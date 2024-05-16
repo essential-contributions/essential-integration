@@ -1,0 +1,108 @@
+{
+  "nodes": {
+    "essential-server": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "systems": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1715657364,
+        "narHash": "sha256-B7Ch6z61xBqXVDtYNATWnUCbOSE9MFX/RQS3BPSMtyE=",
+        "ref": "refs/heads/main",
+        "rev": "af9e75cf7925a3da1140eb97cd93a235d902c511",
+        "revCount": 48,
+        "type": "git",
+        "url": "ssh://git@github.com/essential-contributions/essential-server"
+      },
+      "original": {
+        "type": "git",
+        "url": "ssh://git@github.com/essential-contributions/essential-server"
+      }
+    },
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1715787315,
+        "narHash": "sha256-cYApT0NXJfqBkKcci7D9Kr4CBYZKOQKDYA23q8XNuWg=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "33d1e753c82ffc557b4a585c77de43d4c922ebb5",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "pint": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "pint-src": "pint-src",
+        "systems": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1715743211,
+        "narHash": "sha256-NwiYoToTJmYviiu1aMXpIdM7jmk9zepUcLYrx82s63I=",
+        "ref": "refs/heads/main",
+        "rev": "b474bcc2fec03d0c444fcd58935c1a2f39d3bfeb",
+        "revCount": 42,
+        "type": "git",
+        "url": "ssh://git@github.com/essential-contributions/pint.nix"
+      },
+      "original": {
+        "type": "git",
+        "url": "ssh://git@github.com/essential-contributions/pint.nix"
+      }
+    },
+    "pint-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1715478752,
+        "narHash": "sha256-7itkdw5iDcbfyOUPT7e2EnPjYLjSUnEduSwSBoD/zeM=",
+        "ref": "refs/heads/master",
+        "rev": "38b54a2bc7038528c9ec1f6f37bcb28e335e812d",
+        "revCount": 1172,
+        "type": "git",
+        "url": "ssh://git@github.com/essential-contributions/pint"
+      },
+      "original": {
+        "type": "git",
+        "url": "ssh://git@github.com/essential-contributions/pint"
+      }
+    },
+    "root": {
+      "inputs": {
+        "essential-server": "essential-server",
+        "nixpkgs": "nixpkgs",
+        "pint": "pint",
+        "systems": "systems"
+      }
+    },
+    "systems": {
+      "locked": {
+        "lastModified": 1681028828,
+        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
+        "owner": "nix-systems",
+        "repo": "default",
+        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-systems",
+        "repo": "default",
+        "type": "github"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}
