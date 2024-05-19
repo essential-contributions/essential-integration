@@ -1,12 +1,10 @@
 storage {
-	answered_by: b256,
+	times_solved: int,
 }
 
 intent answer_question {
-	state addr = storage::answered_by;
-
+	state times_solved = storage::times_solved;
 	let answer: int;
-
 	constraint answer == 6 * 7;
-	constraint addr != addr';
+	constraint times_solved + 1 == times_solved';
 }

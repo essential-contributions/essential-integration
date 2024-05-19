@@ -65,7 +65,7 @@ SOLUTION=$(jq -n \
         mutations: [
           {
             key: [0,0,0,0],
-            value: 1111
+            value: 1
           }
         ]
       }
