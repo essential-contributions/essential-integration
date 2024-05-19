@@ -1,0 +1,12 @@
+storage {
+	answered_by: b256,
+}
+
+intent answer_question {
+	state addr = storage::answered_by;
+
+	let answer: int;
+
+	constraint answer == 6 * 7;
+	constraint addr != addr';
+}
