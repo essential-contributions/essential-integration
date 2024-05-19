@@ -36,13 +36,18 @@
   in {
     overlays = {
       essential-integration = final: prev: {
-        # Declare packages here.
+        # All Essential tools in one pkg: pintc, pintfmt, essential-rest-server.
+        essential = with prev; symlinkJoin {
+          name = "essential";
+          paths = [ essential-rest-server pintWithSolver server-with-rqlite ];
+        };
       };
       default = inputs.self.overlays.essential-integration;
     };
 
     packages = perSystemPkgs (pkgs: {
-      # Export overlay packages here.
+      essential = pkgs.essential;
+      default = inputs.self.packages.${pkgs.system}.essential;
     });
 
     devShells = perSystemPkgs (pkgs: {
