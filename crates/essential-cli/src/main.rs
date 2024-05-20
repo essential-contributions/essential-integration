@@ -32,7 +32,6 @@ struct SignIntentSet {
     /// The [`secp256k1::PrivateKey`] in its JSON-serialized form (e.g. `[12, 211, 1, 4, /* ..etc */]`).
     #[arg(long)]
     private_key_json: String,
-    #[arg(long)]
     path: std::path::PathBuf,
 }
 

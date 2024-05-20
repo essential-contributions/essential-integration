@@ -1,8 +1,8 @@
 { rustPlatform
 }:
 let
-  src = ../.;
-  manifest-path = "${src}/crates/essential-cli/Cargo.toml";
+  src = ../crates/essential-cli;
+  manifest-path = "${src}/Cargo.toml";
   manifest = builtins.fromTOML (builtins.readFile manifest-path);
 in
 rustPlatform.buildRustPackage {
