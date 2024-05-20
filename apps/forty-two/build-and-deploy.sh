@@ -11,14 +11,22 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Compile the intent set.
 pintc "$SCRIPT_DIR/forty-two.pnt"
 
+# Use `jq` to change the JSON from an object to a list.
+# TODO: `pintc` should address this upstream: essential-contributions/pint#597.
+INTENT_SET_JSON_FILE="$SCRIPT_DIR/forty-two.json"
+jq '[.[]]' $INTENT_SET_JSON_FILE > tmp.json && mv tmp.json $INTENT_SET_JSON_FILE
+
 # ---------------------------------------------------------
 # SIGN
 # ---------------------------------------------------------
 
+# Create a keypair to sign with.
+KEYPAIR_JSON=$(essential generate-keys)
+PRIVATE_KEY_JSON=$(echo $KEYPAIR_JSON | jq -c ."private")
+
 # Sign the single inner intent and update JSON.
-# TODO: This is currently nonsense - should add a minimal `essential-sign` CLI tool for this.
-JSON_FILE="$SCRIPT_DIR/forty-two.json"
-JSON_DATA=$(jq '{"data":[."::answer_question"],"signature":[[100,25,101,148,47,130,47,56,47,165,202,216,89,197,144,111,42,202,172,74,97,30,127,140,102,214,209,174,205,231,153,25,117,170,44,154,227,176,209,112,199,140,57,172,196,159,236,175,202,60,19,233,44,50,192,49,175,17,62,171,223,151,50,57],1]}' "$JSON_FILE")
+SIGNED_INTENT_SET_JSON_FILE="$SCRIPT_DIR/forty-two-signed.json"
+essential sign-intent-set --private-key-json "$PRIVATE_KEY_JSON" $INTENT_SET_JSON_FILE > $SIGNED_INTENT_SET_JSON_FILE
 
 # ---------------------------------------------------------
 # DEPLOY
@@ -26,11 +34,25 @@ JSON_DATA=$(jq '{"data":[."::answer_question"],"signature":[[100,25,101,148,47,1
 
 # Deploy the intent set. Assumes the following server port.
 SERVER_PORT="45539"
+JSON_DATA=$(jq . $SIGNED_INTENT_SET_JSON_FILE)
 RESPONSE=$(curl -X POST -H "Content-Type: application/json" \
   -d "$JSON_DATA" \
   "http://localhost:$SERVER_PORT/deploy-intent-set")
 
-# TODO: Do error checking of response - currenlty we assume it's correct.
+# Retrieve the intent addresses (contains only the one intent address in this case).
+INTENT_ADDRESSES=$(essential intent-addresses $INTENT_SET_JSON_FILE)
+INTENT_ADDRESS=$(echo $INTENT_ADDRESSES | jq -c '.[0]')
+
+# Before continuing, ensure that the response we got from the server when we
+# deployed the intent set matches the INTENT_SET_CA we expect.
+INTENT_SET_CA=$(echo $INTENT_ADDRESS | jq -c '."set"')
+
+if [ "$RESPONSE" != "$INTENT_SET_CA" ]; then
+  echo "Error: RESPONSE does not match INTENT_SET_CA"
+  echo "RESPONSE: $RESPONSE"
+  echo "INTENT_SET_CA: $INTENT_SET_CA"
+  exit 1
+fi
 
 # ---------------------------------------------------------
 # SOLVE
@@ -38,20 +60,17 @@ RESPONSE=$(curl -X POST -H "Content-Type: application/json" \
 
 # Construct a solution with the `42` decision var and the address we want to change the state to.
 # TODO: This is super unwieldy - would be great if pintc could generate this.
+# TODO: Don't use `Signed<Solution>`, instead just use `Solution`.
 ANSWER="42"
-INTENT_SET_CA="$RESPONSE"
 SOLUTION=$(jq -n \
-  --argjson intent_set_ca "$INTENT_SET_CA" \
+  --argjson intent_addr "$INTENT_ADDRESS" \
   --argjson answer "$ANSWER" \
 '
 {
   data: {
     data: [
       {
-        intent_to_solve: {
-          set: $intent_set_ca,
-          intent: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-        },
+        intent_to_solve: $intent_addr,
         decision_variables: [
           {
             Inline: $answer
@@ -80,6 +99,12 @@ SOLUTION=$(jq -n \
 }')
 
 # Submit the solution.
-curl -X POST -H "Content-Type: application/json" \
+RESPONSE=$(curl -X POST -H "Content-Type: application/json" \
   -d "$SOLUTION" \
-  "http://localhost:$SERVER_PORT/submit-solution"
+  "http://localhost:$SERVER_PORT/submit-solution")
+
+# TODO: Convert the solution hash into expected hash format (base64?).
+
+# Check the outcome of the solution.
+# curl -X GET -H "Content-Type: application/json" \
+#   "http://localhost:$SERVER_PORT/solution-outcome/NsFZ12tS4D5JY2NgfFlAIn9i9OBI3zRLBQFZvJe7o9c="
