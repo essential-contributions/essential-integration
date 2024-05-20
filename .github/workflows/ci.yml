@@ -27,7 +27,7 @@ concurrency:
       matrix:
         os: [ubuntu-latest, macos-latest]
         command: [
-            "develop --print-build-logs --no-update-lock-file",
+            "shell --print-build-logs --no-update-lock-file",
           ]
     runs-on: ${{ matrix.os }}
     steps:
