@@ -22,39 +22,39 @@
     };
   };
 
-  outputs = inputs: let
-    overlays = [
-      inputs.essential-server.overlays.default
-      inputs.pint.overlays.default
-      inputs.self.overlays.default
-    ];
+  outputs = inputs:
+    let
+      overlays = [
+        inputs.essential-server.overlays.default
+        inputs.pint.overlays.default
+        inputs.self.overlays.default
+      ];
 
-    # Functions for accessing pkgs per system.
-    perSystemPkgs = withPkgs:
-      inputs.nixpkgs.lib.genAttrs (import inputs.systems)
-        (system: withPkgs (import inputs.nixpkgs { inherit overlays system; }));
-  in {
-    overlays = {
-      essential-integration = final: prev: {
-        # All Essential tools in one pkg: pintc, pintfmt, essential-rest-server.
-        essential = with prev; symlinkJoin {
-          name = "essential";
-          paths = [ essential-rest-server pintWithSolver server-with-rqlite ];
+      # Functions for accessing pkgs per system.
+      perSystemPkgs = withPkgs:
+        inputs.nixpkgs.lib.genAttrs (import inputs.systems)
+          (system: withPkgs (import inputs.nixpkgs { inherit overlays system; }));
+    in
+    {
+      overlays = {
+        essential-integration = final: prev: {
+          essential-cli = prev.callPackage ./pkgs/essential-cli.nix { };
+          essential = final.callPackage ./pkgs/essential-all.nix { };
         };
+        default = inputs.self.overlays.essential-integration;
       };
-      default = inputs.self.overlays.essential-integration;
+
+      packages = perSystemPkgs (pkgs: {
+        essential-cli = pkgs.essential-cli;
+        essential = pkgs.essential;
+        default = inputs.self.packages.${pkgs.system}.essential;
+      });
+
+      devShells = perSystemPkgs (pkgs: {
+        essential-integration-dev = pkgs.callPackage ./shell.nix { };
+        default = inputs.self.devShells.${pkgs.system}.essential-integration-dev;
+      });
+
+      formatter = perSystemPkgs (pkgs: pkgs.nixpkgs-fmt);
     };
-
-    packages = perSystemPkgs (pkgs: {
-      essential = pkgs.essential;
-      default = inputs.self.packages.${pkgs.system}.essential;
-    });
-
-    devShells = perSystemPkgs (pkgs: {
-      essential-integration-dev = pkgs.callPackage ./shell.nix { };
-      default = inputs.self.devShells.${pkgs.system}.essential-integration-dev;
-    });
-
-    formatter = perSystemPkgs (pkgs: pkgs.nixpkgs-fmt);
-  };
 }

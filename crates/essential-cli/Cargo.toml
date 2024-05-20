@@ -1,0 +1,16 @@
+[package]
+name = "essential-cli"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "essential"
+path = "src/main.rs"
+
+[dependencies]
+clap = { workspace = true }
+essential-hash = { workspace = true }
+essential-sign = { workspace = true }
+essential-types = { workspace = true }
+secp256k1 = { workspace = true }
+serde_json = { workspace = true }
