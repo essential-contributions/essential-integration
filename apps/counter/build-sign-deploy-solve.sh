@@ -63,13 +63,10 @@ fi
 # SOLVE
 # ---------------------------------------------------------
 
-# Construct a solution with the `42` decision var and the address we want to change the state to.
-# TODO: This is super unwieldy - would be great if pintc could generate this.
+# Construct a solution to initialise the `counter` to `0`.
 # TODO: Don't use `Signed<Solution>`, instead just use `Solution`.
-ANSWER="42"
 SOLUTION=$(jq -n \
   --argjson intent_addr "$INTENT_ADDRESS_INIT" \
-  --argjson answer "$ANSWER" \
 '
 {
   data: {
