@@ -103,8 +103,11 @@ RESPONSE=$(curl -X POST -H "Content-Type: application/json" \
   -d "$SOLUTION" \
   "http://localhost:$SERVER_PORT/submit-solution")
 
-# TODO: Convert the solution hash into expected hash format (base64?).
+# Convert the solution CA into expected hash format (base64) via hexadecimal.
+SOLUTION_CA_JSON="$RESPONSE"
+SOLUTION_CA_HEX=$(echo $SOLUTION_CA_JSON | jq -r '.[]' | awk '{ printf "%02x", $1 }')
+SOLUTION_CA_BASE64=$(echo $SOLUTION_CA_HEX | xxd -r -p | base64)
 
 # Check the outcome of the solution.
-# curl -X GET -H "Content-Type: application/json" \
-#   "http://localhost:$SERVER_PORT/solution-outcome/NsFZ12tS4D5JY2NgfFlAIn9i9OBI3zRLBQFZvJe7o9c="
+curl -X GET -H "Content-Type: application/json" \
+  "http://localhost:$SERVER_PORT/solution-outcome/$SOLUTION_CA_BASE64"

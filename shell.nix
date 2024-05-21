@@ -2,10 +2,12 @@
 { essential
 , jq
 , mkShell
+, xxd
 }:
 mkShell {
   buildInputs = [
     essential
     jq
+    xxd
   ];
 }
