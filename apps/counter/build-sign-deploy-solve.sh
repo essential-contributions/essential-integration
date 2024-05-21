@@ -108,7 +108,8 @@ RESPONSE=$(curl -X POST -H "Content-Type: application/json" \
 SOLUTION_CA_JSON="$RESPONSE"
 SOLUTION_CA_HEX=$(echo $SOLUTION_CA_JSON | jq -r '.[]' | awk '{ printf "%02x", $1 }')
 SOLUTION_CA_BASE64=$(echo $SOLUTION_CA_HEX | xxd -r -p | base64)
+SOLUTION_CA_BASE64URL=$(echo $SOLUTION_CA_BASE64 | tr '+/' '-_')
 
 # Check the outcome of the solution.
 curl -X GET -H "Content-Type: application/json" \
-  "http://localhost:$SERVER_PORT/solution-outcome/$SOLUTION_CA_BASE64"
+  "http://localhost:$SERVER_PORT/solution-outcome/$SOLUTION_CA_BASE64URL"
