@@ -1,4 +1,4 @@
-## forty-two
+## counter
 
 A simple constraint that allows for updating a counter in state under the
 condition that the solver can provide the answer to 6 * 7.

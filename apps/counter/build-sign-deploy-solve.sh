@@ -6,14 +6,15 @@ set -x # Debug output.
 # ---------------------------------------------------------
 
 # Directory of this script.
+NAME="counter"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Compile the intent set.
-pintc "$SCRIPT_DIR/forty-two.pnt"
+pintc "$SCRIPT_DIR/$NAME.pnt"
 
 # Use `jq` to change the JSON from an object to a list.
 # TODO: `pintc` should address this upstream: essential-contributions/pint#597.
-INTENT_SET_JSON_FILE="$SCRIPT_DIR/forty-two.json"
+INTENT_SET_JSON_FILE="$SCRIPT_DIR/$NAME.json"
 jq '[.[]]' $INTENT_SET_JSON_FILE > tmp.json && mv tmp.json $INTENT_SET_JSON_FILE
 
 # ---------------------------------------------------------
@@ -25,7 +26,7 @@ KEYPAIR_JSON=$(essential generate-keys)
 PRIVATE_KEY_JSON=$(echo $KEYPAIR_JSON | jq -c ."private")
 
 # Sign the single inner intent and update JSON.
-SIGNED_INTENT_SET_JSON_FILE="$SCRIPT_DIR/forty-two-signed.json"
+SIGNED_INTENT_SET_JSON_FILE="$SCRIPT_DIR/$NAME-signed.json"
 essential sign-intent-set --private-key-json "$PRIVATE_KEY_JSON" $INTENT_SET_JSON_FILE > $SIGNED_INTENT_SET_JSON_FILE
 
 # ---------------------------------------------------------
@@ -39,13 +40,17 @@ RESPONSE=$(curl -X POST -H "Content-Type: application/json" \
   -d "$JSON_DATA" \
   "http://localhost:$SERVER_PORT/deploy-intent-set")
 
-# Retrieve the intent addresses (contains only the one intent address in this case).
+# Retrieve the intent addresses (contains only the one intent address in this
+# case). Note: As the intent set JSON from pint is currently an object (i.e. a
+# map from name to intent), the intents are ordered by their name when converted
+# to a list (not their declaration order within the pint file).
 INTENT_ADDRESSES=$(essential intent-addresses $INTENT_SET_JSON_FILE)
-INTENT_ADDRESS=$(echo $INTENT_ADDRESSES | jq -c '.[0]')
+INTENT_ADDRESS_INCREMENT=$(echo $INTENT_ADDRESSES | jq -c '.[0]')
+INTENT_ADDRESS_INIT=$(echo $INTENT_ADDRESSES | jq -c '.[1]')
 
 # Before continuing, ensure that the response we got from the server when we
 # deployed the intent set matches the INTENT_SET_CA we expect.
-INTENT_SET_CA=$(echo $INTENT_ADDRESS | jq -c '."set"')
+INTENT_SET_CA=$(echo $INTENT_ADDRESSES | jq -c '.[0]."set"')
 
 if [ "$RESPONSE" != "$INTENT_SET_CA" ]; then
   echo "Error: RESPONSE does not match INTENT_SET_CA"
@@ -63,7 +68,7 @@ fi
 # TODO: Don't use `Signed<Solution>`, instead just use `Solution`.
 ANSWER="42"
 SOLUTION=$(jq -n \
-  --argjson intent_addr "$INTENT_ADDRESS" \
+  --argjson intent_addr "$INTENT_ADDRESS_INIT" \
   --argjson answer "$ANSWER" \
 '
 {
@@ -71,11 +76,7 @@ SOLUTION=$(jq -n \
     data: [
       {
         intent_to_solve: $intent_addr,
-        decision_variables: [
-          {
-            Inline: $answer
-          }
-        ]
+        decision_variables: []
       }
     ],
     state_mutations: [
@@ -84,7 +85,7 @@ SOLUTION=$(jq -n \
         mutations: [
           {
             key: [0,0,0,0],
-            value: 1
+            value: 0
           }
         ]
       }

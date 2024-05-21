@@ -1,0 +1,15 @@
+storage {
+	counter: int,
+}
+
+intent init {
+	state counter = storage::counter;
+	constraint counter' == 0;
+}
+
+intent increment {
+	state counter = storage::counter;
+	let answer: int;
+	constraint answer == 6 * 7;
+	constraint counter + 1 == counter';
+}
