@@ -48,7 +48,7 @@ fn generate_keys() {
 
 fn intent_addresses(cmd: IntentAddresses) {
     let intent_set = read_intent_set(&cmd.path);
-    let set_addr = essential_hash::content_addr(&intent_set);
+    let set_addr = essential_hash::intent_set_addr::from_intents(&intent_set);
     let intent_addrs: Vec<_> = intent_set.iter().map(|intent| {
         let intent = essential_hash::content_addr(intent);
         let set = set_addr.clone();

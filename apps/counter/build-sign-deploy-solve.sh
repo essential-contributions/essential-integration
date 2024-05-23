@@ -1,5 +1,4 @@
 set -eo pipefail
-set -x # Debug output.
 
 # ---------------------------------------------------------
 # BUILD
@@ -69,30 +68,22 @@ SOLUTION=$(jq -n \
   --argjson intent_addr "$INTENT_ADDRESS_INIT" \
 '
 {
-  data: {
-    data: [
-      {
-        intent_to_solve: $intent_addr,
-        decision_variables: []
-      }
-    ],
-    state_mutations: [
-      {
-        pathway: 0,
-        mutations: [
-          {
-            key: [0,0,0,0],
-            value: 0
-          }
-        ]
-      }
-    ]
-  },
-  signature: [
-    [
-      227,149,64,152,61,122,243,188,139,161,53,210,43,86,106,204,89,249,201,75,200,88,214,81,248,111,37,27,148,225,87,74,110,213,26,68,171,171,18,221,207,212,83,56,94,250,152,9,44,100,237,37,49,208,239,95,229,91,202,99,66,13,148,225
-    ],
-    0
+  data: [
+    {
+      intent_to_solve: $intent_addr,
+      decision_variables: []
+    }
+  ],
+  state_mutations: [
+    {
+      pathway: 0,
+      mutations: [
+        {
+          key: [0,0,0,0],
+          value: [0]
+        }
+      ]
+    }
   ]
 }')
 
@@ -102,11 +93,8 @@ RESPONSE=$(curl -X POST -H "Content-Type: application/json" \
   "http://localhost:$SERVER_PORT/submit-solution")
 
 # Convert the solution CA into expected hash format (base64) via hexadecimal.
-SOLUTION_CA_JSON="$RESPONSE"
-SOLUTION_CA_HEX=$(echo $SOLUTION_CA_JSON | jq -r '.[]' | awk '{ printf "%02x", $1 }')
-SOLUTION_CA_BASE64=$(echo $SOLUTION_CA_HEX | xxd -r -p | base64)
-SOLUTION_CA_BASE64URL=$(echo $SOLUTION_CA_BASE64 | tr '+/' '-_')
+SOLUTION_CA="$(echo $RESPONSE | awk -F'"' '{print $2}')"
 
 # Check the outcome of the solution.
 curl -X GET -H "Content-Type: application/json" \
-  "http://localhost:$SERVER_PORT/solution-outcome/$SOLUTION_CA_BASE64URL"
+  "http://localhost:$SERVER_PORT/solution-outcome/$SOLUTION_CA"
