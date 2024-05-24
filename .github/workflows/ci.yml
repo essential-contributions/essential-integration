@@ -56,3 +56,36 @@ jobs:
       - uses: DeterminateSystems/nix-installer-action@v10
       - uses: DeterminateSystems/magic-nix-cache-action@v4
       - run: nix ${{ matrix.command }}
+
+  # Test the apps.
+  apps:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Add each app's test command here.
+          - command: ./apps/counter/build-sign-deploy-solve.sh
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: "write"
+      contents: "read"
+    steps:
+      - uses: actions/checkout@v3
+      - uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: |
+            ${{ secrets.SSH_KEY_BASE }}
+            ${{ secrets.SSH_KEY_PINT }}
+            ${{ secrets.SSH_KEY_PINTNIX }}
+            ${{ secrets.SSH_KEY_SERVER }}
+      - uses: DeterminateSystems/nix-installer-action@v10
+      - uses: DeterminateSystems/magic-nix-cache-action@v4
+      - run: |
+          # Enter a shell with essential tools.
+          nix develop
+          # Run the server in the background.
+          RUST_LOG=trace essential-rest-server --db memory "0.0.0.0:45539" &
+          # Give the server a second to startup.
+          sleep 1
+          # Run the app test command.
+          ${{ matrix.command }}
