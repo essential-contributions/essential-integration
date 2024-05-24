@@ -1,4 +1,11 @@
 set -eo pipefail
+temp_dir=$(mktemp -d)
+
+# Take the server port as an argument.
+SERVER_PORT="45539"
+if [ -n "$1" ]; then
+  SERVER_PORT=$1
+fi
 
 # ---------------------------------------------------------
 # BUILD
@@ -8,7 +15,7 @@ NAME="counter"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PINT_FILE="$SCRIPT_DIR/$NAME.pnt"
 echo "Building $PINT_FILE"
-pintc "$PINT_FILE"
+pintc "$PINT_FILE" --output "$temp_dir/$NAME.json"
 echo "Built $PINT_FILE"
 
 # ---------------------------------------------------------
@@ -16,7 +23,7 @@ echo "Built $PINT_FILE"
 # ---------------------------------------------------------
 
 # Create a keypair and sign the intent set.
-INTENT_SET_JSON_FILE="$SCRIPT_DIR/$NAME.json"
+INTENT_SET_JSON_FILE="$temp_dir/$NAME.json"
 echo "Signing $INTENT_SET_JSON_FILE"
 KEYPAIR_JSON=$(essential generate-keys)
 PRIVATE_KEY_JSON=$(echo $KEYPAIR_JSON | jq -c ."private")
@@ -28,7 +35,6 @@ SIGNED_INTENT_SET_JSON=$(essential sign-intent-set \
 # ---------------------------------------------------------
 
 # Deploy the intent set. Assumes the following server port.
-SERVER_PORT="45539"
 echo "Deploying signed intent set"
 echo $SIGNED_INTENT_SET_JSON | jq '.'
 RESPONSE=$(curl -X POST -H "Content-Type: application/json" \

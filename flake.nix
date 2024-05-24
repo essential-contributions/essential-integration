@@ -38,8 +38,12 @@
     {
       overlays = {
         essential-integration = final: prev: {
+          # CLI utilities.
           essential-cli = prev.callPackage ./pkgs/essential-cli.nix { };
+          # All essential applications under one package.
           essential = final.callPackage ./pkgs/essential-all.nix { };
+          # All app tests.
+          test-app-counter = final.callPackage ./pkgs/test-app-counter.nix { };
         };
         default = inputs.self.overlays.essential-integration;
       };
@@ -47,6 +51,7 @@
       packages = perSystemPkgs (pkgs: {
         essential-cli = pkgs.essential-cli;
         essential = pkgs.essential;
+        test-app-counter = pkgs.test-app-counter;
         default = inputs.self.packages.${pkgs.system}.essential;
       });
 

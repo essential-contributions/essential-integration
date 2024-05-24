@@ -63,8 +63,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # Add each app's test command here.
-          - command: ./apps/counter/build-sign-deploy-solve.sh
+          # Add each app's test command here, each with a unique port.
+          - command: nix run .#test-app-counter -- 44001
     runs-on: ubuntu-latest
     permissions:
       id-token: "write"
@@ -80,12 +80,4 @@ jobs:
             ${{ secrets.SSH_KEY_SERVER }}
       - uses: DeterminateSystems/nix-installer-action@v10
       - uses: DeterminateSystems/magic-nix-cache-action@v4
-      - run: |
-          # Enter a shell with essential tools.
-          nix develop
-          # Run the server in the background.
-          RUST_LOG=trace essential-rest-server --db memory "0.0.0.0:45539" &
-          # Give the server a second to startup.
-          sleep 1
-          # Run the app test command.
-          ${{ matrix.command }}
+      - run: ${{ matrix.command }}
