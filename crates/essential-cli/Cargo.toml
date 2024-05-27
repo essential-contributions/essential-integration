@@ -8,7 +8,7 @@ name = "essential"
 path = "src/main.rs"
 
 [dependencies]
-clap = { versio = "4", features = ["derive"] }
+clap = { version = "4", features = ["derive"] }
 essential-hash = { git = "ssh://git@github.com/essential-contributions/essential-base.git" }
 essential-sign = { git = "ssh://git@github.com/essential-contributions/essential-base.git" }
 essential-types = { git = "ssh://git@github.com/essential-contributions/essential-base.git" }
