@@ -1,3 +1,7 @@
+# A package around the `apps/counter/test.sh` script.
+#
+# This package automatically starts an instance of the `essential-rest-server`,
+# runs the test script, then closes the server.
 { essential
 , jq
 , xxd
@@ -12,6 +16,7 @@ writeShellApplication {
   runtimeInputs = [ essential jq xxd ];
   text = ''
     # Function to clean up and kill the server.
+    server_pid=""
     cleanup() {
       echo "Shutting down the server with PID $server_pid..."
       kill $server_pid
@@ -21,7 +26,7 @@ writeShellApplication {
     # Default port number, or receive via arg.
     SERVER_PORT="45539"
     echo $
-    if [ -n "$1" ]; then
+    if [ $# -gt 0 ]; then
       SERVER_PORT=$1
       echo "Using port $SERVER_PORT"
     else
@@ -36,6 +41,6 @@ writeShellApplication {
     sleep 1
 
     # Run the app test command.
-    ${src}/build-sign-deploy-solve.sh "$SERVER_PORT"
+    ${src}/test.sh "$SERVER_PORT"
   '';
 }

@@ -1,3 +1,11 @@
+# This test script does the following:
+#
+# 1. Builds the pint contract.
+# 2. Signs the intent set.
+# 3. Deploys the intent set.
+# 4. Solves the `init` intent and waits for inclusion in a block.
+# 5. Solves the `increment` intent and waits for inclusion in a block.
+
 set -eo pipefail
 temp_dir=$(mktemp -d)
 
