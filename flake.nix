@@ -44,6 +44,7 @@
           essential = final.callPackage ./pkgs/essential-all.nix { };
           # All app tests.
           test-app-counter = final.callPackage ./pkgs/test-app-counter.nix { };
+          test-app-fungible-token = final.callPackage ./pkgs/test-app-fungible-token.nix { };
         };
         default = inputs.self.overlays.essential-integration;
       };
@@ -52,6 +53,7 @@
         essential-cli = pkgs.essential-cli;
         essential = pkgs.essential;
         test-app-counter = pkgs.test-app-counter;
+        test-app-fungible-token = pkgs.test-app-fungible-token;
         default = inputs.self.packages.${pkgs.system}.essential;
       });
 

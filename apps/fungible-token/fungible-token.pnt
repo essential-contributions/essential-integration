@@ -1,0 +1,42 @@
+// TODO: authentication to follow
+
+storage {
+    total_supply: int,
+    balances: (b256 => int),
+}
+
+intent mint {
+    let minter: b256;
+    let amount: int;
+
+    state minter_balance = storage::balances[minter];
+    state total_supply = storage::total_supply;
+
+    constraint total_supply' == total_supply + amount;
+    constraint minter_balance' == minter_balance + amount;
+}
+
+intent burn {
+    let burner: b256;
+    let amount: int;
+
+    state burner_balance = storage::balances[burner];
+    state total_supply = storage::total_supply;
+
+    constraint burner_balance >= amount;
+    constraint burner_balance' == burner_balance - amount;
+    constraint total_supply' == total_supply - amount;
+}
+
+intent transfer {
+    let receiver: b256;
+    let sender: b256;
+    let amount: int;
+
+    state receiver_balance = storage::balances[receiver];
+    state sender_balance = storage::balances[sender];
+
+    constraint sender_balance >= amount;
+    constraint sender_balance' == sender_balance - amount;
+    constraint receiver_balance' == receiver_balance + amount;
+}
