@@ -7,7 +7,7 @@ edition = "2021"
 anyhow = { workspace = true }
 base64 = { workspace = true }
 clap = { workspace = true }
-essential-server = { workspace = true }
+essential-server-types = { workspace = true }
 essential-types = { workspace = true }
 serde = { workspace = true }
 reqwest = { workspace = true, features = ["json"] }

@@ -1,5 +1,5 @@
 use base64::Engine as _;
-use essential_server::{CheckSolutionOutput, SolutionOutcome};
+use essential_server_types::{CheckSolutionOutput, SolutionOutcome};
 use essential_types::{
     convert::bytes_from_word,
     intent::{self, Intent},
