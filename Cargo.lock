@@ -333,6 +333,7 @@ dependencies = [
  "essential-types",
  "reqwest",
  "serde",
+ "serde_json",
  "tokio",
 ]
 
