@@ -3,7 +3,7 @@ use essential_rest_client::EssentialClient;
 use essential_types::{
     intent::{Intent, SignedSet},
     solution::Solution,
-    ContentAddress, Hash, IntentAddress, Key,
+    ContentAddress, IntentAddress, Key,
 };
 use std::{ops::Range, time::Duration};
 
@@ -38,7 +38,7 @@ enum Commands {
     },
     SolutionOutcome {
         #[arg(long)]
-        solution_hash: String,
+        solution_hash: ContentAddress,
     },
     GetIntent {
         #[arg(long)]
@@ -46,7 +46,7 @@ enum Commands {
     },
     GetIntentSet {
         #[arg(long)]
-        address: String,
+        address: ContentAddress,
     },
     ListIntentSets {
         #[arg(long, default_value(None))]
@@ -79,18 +79,18 @@ async fn main() {
     if let Some(command) = command {
         match command {
             Commands::DeployIntentSet { intents } => {
-                let intents = serde_json::from_slice::<SignedSet>(intents.as_bytes()).unwrap();
+                let intents = serde_json::from_str::<SignedSet>(&intents).unwrap();
                 let output = client.deploy_intent_set(intents).await.unwrap();
                 print!("{}", output);
             }
             Commands::CheckSolution { solution } => {
-                let solution = serde_json::from_slice::<Solution>(solution.as_bytes()).unwrap();
+                let solution = serde_json::from_str::<Solution>(&solution).unwrap();
                 let output = client.check_solution(solution).await.unwrap();
                 print!("{:#?}", output);
             }
             Commands::CheckSolutionWithData { solution, intents } => {
-                let solution = serde_json::from_slice::<Solution>(solution.as_bytes()).unwrap();
-                let intents = serde_json::from_slice::<Vec<Intent>>(intents.as_bytes()).unwrap();
+                let solution = serde_json::from_str::<Solution>(&solution).unwrap();
+                let intents = serde_json::from_str::<Vec<Intent>>(&intents).unwrap();
                 let output = client
                     .check_solution_with_data(solution, intents)
                     .await
@@ -98,29 +98,26 @@ async fn main() {
                 print!("{:#?}", output);
             }
             Commands::SubmitSolution { solution } => {
-                let solution = serde_json::from_slice::<Solution>(solution.as_bytes()).unwrap();
+                let solution = serde_json::from_str::<Solution>(&solution).unwrap();
                 let output = client.submit_solution(solution).await.unwrap();
                 print!("{}", output);
             }
             Commands::SolutionOutcome { solution_hash } => {
-                let solution_hash =
-                    serde_json::from_slice::<Hash>(solution_hash.as_bytes()).unwrap();
-                let output = client.solution_outcome(&solution_hash).await.unwrap();
+                let output = client.solution_outcome(&solution_hash.0).await.unwrap();
                 print!("{:#?}", output);
             }
             Commands::GetIntent { address } => {
-                let address = serde_json::from_slice::<IntentAddress>(address.as_bytes()).unwrap();
+                let address = serde_json::from_str::<IntentAddress>(&address).unwrap();
                 let output = client.get_intent(&address).await.unwrap();
                 print!("{:#?}", output);
             }
             Commands::GetIntentSet { address } => {
-                let address = serde_json::from_slice::<ContentAddress>(address.as_bytes()).unwrap();
                 let output = client.get_intent_set(&address).await.unwrap();
                 print!("{:#?}", output);
             }
             Commands::ListIntentSets { time_range, page } => {
                 let time_range = time_range.map(|time_range| {
-                    serde_json::from_slice::<Range<Duration>>(time_range.as_bytes()).unwrap()
+                    serde_json::de::from_str::<Range<Duration>>(&time_range).unwrap()
                 });
                 let output = client.list_intent_sets(time_range, page).await.unwrap();
                 print!("{:#?}", output);
@@ -131,14 +128,14 @@ async fn main() {
             }
             Commands::ListWinningBlocks { time_range, page } => {
                 let time_range = time_range.map(|time_range| {
-                    serde_json::from_slice::<Range<Duration>>(time_range.as_bytes()).unwrap()
+                    serde_json::from_str::<Range<Duration>>(&time_range).unwrap()
                 });
                 let output = client.list_winning_blocks(time_range, page).await.unwrap();
                 print!("{:#?}", output);
             }
             Commands::QueryState { address, key } => {
-                let address = serde_json::from_slice::<ContentAddress>(address.as_bytes()).unwrap();
-                let key = serde_json::from_slice::<Key>(key.as_bytes()).unwrap();
+                let address = serde_json::from_str::<ContentAddress>(&address).unwrap();
+                let key = serde_json::from_str::<Key>(&key).unwrap();
                 let output = client.query_state(&address, &key).await.unwrap();
                 print!("{:#?}", output);
             }
