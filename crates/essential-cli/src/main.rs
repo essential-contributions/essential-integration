@@ -68,7 +68,7 @@ fn sign_intent_set(cmd: SignIntentSet) {
     let sk = secp256k1::SecretKey::from_slice(&sk_bytes)
         .expect("failed to parse secp256k1 private key from bytes");
     let intent_set = read_intent_set(&cmd.path);
-    let signed = essential_sign::sign(intent_set, &sk);
+    let signed = essential_sign::intent_set::sign(intent_set, &sk);
     println!("{}", serde_json::to_string(&signed).unwrap());
 }
 

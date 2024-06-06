@@ -9,7 +9,7 @@ intent init {
 
 intent increment {
 	state counter = storage::counter;
-	let answer: int;
+	var answer: int;
 	constraint answer == 6 * 7;
 	constraint counter + 1 == counter';
 }

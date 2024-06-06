@@ -2,7 +2,7 @@
 { essential-cli
 , essential-rest-client
 , essential-rest-server
-, pintWithSolver
+, pint
 , server-with-rqlite
 , symlinkJoin
 }:
@@ -12,7 +12,7 @@ symlinkJoin {
     essential-cli
     essential-rest-client
     essential-rest-server
-    pintWithSolver
+    pint
     server-with-rqlite
   ];
 }
