@@ -18,7 +18,7 @@ pub struct EssentialClient {
 }
 
 impl EssentialClient {
-    pub async fn new(addr: String) -> anyhow::Result<Self> {
+    pub fn new(addr: String) -> anyhow::Result<Self> {
         let client = ClientBuilder::new().http2_prior_knowledge().build()?;
         let url = reqwest::Url::parse(&addr)?;
         Ok(Self { client, url })
