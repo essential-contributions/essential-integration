@@ -1,0 +1,14 @@
+storage {
+    owners: (b256 => b256),
+}
+
+intent Mint {
+    var token: b256;
+    var new_owner: b256;
+
+    state owner = storage::owners[token];
+
+    // TODO: Constrain that this has no pre state owner
+
+    constraint owner' == new_owner;
+}

@@ -1,0 +1,14 @@
+[package]
+name = "nft-front-end"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = { workspace = true }
+essential-hash = { workspace = true }
+essential-rest-client = { workspace = true }
+essential-signer = { workspace = true }
+essential-types = { workspace = true }
+essential-wallet = { workspace = true }
+serde_json = { workspace = true }
+tokio = { workspace = true }
