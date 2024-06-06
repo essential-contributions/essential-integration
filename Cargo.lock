@@ -1609,6 +1609,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "nft-front-end"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "essential-hash",
+ "essential-rest-client",
+ "essential-signer",
+ "essential-types",
+ "essential-wallet",
+ "serde_json",
+ "tokio",
+]
+
+[[package]]
 name = "nix"
 version = "0.22.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
