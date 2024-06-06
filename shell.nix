@@ -3,11 +3,28 @@
 , jq
 , mkShell
 , xxd
+, darwin
+, cargo-toml-lint
+, clippy
+, rqlite
+, rust-analyzer
+, rustfmt
+, lib
+, stdenv
+, libiconv
 }:
 mkShell {
   buildInputs = [
     essential
     jq
     xxd
+    libiconv
+    cargo-toml-lint
+    clippy
+    rqlite
+    rust-analyzer
+    rustfmt
+  ] ++ lib.optionals stdenv.isDarwin [
+    darwin.apple_sdk.frameworks.SystemConfiguration
   ];
 }
