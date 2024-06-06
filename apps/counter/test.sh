@@ -45,7 +45,7 @@ SIGNED_INTENT_SET_JSON=$(essential sign-intent-set \
 # Deploy the intent set. Assumes the following server port.
 echo "Deploying signed intent set"
 echo $SIGNED_INTENT_SET_JSON | jq '.'
-RESPONSE=$(curl -X POST -H "Content-Type: application/json" \
+RESPONSE=$(curl -X POST --http2-prior-knowledge -H "Content-Type: application/json" \
   -d "$SIGNED_INTENT_SET_JSON" \
   "http://localhost:$SERVER_PORT/deploy-intent-set")
 echo "$RESPONSE" | jq '.'
@@ -76,25 +76,21 @@ SOLUTION=$(jq -n \
   data: [
     {
       intent_to_solve: $intent_addr,
-      decision_variables: []
-    }
-  ],
-  state_mutations: [
-    {
-      pathway: 0,
-      mutations: [
+      decision_variables: [],
+      state_mutations: [
         {
-          key: [0,0,0,0],
+          key: [0],
           value: [0]
         }
-      ]
+      ],
+      transient_data: []
     }
   ]
 }')
 
 echo "Submitting 'init' solution"
 echo $SOLUTION | jq '.'
-RESPONSE=$(curl -X POST -H "Content-Type: application/json" \
+RESPONSE=$(curl -X POST --http2-prior-knowledge -H "Content-Type: application/json" \
   -d "$SOLUTION" \
   "http://localhost:$SERVER_PORT/submit-solution")
 echo "$RESPONSE" | jq '.'
@@ -108,18 +104,18 @@ await_solution_outcome() {
   echo "Awaiting outcome for solution $SOLUTION_CA"
   while true; do
     # Request outcome.
-    RESPONSE=$(curl -s -X GET -H "Content-Type: application/json" \
+    RESPONSE=$(curl -s -X GET --http2-prior-knowledge -H "Content-Type: application/json" \
       "http://localhost:$SERVER_PORT/solution-outcome/$SOLUTION_CA")
     echo $RESPONSE | jq '.'
 
     # Check for success.
-    SUCCESS=$(echo $RESPONSE | jq 'has("Success")')
+    SUCCESS=$(echo $RESPONSE | jq 'if type == "array" and length == 0 then false else map(has("Success")) | any end')
     if [ "$SUCCESS" == "true" ]; then
       break
     fi
 
     # Check for failure.
-    FAIL=$(echo $RESPONSE | jq 'has("Fail")')
+    FAIL=$(echo $RESPONSE | jq 'if type == "array" and length == 0 then false else map(has("Fail")) | any end')
     if [ "$FAIL" == "true" ]; then
       echo "Error: Solution failed"
       echo "Exiting."
@@ -146,9 +142,9 @@ await_solution_outcome $SOLUTION_CA
 # ---------------------------------------------------------
 
 ADDRESS=$(echo $INTENT_SET_CA | jq -r '.')
-KEY="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" # Key `[0u8; 32]` as base64url
+KEY="AAAAAAAAAAAAAAAA" # Key `[0u8; 8]` as base64url
 echo "Querying state $ADDRESS/$KEY"
-RESPONSE=$(curl -X GET -H "Content-Type: application/json" \
+RESPONSE=$(curl -X GET --http2-prior-knowledge -H "Content-Type: application/json" \
   "http://localhost:$SERVER_PORT/query-state/$ADDRESS/$KEY")
 echo "$RESPONSE" | jq .
 
@@ -168,18 +164,14 @@ SOLUTION=$(jq -n \
   data: [
     {
       intent_to_solve: $intent_addr,
-      decision_variables: [$answer]
-    }
-  ],
-  state_mutations: [
-    {
-      pathway: 0,
-      mutations: [
+      decision_variables: [[$answer]],
+      state_mutations: [
         {
-          key: [0,0,0,0],
+          key: [0],
           value: [$next_count]
         }
-      ]
+      ],
+      transient_data: []
     }
   ]
 }')
@@ -187,7 +179,7 @@ SOLUTION=$(jq -n \
 # Submit the solution.
 echo "Submitting 'increment' solution"
 echo $SOLUTION | jq '.'
-RESPONSE=$(curl -X POST -H "Content-Type: application/json" \
+RESPONSE=$(curl -X POST --http2-prior-knowledge -H "Content-Type: application/json" \
   -d "$SOLUTION" \
   "http://localhost:$SERVER_PORT/submit-solution")
 
