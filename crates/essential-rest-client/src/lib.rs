@@ -11,7 +11,9 @@ use std::{ops::Range, time::Duration};
 
 /// Client library for sending requests to the Essential REST Server.
 pub struct EssentialClient {
+    /// Async reqwest client to make requests with.
     client: Client,
+    /// The url to make requests to.
     url: reqwest::Url,
 }
 

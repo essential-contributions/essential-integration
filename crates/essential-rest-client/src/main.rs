@@ -11,11 +11,14 @@ use std::{ops::Range, time::Duration};
 #[command(version, about, long_about = None)]
 struct Cli {
     #[arg(default_value_t = String::from("http://0.0.0.0:0"))]
+    /// Server address to bind to. Default: "http://0.0.0.0:0"
     address: String,
     #[command(subcommand)]
     commands: Option<Commands>,
 }
 
+/// Subcommands for calling server functions.
+/// Non-primitive types are expected to be JSON strings.
 #[derive(Subcommand, Debug)]
 enum Commands {
     DeployIntentSet {
