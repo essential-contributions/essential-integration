@@ -7,13 +7,13 @@
 }:
 let
   src = ../.;
-  crateDir = "${src}/crates/essential-cli";
+  crateDir = "${src}/crates/essential-rest-client";
   crateTOML = "${crateDir}/Cargo.toml";
   lockFile = "${src}/Cargo.lock";
 in
 rustPlatform.buildRustPackage {
   inherit src;
-  pname = "essential-cli";
+  pname = "essential-rest-client";
   version = (builtins.fromTOML (builtins.readFile crateTOML)).package.version;
 
   nativeBuildInputs = lib.optionals stdenv.isLinux [

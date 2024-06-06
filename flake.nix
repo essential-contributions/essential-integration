@@ -40,6 +40,8 @@
         essential-integration = final: prev: {
           # CLI utilities.
           essential-cli = prev.callPackage ./pkgs/essential-cli.nix { };
+          # Essential REST client.
+          essential-rest-client = prev.callPackage ./pkgs/essential-rest-client.nix { };
           # All essential applications under one package.
           essential = final.callPackage ./pkgs/essential-all.nix { };
           # All app tests.
@@ -51,6 +53,7 @@
 
       packages = perSystemPkgs (pkgs: {
         essential-cli = pkgs.essential-cli;
+        essential-rest-client = pkgs.essential-rest-client;
         essential = pkgs.essential;
         test-app-counter = pkgs.test-app-counter;
         test-app-fungible-token = pkgs.test-app-fungible-token;

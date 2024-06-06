@@ -36,24 +36,29 @@ struct SignIntentSet {
 }
 
 fn generate_keys() {
-    use essential_sign::secp256k1::{Secp256k1, rand::rngs::OsRng};
+    use essential_sign::secp256k1::{rand::rngs::OsRng, Secp256k1};
     let secp = Secp256k1::new();
     let (sk, pk) = secp.generate_keypair(&mut OsRng);
     let map: std::collections::BTreeMap<_, _> = [
         ("private", sk.secret_bytes().to_vec()),
         ("public", pk.serialize().to_vec()),
-    ].into_iter().collect();
+    ]
+    .into_iter()
+    .collect();
     println!("{}", serde_json::to_string(&map).unwrap())
 }
 
 fn intent_addresses(cmd: IntentAddresses) {
     let intent_set = read_intent_set(&cmd.path);
     let set_addr = essential_hash::intent_set_addr::from_intents(&intent_set);
-    let intent_addrs: Vec<_> = intent_set.iter().map(|intent| {
-        let intent = essential_hash::content_addr(intent);
-        let set = set_addr.clone();
-        essential_types::IntentAddress { set, intent }
-    }).collect();
+    let intent_addrs: Vec<_> = intent_set
+        .iter()
+        .map(|intent| {
+            let intent = essential_hash::content_addr(intent);
+            let set = set_addr.clone();
+            essential_types::IntentAddress { set, intent }
+        })
+        .collect();
     println!("{}", serde_json::to_string(&intent_addrs).unwrap());
 }
 
@@ -63,7 +68,7 @@ fn sign_intent_set(cmd: SignIntentSet) {
     let sk = secp256k1::SecretKey::from_slice(&sk_bytes)
         .expect("failed to parse secp256k1 private key from bytes");
     let intent_set = read_intent_set(&cmd.path);
-    let signed = essential_sign::sign(intent_set, sk);
+    let signed = essential_sign::intent_set::sign(intent_set, &sk);
     println!("{}", serde_json::to_string(&signed).unwrap());
 }
 
@@ -73,8 +78,7 @@ fn read_intent_set(path: &std::path::Path) -> Vec<essential_types::intent::Inten
         .map_err(|e| format!("failed to open file {}: {e}", path.display()))
         .unwrap();
     let reader = BufReader::new(file);
-    serde_json::from_reader(reader)
-        .expect("failed to deserialize intent set")
+    serde_json::from_reader(reader).expect("failed to deserialize intent set")
 }
 
 fn main() {
