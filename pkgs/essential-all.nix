@@ -11,6 +11,7 @@ symlinkJoin {
   paths = [
     essential-cli
     essential-rest-client
+    essential-rest-server
     pintWithSolver
     server-with-rqlite
   ];
