@@ -50,11 +50,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1717644480,
-        "narHash": "sha256-33/2VWAZIqwRbZ3cCH4OX8eyFev6YhJG+1NwRn3fmj4=",
+        "lastModified": 1718163384,
+        "narHash": "sha256-q2tbcjQSfmBmIFQNfHjC6eOW0+lrf3FnDx2QYlsH59o=",
         "ref": "refs/heads/main",
-        "rev": "b7219bc7c623638f78e71e0e08c4d7bace02f208",
-        "revCount": 58,
+        "rev": "d02c144db50424972ca9948749c2eda545787c2a",
+        "revCount": 60,
         "type": "git",
         "url": "ssh://git@github.com/essential-contributions/pint.nix"
       },
@@ -66,11 +66,11 @@
     "pint-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1717641702,
-        "narHash": "sha256-01+y40iT5AVif3gCyIYjp3zFtK3MWoSFGkdWSwWSbsE=",
+        "lastModified": 1718156020,
+        "narHash": "sha256-O5ppoDoOjsZtDOQkUjILLR3RBNuj/PXq2AR6ViFDc1s=",
         "ref": "refs/heads/master",
-        "rev": "b263a9aa79db071fc01041b4d507d1650a29bcca",
-        "revCount": 1248,
+        "rev": "2f7794a4633633bd9e61a3b18065bf2379ecedaf",
+        "revCount": 1290,
         "type": "git",
         "url": "ssh://git@github.com/essential-contributions/pint"
       },
