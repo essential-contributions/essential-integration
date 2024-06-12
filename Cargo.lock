@@ -1600,9 +1600,11 @@ dependencies = [
  "anyhow",
  "essential-hash",
  "essential-rest-client",
+ "essential-sign",
  "essential-signer",
  "essential-types",
  "essential-wallet",
+ "hex",
  "serde_json",
  "tokio",
 ]
