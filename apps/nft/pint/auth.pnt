@@ -18,8 +18,8 @@ intent Auth {
 
     constraint (
             // Key authorization
-            auth_addr.0 == 0x735D3F4ED3C65175CBEBAFF7308138944A135A93DA358985B335871455E774FB
-            && auth_addr.1 == 0xE1C16C435BC7EF596C079CAAAADCB590235942CD5947A9287377B1FA6E2CE9FB
+            auth_addr.0 == 0x7E983C4A21D7CE998EF7E83FA398D0A8B6786B5DC045626CC231AECDD3795F1D
+            && auth_addr.1 == 0x21664E4A6AE234D05AA87ECB536F253105F375E8820A2C2F3C6E4931272488EC
         ) || (
             // Contract authorization
             key == __sha256(auth_addr)
