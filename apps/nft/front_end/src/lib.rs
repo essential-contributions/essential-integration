@@ -228,10 +228,23 @@ impl Nft {
         to: [Word; 4],
         token: [Word; 4],
     ) -> anyhow::Result<Solution> {
+        let mut state_key = vec![0];
+        state_key.extend_from_slice(&key);
+
+        let mut nonce = loop {
+            let nonce = self.query(&self.deployed_intents.key, &state_key).await?;
+            if !nonce.is_empty() {
+                break nonce;
+            }
+            tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+        };
+        nonce[0] += 1;
+
         // Sign key, token, to
         let mut to_hash = key.to_vec();
         to_hash.extend_from_slice(&token);
         to_hash.extend_from_slice(&to);
+        to_hash.push(nonce[0]);
 
         let sig = self.wallet.sign_words(&to_hash, account_name)?;
         let sig = match sig {
@@ -241,6 +254,8 @@ impl Nft {
         let sig = essential_sign::encode::signature(&sig);
 
         let mut decision_variables = vec![];
+
+        decision_variables.push(vec![nonce[0]]);
 
         // Currently dec vars are stored as one word each in pint.
         let iter = sig.into_iter().map(|w| vec![w]);
@@ -264,18 +279,6 @@ impl Nft {
                 value: to.to_vec(),
             },
         ];
-
-        let mut state_key = vec![0];
-        state_key.extend_from_slice(&key);
-
-        let mut nonce = loop {
-            let nonce = self.query(&self.deployed_intents.key, &state_key).await?;
-            if !nonce.is_empty() {
-                break nonce;
-            }
-            tokio::time::sleep(std::time::Duration::from_millis(100)).await;
-        };
-        nonce[0] += 1;
 
         let key_auth = SolutionData {
             intent_to_solve: self.deployed_intents.key_key.clone(),
