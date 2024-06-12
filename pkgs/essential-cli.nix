@@ -16,11 +16,13 @@ rustPlatform.buildRustPackage {
   pname = "essential-cli";
   version = (builtins.fromTOML (builtins.readFile crateTOML)).package.version;
 
-  nativeBuildInputs = lib.optionals stdenv.isLinux [
+  OPENSSL_NO_VENDOR = 1;
+
+  nativeBuildInputs = [
     pkg-config
   ];
 
-  buildInputs = lib.optionals stdenv.isLinux [
+  buildInputs = [
     openssl
   ] ++ lib.optionals stdenv.isDarwin [
     darwin.apple_sdk.frameworks.SystemConfiguration

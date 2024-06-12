@@ -2,6 +2,14 @@ storage {
     owners: (b256 => b256),
 }
 
+interface Auth {
+    intent Key {
+        pub var key: b256;
+        pub var token: b256;
+        pub var to: b256;
+    }
+}
+
 intent Mint {
     var token: b256;
     var new_owner: b256;
@@ -11,4 +19,14 @@ intent Mint {
     // TODO: Constrain that this has no pre state owner
 
     constraint owner' == new_owner;
+}
+
+intent Transfer {
+    interface AuthInstance = Auth(0xF8E1DE7C30FA838B90B791CCC8B1BD5413C32FC4527EB2D6333FA3414463AEC2);
+    intent K = AuthInstance::Key(0xE1C16C435BC7EF596C079CAAAADCB590235942CD5947A9287377B1FA6E2CE9FB);
+
+    state owner = storage::owners[K::token];
+
+    constraint owner == K::key;
+    constraint owner' == K::to;
 }

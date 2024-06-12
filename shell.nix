@@ -12,6 +12,7 @@
 , lib
 , stdenv
 , libiconv
+, openssl
 }:
 mkShell {
   buildInputs = [
@@ -24,6 +25,8 @@ mkShell {
     rqlite
     rust-analyzer
     rustfmt
+    openssl
+    openssl.dev
   ] ++ lib.optionals stdenv.isDarwin [
     darwin.apple_sdk.frameworks.SystemConfiguration
   ];
