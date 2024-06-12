@@ -1,0 +1,31 @@
+storage {
+    nonce: (b256 => int),
+}
+
+intent Init {
+    // Hack to set nonce to 0 because we can't check is_empty
+    var sig: { b256, b256, int };
+    var key: b256;
+    var public_key: { b256, int };
+
+    state nonce = storage::nonce[key];
+
+    constraint nonce' == 0;
+    constraint __recover_secp256k1(__sha256(key), sig) == public_key;
+    constraint __sha256(public_key) == key;
+}
+
+intent Key {
+    pub var key: b256;
+    pub var token: b256;
+    pub var to: b256;
+
+    var sig: { b256, b256, int };
+    var public_key: { b256, int };
+    
+    state nonce = storage::nonce[key];
+    
+    constraint nonce' == nonce + 1;
+    constraint __recover_secp256k1(__sha256({key, token, to}), sig) == public_key;
+    constraint __sha256(public_key) == key;
+}

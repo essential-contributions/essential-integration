@@ -1,0 +1,37 @@
+
+storage {
+    token: b256,
+}
+
+interface Nft {
+    storage {
+        owners: (b256 => b256),
+    }
+}
+
+intent Init {
+    // Hack to allow initializing the owner as we don't have nil
+    interface NftInstance = Nft(0xE458FD57925C4CE678A66365A2FC10F3F3288897690BA6822845EE940623C40B);
+    
+    state current_token = storage::token;
+    state token_owner = NftInstance::storage::owners[current_token'];
+}
+
+intent Swap {
+    interface NftInstance = Nft(0xE458FD57925C4CE678A66365A2FC10F3F3288897690BA6822845EE940623C40B);
+    
+    pub var key: b256;
+    pub var token: b256;
+    pub var to: b256;
+    
+    state current_token = storage::token;
+    state current_token_owner = NftInstance::storage::owners[current_token];
+    state new_token_owner = NftInstance::storage::owners[current_token'];
+    
+    constraint current_token_owner == __sha256({__this_set_address(), __this_address()});
+    constraint new_token_owner' == current_token_owner;
+    constraint new_token_owner == current_token_owner';
+    constraint key == current_token_owner;
+    constraint token == current_token;
+    constraint to == new_token_owner;
+}
