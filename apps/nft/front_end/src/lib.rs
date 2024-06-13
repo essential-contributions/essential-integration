@@ -8,10 +8,13 @@ use essential_types::{
     solution::{Mutation, Solution, SolutionData},
     ContentAddress, Hash, IntentAddress, Word,
 };
+use inputs::nft::query_owners;
 use tokio::{
     io::{AsyncReadExt, BufReader},
     process::Command,
 };
+
+mod inputs;
 
 pub struct Nft {
     client: EssentialClient,
@@ -54,29 +57,19 @@ impl Nft {
     }
 
     async fn mint_inner(&mut self, key: [Word; 4], token: Hash) -> anyhow::Result<()> {
-        let token = essential_types::convert::word_4_from_u8_32(token);
+        let decision_variables = inputs::nft::mint::DecVars {
+            token: token.into(),
+            new_owner: key.into(),
+        };
 
-        let mut state_key = vec![0];
-        state_key.extend_from_slice(&token);
+        let mutation = inputs::nft::owners(token.into(), key.into());
 
         let solution = Solution {
             data: vec![SolutionData {
                 intent_to_solve: self.deployed_intents.nft_mint.clone(),
-                decision_variables: vec![
-                    vec![token[0]],
-                    vec![token[1]],
-                    vec![token[2]],
-                    vec![token[3]],
-                    vec![key[0]],
-                    vec![key[1]],
-                    vec![key[2]],
-                    vec![key[3]],
-                ],
+                decision_variables: decision_variables.encode(),
                 transient_data: Default::default(),
-                state_mutations: vec![Mutation {
-                    key: state_key,
-                    value: key.to_vec(),
-                }],
+                state_mutations: vec![mutation],
             }],
         };
         self.client.submit_solution(solution).await?;
@@ -98,12 +91,9 @@ impl Nft {
     }
 
     async fn do_i_own_inner(&mut self, key: [Word; 4], hash: Hash) -> anyhow::Result<bool> {
-        let hash = essential_types::convert::word_4_from_u8_32(hash);
-
-        let mut state_key = vec![0];
-        state_key.extend_from_slice(&hash);
-
-        let state = self.query(&self.deployed_intents.nft, &state_key).await?;
+        let state = self
+            .query(&self.deployed_intents.nft, &query_owners(hash.into()))
+            .await?;
         Ok(state[..] == key[..])
     }
 
@@ -122,19 +112,12 @@ impl Nft {
     }
 
     pub async fn init_swap_any(&mut self, token: Hash) -> anyhow::Result<()> {
-        let token = essential_types::convert::word_4_from_u8_32(token);
-
-        let state_key = vec![0];
-
         let solution = Solution {
             data: vec![SolutionData {
                 intent_to_solve: self.deployed_intents.swap_any_init.clone(),
                 decision_variables: Default::default(),
                 transient_data: Default::default(),
-                state_mutations: vec![Mutation {
-                    key: state_key.clone(),
-                    value: token.to_vec(),
-                }],
+                state_mutations: vec![inputs::swap_any::token(token.into())],
             }],
         };
         self.client.submit_solution(solution).await?;
@@ -143,10 +126,11 @@ impl Nft {
     }
 
     pub async fn swap_any_owns(&mut self) -> anyhow::Result<Option<Hash>> {
-        let state_key = vec![0];
-
         let state = self
-            .query(&self.deployed_intents.swap_any, &state_key)
+            .query(
+                &self.deployed_intents.swap_any,
+                &inputs::swap_any::query_token(),
+            )
             .await?;
 
         if state.is_empty() {
@@ -185,40 +169,34 @@ impl Nft {
     }
 
     async fn initialize_nonce(&mut self, account_name: &str, key: [Word; 4]) -> anyhow::Result<()> {
-        let mut state_key = vec![0];
-        state_key.extend_from_slice(&key);
-
-        let state = self.query(&self.deployed_intents.key, &state_key).await?;
+        let state = self
+            .query(
+                &self.deployed_intents.key,
+                &inputs::key::query_nonce(key.into()),
+            )
+            .await?;
         if state.is_empty() {
             // Init nonce
 
             // Sign key
-            let mut decision_variables = vec![];
             let sig = self.wallet.sign_words(&key, account_name)?;
             let sig = match sig {
                 essential_signer::Signature::Secp256k1(sig) => sig,
                 _ => bail!("Invalid signature"),
             };
-            let sig = essential_sign::encode::signature(&sig);
 
-            // Currently dec vars are stored as one word each in pint.
-            let iter = sig.into_iter().map(|w| vec![w]);
-            decision_variables.extend(iter);
-            let iter = key.iter().map(|w| vec![*w]);
-            decision_variables.extend(iter);
-            let k = self.get_key(account_name)?;
-            let iter = k.iter().map(|w| vec![*w]);
-            decision_variables.extend(iter);
+            let decision_variables = inputs::key::init::DecVars {
+                sig,
+                key: key.into(),
+                public_key: self.get_pub_key(account_name)?,
+            };
 
             let solution = Solution {
                 data: vec![SolutionData {
                     intent_to_solve: self.deployed_intents.key_init.clone(),
-                    decision_variables,
+                    decision_variables: decision_variables.encode(),
                     transient_data: Default::default(),
-                    state_mutations: vec![Mutation {
-                        key: state_key.clone(),
-                        value: vec![0],
-                    }],
+                    state_mutations: vec![inputs::key::nonce(key.into(), 0.into())],
                 }],
             };
             self.client.submit_solution(solution).await?;
@@ -233,101 +211,70 @@ impl Nft {
         to: [Word; 4],
         token: [Word; 4],
     ) -> anyhow::Result<Solution> {
-        let mut state_key = vec![0];
-        state_key.extend_from_slice(&key);
-
-        let mut nonce = loop {
-            let nonce = self.query(&self.deployed_intents.key, &state_key).await?;
+        let nonce = loop {
+            let nonce = self
+                .query(
+                    &self.deployed_intents.key,
+                    &inputs::key::query_nonce(key.into()),
+                )
+                .await?;
             if !nonce.is_empty() {
                 break nonce;
             }
             tokio::time::sleep(std::time::Duration::from_millis(100)).await;
         };
-        nonce[0] += 1;
+        let mut nonce = nonce[0];
+        nonce += 1;
 
         // Sign key, token, to
         let mut to_hash = key.to_vec();
         to_hash.extend_from_slice(&token);
         to_hash.extend_from_slice(&to);
-        to_hash.push(nonce[0]);
+        to_hash.push(nonce);
 
         let sig = self.wallet.sign_words(&to_hash, account_name)?;
         let sig = match sig {
             essential_signer::Signature::Secp256k1(sig) => sig,
             _ => bail!("Invalid signature"),
         };
-        let sig = essential_sign::encode::signature(&sig);
 
-        let mut decision_variables = vec![];
+        let decision_variables = inputs::key::key::DecVars {
+            new_nonce: nonce.into(),
+            sig,
+            public_key: self.get_pub_key(account_name)?,
+        };
 
-        decision_variables.push(vec![nonce[0]]);
-
-        // Currently dec vars are stored as one word each in pint.
-        let iter = sig.into_iter().map(|w| vec![w]);
-        decision_variables.extend(iter);
-
-        let k = self.get_key(account_name)?;
-        let iter = k.iter().map(|w| vec![*w]);
-        decision_variables.extend(iter);
-
-        let transient_data = vec![
-            Mutation {
-                key: vec![0],
-                value: key.to_vec(),
-            },
-            Mutation {
-                key: vec![1],
-                value: token.to_vec(),
-            },
-            Mutation {
-                key: vec![2],
-                value: to.to_vec(),
-            },
-        ];
+        let transient_data = inputs::key::key::TransientData {
+            key: key.into(),
+            token: token.into(),
+            to: to.into(),
+        };
 
         let key_auth = SolutionData {
             intent_to_solve: self.deployed_intents.key_key.clone(),
-            decision_variables,
-            transient_data: transient_data.clone(),
-            state_mutations: vec![Mutation {
-                key: state_key,
-                value: nonce,
-            }],
+            decision_variables: decision_variables.encode(),
+            transient_data: transient_data.encode(),
+            state_mutations: vec![inputs::key::nonce(key.into(), nonce.into())],
         };
 
-        let mut decision_variables = word_4_from_u8_32(self.deployed_intents.key.0)
-            .iter()
-            .copied()
-            .chain(
-                word_4_from_u8_32(self.deployed_intents.key_key.intent.0)
-                    .iter()
-                    .copied(),
-            )
-            .map(|w| vec![w])
-            .collect::<Vec<_>>();
-
-        // Pathway to key intent
-        decision_variables.push(vec![0]);
+        let decision_variables = inputs::auth::DecVars {
+            auth_addr: self.deployed_intents.key_key.clone(),
+            authi_auth_pathway: 0.into(),
+        };
 
         let auth = SolutionData {
             intent_to_solve: self.deployed_intents.auth_auth.clone(),
-            decision_variables,
-            transient_data,
+            decision_variables: decision_variables.encode(),
+            transient_data: transient_data.encode(),
             state_mutations: vec![],
         };
-
-        let mut state_key = vec![0];
-        state_key.extend_from_slice(&token);
 
         let transfer_nft = SolutionData {
             intent_to_solve: self.deployed_intents.nft_transfer.clone(),
             // Pathway to the auth intent
             decision_variables: vec![vec![1]],
             transient_data: vec![],
-            state_mutations: vec![Mutation {
-                key: state_key,
-                value: to.to_vec(),
-            }],
+            state_mutations: vec![inputs::nft::owners(token.into(), to.into())],
         };
         Ok(Solution {
             data: vec![key_auth, auth, transfer_nft],
@@ -350,68 +297,56 @@ impl Nft {
             .await?;
 
         // Get existing token
-        let current_token = self.query(&self.deployed_intents.swap_any, &[0]).await?;
+        let current_token = self
+            .query(
+                &self.deployed_intents.swap_any,
+                &inputs::swap_any::query_token(),
+            )
+            .await?;
 
-        let transient_data = vec![
-            Mutation {
-                key: vec![0],
-                value: to.to_vec(),
-            },
-            Mutation {
-                key: vec![1],
-                value: current_token.to_vec(),
-            },
-            Mutation {
-                key: vec![2],
-                value: key.to_vec(),
-            },
-        ];
+        let Ok(current_token): Result<[Word; 4], _> = current_token.try_into() else {
+            bail!("Bad token state")
+        };
+
+        let transient_data = inputs::swap_any::swap::TransientData {
+            key: to.into(),
+            token: current_token.into(),
+            to: key.into(),
+        };
 
         let swap_any_swap = SolutionData {
             intent_to_solve: self.deployed_intents.swap_any_swap.clone(),
             decision_variables: Default::default(),
-            transient_data: transient_data.clone(),
+            transient_data: transient_data.encode(),
             state_mutations: vec![Mutation {
                 key: vec![0],
                 value: token.to_vec(),
             }],
         };
 
-        let mut decision_variables = word_4_from_u8_32(self.deployed_intents.swap_any.0)
-            .iter()
-            .copied()
-            .chain(
-                word_4_from_u8_32(self.deployed_intents.swap_any_swap.intent.0)
-                    .iter()
-                    .copied(),
-            )
-            .map(|w| vec![w])
-            .collect::<Vec<_>>();
-
-        // Pathway to swap_any_swap intent
-        decision_variables.push(vec![3]);
+        let decision_variables = inputs::auth::DecVars {
+            auth_addr: self.deployed_intents.swap_any_swap.clone(),
+            // Pathway to swap_any_swap intent
+            authi_auth_pathway: 3.into(),
+        };
 
         let auth = SolutionData {
             intent_to_solve: self.deployed_intents.auth_auth.clone(),
-            decision_variables,
-            transient_data,
+            decision_variables: decision_variables.encode(),
+            transient_data: transient_data.encode(),
             state_mutations: vec![],
         };
 
         // Transfer existing token from swap_any to user
-
-        let mut state_key = vec![0];
-        state_key.extend(current_token);
-
         let transfer_nft = SolutionData {
             intent_to_solve: self.deployed_intents.nft_transfer.clone(),
             // Pathway to the auth intent
-            decision_variables: vec![vec![4]],
+            decision_variables: inputs::nft::transfer::DecVars {
+                auth_auth_pathway: 4.into(),
+            }
+            .encode(),
             transient_data: vec![],
-            state_mutations: vec![Mutation {
-                key: state_key,
-                value: key.to_vec(),
-            }],
+            state_mutations: vec![inputs::nft::owners(current_token.into(), key.into())],
         };
 
         solution.data.push(swap_any_swap);
@@ -436,12 +371,15 @@ impl Nft {
         Ok(word_4_from_u8_32(essential_hash::hash_words(&encoded)))
     }
 
-    fn get_key(&mut self, account_name: &str) -> anyhow::Result<[Word; 5]> {
+    fn get_pub_key(
+        &mut self,
+        account_name: &str,
+    ) -> anyhow::Result<essential_signer::secp256k1::PublicKey> {
         let public_key = self.wallet.get_public_key(account_name)?;
         let essential_signer::PublicKey::Secp256k1(public_key) = public_key else {
             bail!("Invalid public key")
         };
-        Ok(essential_sign::encode::public_key(&public_key))
+        Ok(public_key)
     }
 }
 
