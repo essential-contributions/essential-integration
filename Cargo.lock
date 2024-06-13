@@ -1613,6 +1613,7 @@ name = "nft-front-end"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "clap 4.5.7",
  "essential-hash",
  "essential-rest-client",
  "essential-sign",
@@ -1620,6 +1621,7 @@ dependencies = [
  "essential-types",
  "essential-wallet",
  "hex",
+ "rpassword",
  "serde_json",
  "tokio",
 ]
