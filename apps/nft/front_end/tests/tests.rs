@@ -1,17 +1,14 @@
-use std::{collections::HashMap, path::PathBuf, process::Stdio};
+use std::{path::PathBuf, process::Stdio};
 
-use essential_rest_client::EssentialClient;
-use essential_types::{intent::Intent, ContentAddress, IntentAddress};
-use nft_front_end::{Addresses, Nft};
+use nft_front_end::{deploy_app, print_addresses, Nft};
 use tokio::{
-    fs::File,
-    io::{AsyncBufReadExt, AsyncReadExt, BufReader},
+    io::{AsyncBufReadExt, BufReader},
     process::Command,
 };
 
 #[tokio::test]
 #[ignore = "Will break CI because it requires the essential-rest-server to be on the path"]
-async fn mint_and_transfer() {
+async fn mint_and_transfer_local() {
     let mut child = Command::new("essential-rest-server")
         .env(
             "RUST_LOG",
@@ -60,54 +57,34 @@ async fn mint_and_transfer() {
     assert_ne!(port, 0);
 
     let server_address = format!("http://localhost:{}", port);
+    mint_and_transfer(server_address).await;
+}
 
-    let key_intents = compile_pint_file("key.pnt").await;
-    let key_addresses = named_addresses(&key_intents, &["init", "key"]);
+#[tokio::test]
+#[ignore = "Will break CI because it runs on the deployed server."]
+async fn mint_and_transfer_remote() {
+    let server_address = std::env::var("ESSENTIAL_SERVER_ADDR").unwrap();
+    mint_and_transfer(server_address).await;
+}
 
-    let nft_intents = compile_pint_file("nft.pnt").await;
-    let nft_addresses = named_addresses(&nft_intents, &["mint", "transfer"]);
-
-    let auth_intents = compile_pint_file("auth.pnt").await;
-    let auth_addresses = named_addresses(&auth_intents, &["auth"]);
-
-    let swap_any_intents = compile_pint_file("swap_any.pnt").await;
-    let swap_any_addresses = named_addresses(&swap_any_intents, &["init", "swap"]);
-
-    let addresses = Addresses {
-        nft: nft_addresses["mint"].set.clone(),
-        nft_mint: nft_addresses["mint"].clone(),
-        nft_transfer: nft_addresses["transfer"].clone(),
-        auth: auth_addresses["auth"].set.clone(),
-        auth_auth: auth_addresses["auth"].clone(),
-        key: key_addresses["key"].set.clone(),
-        key_init: key_addresses["init"].clone(),
-        key_key: key_addresses["key"].clone(),
-        swap_any: swap_any_addresses["swap"].set.clone(),
-        swap_any_init: swap_any_addresses["init"].clone(),
-        swap_any_swap: swap_any_addresses["swap"].clone(),
-    };
-
-    print_addresses(&addresses);
-
-    // Deploy intents
-    let client = EssentialClient::new(server_address.clone()).unwrap();
-
+async fn mint_and_transfer(server_address: String) {
     let mut wallet = essential_wallet::Wallet::temp().unwrap();
 
     wallet
         .new_key_pair("deployer", essential_wallet::Scheme::Secp256k1)
         .ok();
 
-    let intents = wallet.sign_intent_set(nft_intents, "deployer").unwrap();
-    client.deploy_intent_set(intents).await.unwrap();
-    let intents = wallet.sign_intent_set(key_intents, "deployer").unwrap();
-    client.deploy_intent_set(intents).await.unwrap();
-    let intents = wallet.sign_intent_set(auth_intents, "deployer").unwrap();
-    client.deploy_intent_set(intents).await.unwrap();
-    let intents = wallet
-        .sign_intent_set(swap_any_intents, "deployer")
-        .unwrap();
-    client.deploy_intent_set(intents).await.unwrap();
+    let pint_directory = PathBuf::from(concat!(env!("CARGO_MANIFEST_DIR"), "/../pint"));
+
+    let addresses = deploy_app(
+        server_address.clone(),
+        &mut wallet,
+        "deployer",
+        pint_directory,
+    )
+    .await
+    .unwrap();
+    print_addresses(&addresses);
 
     let account_name = "alice";
 
@@ -200,93 +177,4 @@ async fn mint_and_transfer() {
         println!("Contract state out of sync");
         tokio::time::sleep(std::time::Duration::from_secs(1)).await;
     }
-}
-
-async fn compile_pint_file(name: &str) -> Vec<Intent> {
-    // Compile Pint files
-    let pint_dir_path = concat!(env!("CARGO_MANIFEST_DIR"), "/../pint");
-    let pint_path = PathBuf::from(pint_dir_path).join(name);
-    assert!(pint_path.exists());
-    let pint_target_path = PathBuf::from(pint_dir_path).join("target");
-    std::fs::create_dir(pint_dir_path).ok();
-
-    let output = Command::new("pintc")
-        .arg(pint_path.display().to_string())
-        .arg("--output")
-        .arg(pint_target_path.join(name))
-        .output()
-        .await
-        .unwrap();
-
-    assert!(
-        output.status.success(),
-        "pintc failed: {}",
-        String::from_utf8_lossy(&output.stderr)
-    );
-    let file = File::open(pint_target_path.join(name)).await.unwrap();
-    let mut bytes = Vec::new();
-    let mut reader = BufReader::new(file);
-    reader.read_to_end(&mut bytes).await.unwrap();
-
-    let intents: Vec<Intent> =
-        serde_json::from_slice(&bytes).expect("failed to deserialize intent set");
-    intents
-}
-
-fn named_addresses(intents: &[Intent], names: &[&str]) -> HashMap<String, IntentAddress> {
-    assert_eq!(intents.len(), names.len());
-    let set = essential_hash::intent_set_addr::from_intents(intents);
-    intents
-        .iter()
-        .zip(names.iter())
-        .map(|(intent, name)| {
-            (
-                name.to_string(),
-                IntentAddress {
-                    set: set.clone(),
-                    intent: essential_hash::content_addr(intent),
-                },
-            )
-        })
-        .collect()
-}
-
-fn print_addresses(addresses: &Addresses) {
-    let Addresses {
-        nft,
-        nft_mint,
-        nft_transfer,
-        auth,
-        auth_auth,
-        key,
-        key_init,
-        key_key,
-        swap_any,
-        swap_any_init,
-        swap_any_swap,
-    } = addresses;
-    print_set_address("nft", nft);
-    print_address("nft_mint", nft_mint);
-    print_address("nft_transfer", nft_transfer);
-    print_set_address("auth", auth);
-    print_address("auth_auth", auth_auth);
-    print_set_address("key", key);
-    print_address("key_init", key_init);
-    print_address("key_key", key_key);
-    print_set_address("swap_any", swap_any);
-    print_address("swap_any_init", swap_any_init);
-    print_address("swap_any_swap", swap_any_swap);
-}
-
-fn print_address(name: &str, address: &IntentAddress) {
-    println!(
-        "{}: set: {}, intent: {}",
-        name,
-        hex::encode_upper(address.set.0),
-        hex::encode_upper(address.intent.0),
-    );
-}
-
-fn print_set_address(name: &str, address: &ContentAddress) {
-    println!("{}: set: {}", name, hex::encode_upper(address.0),);
 }

@@ -1,11 +1,16 @@
-use std::vec;
+use std::{path::PathBuf, vec};
 
 use anyhow::bail;
 use essential_rest_client::EssentialClient;
 use essential_types::{
     convert::word_4_from_u8_32,
+    intent::Intent,
     solution::{Mutation, Solution, SolutionData},
     ContentAddress, Hash, IntentAddress, Word,
+};
+use tokio::{
+    io::{AsyncReadExt, BufReader},
+    process::Command,
 };
 
 pub struct Nft {
@@ -438,6 +443,160 @@ impl Nft {
         };
         Ok(essential_sign::encode::public_key(&public_key))
     }
+}
+
+pub async fn deploy_app(
+    addr: String,
+    wallet: &mut essential_wallet::Wallet,
+    account_name: &str,
+    pint_directory: PathBuf,
+) -> anyhow::Result<Addresses> {
+    let client = EssentialClient::new(addr)?;
+    let key_intents = compile_pint_file(pint_directory.clone(), "key.pnt").await?;
+    let key_addresses = get_addresses(&key_intents);
+
+    let nft_intents = compile_pint_file(pint_directory.clone(), "nft.pnt").await?;
+    let nft_addresses = get_addresses(&nft_intents);
+
+    let auth_intents = compile_pint_file(pint_directory.clone(), "auth.pnt").await?;
+    let auth_addresses = get_addresses(&auth_intents);
+
+    let swap_any_intents = compile_pint_file(pint_directory.clone(), "swap_any.pnt").await?;
+    let swap_any_addresses = get_addresses(&swap_any_intents);
+
+    let addresses = Addresses {
+        nft: nft_addresses.0.clone(),
+        nft_mint: nft_addresses.1[0].clone(),
+        nft_transfer: nft_addresses.1[1].clone(),
+        auth: auth_addresses.0.clone(),
+        auth_auth: auth_addresses.1[0].clone(),
+        key: key_addresses.0.clone(),
+        key_init: key_addresses.1[0].clone(),
+        key_key: key_addresses.1[1].clone(),
+        swap_any: swap_any_addresses.0.clone(),
+        swap_any_init: swap_any_addresses.1[0].clone(),
+        swap_any_swap: swap_any_addresses.1[1].clone(),
+    };
+
+    let intents = wallet.sign_intent_set(nft_intents, account_name)?;
+    client.deploy_intent_set(intents).await?;
+    let intents = wallet.sign_intent_set(key_intents, account_name)?;
+    client.deploy_intent_set(intents).await?;
+    let intents = wallet.sign_intent_set(auth_intents, account_name)?;
+    client.deploy_intent_set(intents).await?;
+    let intents = wallet.sign_intent_set(swap_any_intents, account_name)?;
+    client.deploy_intent_set(intents).await?;
+
+    Ok(addresses)
+}
+
+pub async fn compile_addresses(pint_directory: PathBuf) -> anyhow::Result<Addresses> {
+    let key_intents = compile_pint_file(pint_directory.clone(), "key.pnt").await?;
+    let key_addresses = get_addresses(&key_intents);
+
+    let nft_intents = compile_pint_file(pint_directory.clone(), "nft.pnt").await?;
+    let nft_addresses = get_addresses(&nft_intents);
+
+    let auth_intents = compile_pint_file(pint_directory.clone(), "auth.pnt").await?;
+    let auth_addresses = get_addresses(&auth_intents);
+
+    let swap_any_intents = compile_pint_file(pint_directory.clone(), "swap_any.pnt").await?;
+    let swap_any_addresses = get_addresses(&swap_any_intents);
+
+    let addresses = Addresses {
+        nft: nft_addresses.0.clone(),
+        nft_mint: nft_addresses.1[0].clone(),
+        nft_transfer: nft_addresses.1[1].clone(),
+        auth: auth_addresses.0.clone(),
+        auth_auth: auth_addresses.1[0].clone(),
+        key: key_addresses.0.clone(),
+        key_init: key_addresses.1[0].clone(),
+        key_key: key_addresses.1[1].clone(),
+        swap_any: swap_any_addresses.0.clone(),
+        swap_any_init: swap_any_addresses.1[0].clone(),
+        swap_any_swap: swap_any_addresses.1[1].clone(),
+    };
+
+    Ok(addresses)
+}
+pub fn print_addresses(addresses: &Addresses) {
+    let Addresses {
+        nft,
+        nft_mint,
+        nft_transfer,
+        auth,
+        auth_auth,
+        key,
+        key_init,
+        key_key,
+        swap_any,
+        swap_any_init,
+        swap_any_swap,
+    } = addresses;
+    print_set_address("nft", nft);
+    print_address("nft_mint", nft_mint);
+    print_address("nft_transfer", nft_transfer);
+    print_set_address("auth", auth);
+    print_address("auth_auth", auth_auth);
+    print_set_address("key", key);
+    print_address("key_init", key_init);
+    print_address("key_key", key_key);
+    print_set_address("swap_any", swap_any);
+    print_address("swap_any_init", swap_any_init);
+    print_address("swap_any_swap", swap_any_swap);
+}
+
+fn print_address(name: &str, address: &IntentAddress) {
+    println!(
+        "{}: set: {}, intent: {}",
+        name,
+        hex::encode_upper(address.set.0),
+        hex::encode_upper(address.intent.0),
+    );
+}
+
+fn print_set_address(name: &str, address: &ContentAddress) {
+    println!("{}: set: {}", name, hex::encode_upper(address.0),);
+}
+
+async fn compile_pint_file(path: PathBuf, name: &str) -> anyhow::Result<Vec<Intent>> {
+    // Compile Pint files
+    let pint_path = path.join(name);
+    assert!(pint_path.exists());
+    let pint_target_path = path.join("target");
+    std::fs::create_dir(path).ok();
+
+    let output = Command::new("pintc")
+        .arg(pint_path.display().to_string())
+        .arg("--output")
+        .arg(pint_target_path.join(name))
+        .output()
+        .await?;
+
+    assert!(
+        output.status.success(),
+        "pintc failed: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let file = tokio::fs::File::open(pint_target_path.join(name)).await?;
+    let mut bytes = Vec::new();
+    let mut reader = BufReader::new(file);
+    reader.read_to_end(&mut bytes).await?;
+
+    let intents: Vec<Intent> = serde_json::from_slice(&bytes)?;
+    Ok(intents)
+}
+
+fn get_addresses(intents: &[Intent]) -> (ContentAddress, Vec<IntentAddress>) {
+    let set = essential_hash::intent_set_addr::from_intents(intents);
+    let intents = intents
+        .iter()
+        .map(|intent| IntentAddress {
+            set: set.clone(),
+            intent: essential_hash::content_addr(intent),
+        })
+        .collect();
+    (set, intents)
 }
 
 fn contract_hash(contract: &IntentAddress) -> [Word; 4] {
