@@ -11,6 +11,9 @@ pub struct TransientData {
     pub key: B256,
     pub token: B256,
     pub to: B256,
+    pub set: B256,
+    pub intent_addr: B256,
+    pub path: Int,
 }
 
 impl DecVars {
@@ -29,11 +32,21 @@ impl DecVars {
 
 impl TransientData {
     pub fn encode(&self) -> Vec<Mutation> {
-        let Self { key, token, to } = self;
+        let Self {
+            key,
+            token,
+            to,
+            set,
+            intent_addr,
+            path,
+        } = self;
         let mutations = vec![
             index_mutation(0, key.to_value()),
             index_mutation(1, token.to_value()),
             index_mutation(2, to.to_value()),
+            index_mutation(3, set.to_value()),
+            index_mutation(4, intent_addr.to_value()),
+            index_mutation(5, path.to_value()),
         ];
 
         mutations

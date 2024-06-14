@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use anyhow::bail;
 use clap::{Args, Parser, Subcommand};
-use nft_front_end::{compile_addresses, deploy_app, print_addresses, Nft};
+use nft_front_end::{compile_addresses, deploy_app, print_addresses, update_addresses, Nft};
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -25,6 +25,14 @@ enum Command {
     DeployApp {
         #[command(flatten)]
         server: ServerName,
+    },
+    PrintAddresses {
+        /// The directory containing the pint files.
+        pint_directory: PathBuf,
+    },
+    UpdateAddresses {
+        /// The directory containing the pint files.
+        pint_directory: PathBuf,
     },
     Mint {
         #[command(flatten)]
@@ -70,6 +78,18 @@ async fn main() {
 }
 
 async fn run(cli: Cli) -> anyhow::Result<()> {
+    match &cli.command {
+        Command::PrintAddresses { pint_directory } => {
+            let deployed_intents = compile_addresses(pint_directory.clone()).await?;
+            print_addresses(&deployed_intents);
+            return Ok(());
+        }
+        Command::UpdateAddresses { pint_directory } => {
+            update_addresses(pint_directory.clone()).await?;
+            return Ok(());
+        }
+        _ => (),
+    }
     let pass = rpassword::prompt_password("Enter password to unlock wallet: ")?;
     let mut wallet = match cli.path {
         Some(path) => essential_wallet::Wallet::new(&pass, path)?,
@@ -157,6 +177,8 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
             nft.transfer(&account, &to, token).await?;
             println!("Transferred token: {} to {}", hash, to);
         }
+        Command::PrintAddresses { .. } => unreachable!(),
+        Command::UpdateAddresses { .. } => unreachable!(),
     }
     Ok(())
 }
