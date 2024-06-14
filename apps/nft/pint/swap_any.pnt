@@ -10,15 +10,16 @@ interface Nft {
 }
 
 intent Init {
-    // Hack to allow initializing the owner as we don't have nil
-    interface NftInstance = Nft(0xE458FD57925C4CE678A66365A2FC10F3F3288897690BA6822845EE940623C40B);
+    interface NftInstance = Nft(0x3C166198F9DCFABB242FE7792E232FC4DD1B47ECC2D8E0A7C396535EC37E308A);
     
     state current_token = storage::token;
     state token_owner = NftInstance::storage::owners[current_token'];
+
+    constraint current_token == nil;
 }
 
 intent Swap {
-    interface NftInstance = Nft(0xE458FD57925C4CE678A66365A2FC10F3F3288897690BA6822845EE940623C40B);
+    interface NftInstance = Nft(0x3C166198F9DCFABB242FE7792E232FC4DD1B47ECC2D8E0A7C396535EC37E308A);
     
     pub var key: b256;
     pub var token: b256;
@@ -28,10 +29,18 @@ intent Swap {
     state current_token_owner = NftInstance::storage::owners[current_token];
     state new_token_owner = NftInstance::storage::owners[current_token'];
     
-    constraint current_token_owner == __sha256({__this_set_address(), __this_address()});
+    constraint new_token_owner' == lib::@hash_this_addr();
     constraint new_token_owner' == current_token_owner;
-    constraint new_token_owner == current_token_owner';
-    constraint key == current_token_owner;
-    constraint token == current_token;
-    constraint to == new_token_owner;
+    constraint current_token_owner' == new_token_owner;
+
+    @check_auth(
+        { key: key, token: token, to: to};
+        {key: current_token_owner, token: current_token, to: new_token_owner}
+    );
+}
+
+macro @check_auth($auth, $change) {
+    constraint $auth.key == $change.key;
+    constraint $auth.token == $change.token;
+    constraint $auth.to == $change.to;
 }

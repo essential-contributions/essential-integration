@@ -2,7 +2,6 @@ use essential_types::{solution::Mutation, Key};
 
 use super::{index_key, Int, B256};
 
-pub mod init;
 #[allow(clippy::module_inception)]
 pub mod key;
 

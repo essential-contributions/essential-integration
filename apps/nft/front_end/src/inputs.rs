@@ -59,6 +59,12 @@ impl From<Word> for Int {
     }
 }
 
+impl From<ContentAddress> for B256 {
+    fn from(value: ContentAddress) -> Self {
+        Self(word_4_from_u8_32(value.0))
+    }
+}
+
 trait Slots {
     fn to_slots<I>(&mut self, iter: I)
     where

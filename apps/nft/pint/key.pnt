@@ -2,32 +2,22 @@ storage {
     nonce: (b256 => int),
 }
 
-intent Init {
-    // Hack to set nonce to 0 because we can't check is_empty
-    var sig: { b256, b256, int };
-    var key: b256;
-    var public_key: { b256, int };
-
-    state nonce = storage::nonce[key];
-
-    constraint nonce' == 0;
-    constraint __recover_secp256k1(__sha256(key), sig) == public_key;
-    constraint __sha256(public_key) == key;
-}
-
 intent Key {
     pub var key: b256;
     pub var token: b256;
     pub var to: b256;
+    pub var set: b256;
+    pub var intent_addr: b256;
+    pub var path: int;
 
     var new_nonce: int;
-    var sig: { b256, b256, int };
-    var public_key: { b256, int };
+    var sig: lib::Secp256k1Signature;
+    var public_key: lib::Secp256k1PublicKey;
     
     state nonce = storage::nonce[key];
     
-    constraint nonce' == nonce + 1;
+    constraint lib::@init(nonce);
     constraint new_nonce == nonce';
-    constraint __recover_secp256k1(__sha256({key, token, to, new_nonce}), sig) == public_key;
+    constraint lib::@recover({key, token, to, new_nonce, set, intent_addr, path}; sig; public_key);
     constraint __sha256(public_key) == key;
 }
