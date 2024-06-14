@@ -1,0 +1,54 @@
+
+type IntentAddress = { set: b256, intent_addr: b256 };
+
+type Secp256k1Signature = { b256, b256, int };
+
+type Secp256k1PublicKey = { b256, int };
+
+macro @is_this_intent($I) {
+    constraint $I::set == __this_set_address();
+    constraint $I::intent_addr == __this_address();
+    constraint $I::path == __this_pathway();
+}
+
+macro @constrain_keys($key, &rest) {
+    constraint __mut_keys_len() == @count($key; &rest);
+    // TODO: Constrain that this key is contained in the proposed mutable set
+}
+
+macro @constrain_keys($key) {
+    constraint __mut_keys_len() == 1;
+}
+
+macro @count($i, &rest) {
+    @count(&rest) + 1
+}
+
+macro @count($i) {
+    1
+}
+
+macro @forward_data($t, $I) {
+    constraint $t.key == $I::key;
+    constraint $t.token == $I::token;
+    constraint $t.to == $I::to;
+    constraint $t.set == $I::set;
+    constraint $t.intent_addr == $I::intent_addr;
+    constraint $t.path == $I::path;
+}
+
+macro @delta($s) {
+    $s' == $s + 1
+}
+
+macro @init($s) {
+    ($s == nil && $s' == 1) || @delta($s)
+}
+
+macro @recover($data, $sig, $key) {
+    __recover_secp256k1(__sha256($data), $sig) == $key
+}
+
+macro @hash_this_addr() {
+    __sha256({__this_set_address(), __this_address()})
+}

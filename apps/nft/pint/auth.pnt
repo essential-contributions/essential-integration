@@ -4,6 +4,9 @@ interface AuthI {
         pub var key: b256;
         pub var token: b256;
         pub var to: b256;
+        pub var set: b256;
+        pub var intent_addr: b256;
+        pub var path: int;
     }
 }
 
@@ -11,21 +14,33 @@ intent Auth {
     pub var key: b256;
     pub var token: b256;
     pub var to: b256;
+    pub var set: b256;
+    pub var intent_addr: b256;
+    pub var path: int;
 
-    var auth_addr: { b256, b256 };
-    interface AuthInstance = AuthI(auth_addr.0);
-    intent A = AuthInstance::Auth(auth_addr.1);
 
-    constraint (
-            // Key authorization
-            auth_addr.0 == 0x7E983C4A21D7CE998EF7E83FA398D0A8B6786B5DC045626CC231AECDD3795F1D
-            && auth_addr.1 == 0x21664E4A6AE234D05AA87ECB536F253105F375E8820A2C2F3C6E4931272488EC
-        ) || (
-            // Contract authorization
-            key == __sha256(auth_addr)
-        );
+
+    var auth_addr: lib::IntentAddress;
+
+    interface AuthInstance = AuthI(auth_addr.set);
+    intent A = AuthInstance::Auth(auth_addr.intent_addr);
+
+
+    constraint @key_auth(auth_addr) || key == __sha256(auth_addr);
+
     
-    constraint key == A::key;
-    constraint token == A::token;
-    constraint to == A::to;
+    lib::@forward_data({ key: key, token: token, to: to, set: set, intent_addr: intent_addr, path: path }; A);
+}
+
+// Hard coded key intent address
+macro @key_auth($auth_addr) {
+    @key_auth_check($auth_addr; { 
+        set: 0x94473FBA5473ACACC73161AB7F19C601B6235AF8FDA6D2261BBF9CED83A16059,
+        intent_addr: 0xBBCFDA51E579C128CB2A6C9BA90F31CB6AC0F01327549105E7D2004091BEAACA,
+    })
+}
+
+// Check if the authorized intent is the key intent.
+macro @key_auth_check($auth_addr, $key_addr) {
+    (auth_addr.set == $key_addr.set && auth_addr.intent_addr == $key_addr.intent_addr)
 }

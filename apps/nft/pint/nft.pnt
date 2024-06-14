@@ -7,6 +7,9 @@ interface Auth {
         pub var key: b256;
         pub var token: b256;
         pub var to: b256;
+        pub var set: b256;
+        pub var intent_addr: b256;
+        pub var path: int;
     }
 }
 
@@ -16,17 +19,21 @@ intent Mint {
 
     state owner = storage::owners[token];
 
-    // TODO: Constrain that this has no pre state owner
+    constraint owner == nil;
 
     constraint owner' == new_owner;
 }
 
 intent Transfer {
-    interface AuthInstance = Auth(0xB76BE12752F344E15E02B89763C6A1D3984D9273215024BCE8371831B05AE2E5);
-    intent A = AuthInstance::Auth(0x17F83D82E6C95492EFFD8C5CCADE3D4BF395DB87071BDC9EEB307EF438317F30);
+    interface AuthInstance = Auth(0xDE1F5AF64BDD7F7C28B6E55DB97335C65A5ACDC021F3ABCE2EEDEA271E8D3DEA);
+    intent A = AuthInstance::Auth(0xA5706CAA21604DAC05D795CAFC3EA254D822AFABA1627336DD95EE0F1A44CB83);
 
     state owner = storage::owners[A::token];
 
     constraint owner == A::key;
     constraint owner' == A::to;
+
+    lib::@is_this_intent(A);
+    lib::@constrain_keys(A::token);
+
 }
