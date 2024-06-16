@@ -1,0 +1,29 @@
+// TODO: burn to follow
+// TODO: authentication to follow
+// TODO: removed total supply. maybe add a helper to retrieve that
+
+storage {
+    balances: (b256 => int),
+}
+
+intent mint {
+    var minter: b256;
+    var amount: int;
+
+    state balance = storage::balances[minter];
+
+    constraint (balance == nil && balance' == amount) ||  balance' == balance + amount;
+}
+
+intent transfer {
+    var receiver: b256;
+    var sender: b256;
+    var amount: int;
+
+    state receiver_balance = storage::balances[receiver];
+    state sender_balance = storage::balances[sender];
+
+    constraint sender_balance >= amount;
+    constraint sender_balance' == sender_balance - amount;
+    constraint (receiver_balance == nil && receiver_balance' == amount) ||  receiver_balance' == receiver_balance + amount;
+}
