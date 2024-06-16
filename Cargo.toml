@@ -1,7 +1,8 @@
 [workspace]
 members = [
     "crates/*",
-    "apps/nft/front_end"
+    "apps/nft/front_end",
+    "apps/token/app"
 ]
 resolver = "2"
 
