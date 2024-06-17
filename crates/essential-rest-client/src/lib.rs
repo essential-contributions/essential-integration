@@ -6,7 +6,7 @@ use essential_types::{
     solution::Solution,
     Block, ContentAddress, Hash, IntentAddress, Key, Word,
 };
-use reqwest::{Client, ClientBuilder};
+use reqwest::{Client, ClientBuilder, Response};
 use std::{ops::Range, time::Duration};
 
 /// Client library for sending requests to the Essential REST Server.
@@ -18,7 +18,7 @@ pub struct EssentialClient {
 }
 
 impl EssentialClient {
-    pub async fn new(addr: String) -> anyhow::Result<Self> {
+    pub fn new(addr: String) -> anyhow::Result<Self> {
         let client = ClientBuilder::new().http2_prior_knowledge().build()?;
         let url = reqwest::Url::parse(&addr)?;
         Ok(Self { client, url })
@@ -62,7 +62,7 @@ impl EssentialClient {
     ) -> anyhow::Result<Vec<SolutionOutcome>> {
         let ca = ContentAddress(*solution_hash);
         let url = self.url.join(&format!("/solution-outcome/{ca}"))?;
-        let response = self.client.get(url).send().await?;
+        let response = handle_error(self.client.get(url).send().await?).await?;
         Ok(response.json::<Vec<SolutionOutcome>>().await?)
     }
 
@@ -70,7 +70,7 @@ impl EssentialClient {
         let url = self
             .url
             .join(&format!("/get-intent/{}/{}", address.set, address.intent,))?;
-        let response = self.client.get(url).send().await?;
+        let response = handle_error(self.client.get(url).send().await?).await?;
         Ok(response.json::<Option<Intent>>().await?)
     }
 
@@ -79,7 +79,7 @@ impl EssentialClient {
         address: &ContentAddress,
     ) -> anyhow::Result<Option<intent::SignedSet>> {
         let url = self.url.join(&format!("/get-intent-set/{address}"))?;
-        let response = self.client.get(url).send().await?;
+        let response = handle_error(self.client.get(url).send().await?).await?;
         Ok(response.json::<Option<intent::SignedSet>>().await?)
     }
 
@@ -99,7 +99,7 @@ impl EssentialClient {
                 .append_pair("page", page.to_string().as_str());
         }
 
-        let response = self.client.get(url).send().await?;
+        let response = handle_error(self.client.get(url).send().await?).await?;
         Ok(response.json::<Vec<Vec<Intent>>>().await?)
     }
 
@@ -109,7 +109,7 @@ impl EssentialClient {
             url.query_pairs_mut()
                 .append_pair("page", page.to_string().as_str());
         }
-        let response = self.client.get(url).send().await?;
+        let response = handle_error(self.client.get(url).send().await?).await?;
         Ok(response.json::<Vec<Solution>>().await?)
     }
 
@@ -128,7 +128,7 @@ impl EssentialClient {
             url.query_pairs_mut()
                 .append_pair("page", page.to_string().as_str());
         }
-        let response = self.client.get(url).send().await?;
+        let response = handle_error(self.client.get(url).send().await?).await?;
         Ok(response.json::<Vec<Block>>().await?)
     }
 
@@ -145,7 +145,17 @@ impl EssentialClient {
                     .collect::<Vec<u8>>()
             ),
         ))?;
-        let response = self.client.get(url).send().await?;
+        let response = handle_error(self.client.get(url).send().await?).await?;
         Ok(response.json::<Vec<Word>>().await?)
+    }
+}
+
+async fn handle_error(response: Response) -> anyhow::Result<Response> {
+    let status = response.status();
+    if status.is_success() {
+        Ok(response)
+    } else {
+        let text = response.text().await?;
+        Err(anyhow::anyhow!("{}: {}", status, text))
     }
 }

@@ -1,0 +1,19 @@
+[package]
+name = "essential-deploy"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow.workspace = true
+clap.workspace = true
+essential-rest-client.workspace = true
+essential-types.workspace = true
+essential-wallet.workspace = true
+rpassword.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+
+[dev-dependencies]
+essential-wallet = { workspace = true, features = ["test-utils"]}
