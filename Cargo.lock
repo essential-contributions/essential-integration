@@ -126,6 +126,7 @@ name = "app-utils"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "clap 4.5.7",
  "essential-hash",
  "essential-sign",
  "essential-signer",

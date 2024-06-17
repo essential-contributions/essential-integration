@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 anyhow = { workspace = true }
+clap = { workspace = true }
 essential-hash = { workspace = true }
 essential-sign = { workspace = true }
 essential-signer = { workspace = true }

@@ -1,62 +1,11 @@
-use std::{path::PathBuf, process::Stdio};
-
+use app_utils::local_server::setup_server;
 use nft_front_end::{deploy_app, print_addresses, Nft};
-use tokio::{
-    io::{AsyncBufReadExt, BufReader},
-    process::Command,
-};
+use std::path::PathBuf;
 
 #[tokio::test]
 #[ignore = "Will break CI because it requires the essential-rest-server to be on the path"]
 async fn mint_and_transfer_local() {
-    let mut child = Command::new("essential-rest-server")
-        .env(
-            "RUST_LOG",
-            "[run_loop]=trace,[check_intent]=trace,[constraint]=trace,[recover_secp256k1]=trace",
-        )
-        .arg("--db")
-        .arg("memory")
-        .arg("0.0.0.0:0")
-        .arg("--loop-freq")
-        .arg("1")
-        .kill_on_drop(true)
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .spawn()
-        .unwrap();
-
-    let stdout = child.stdout.take().unwrap();
-
-    let buf = BufReader::new(stdout);
-    let mut lines = buf.lines();
-
-    let port;
-    loop {
-        if let Some(line) = lines.next_line().await.unwrap() {
-            if line.contains("Listening") {
-                port = line
-                    .split(':')
-                    .next_back()
-                    .unwrap()
-                    .trim()
-                    .parse::<u16>()
-                    .unwrap();
-                break;
-            }
-        }
-    }
-
-    tokio::spawn(async move {
-        loop {
-            if let Some(line) = lines.next_line().await.unwrap() {
-                println!("{}", line);
-            }
-        }
-    });
-
-    assert_ne!(port, 0);
-
-    let server_address = format!("http://localhost:{}", port);
+    let (server_address, _child) = setup_server().await.unwrap();
     mint_and_transfer(server_address).await;
 }
 

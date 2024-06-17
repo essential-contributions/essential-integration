@@ -1,6 +1,10 @@
-use clap::{Args, Parser, Subcommand};
+use app_utils::cli::ServerName;
+use clap::{Parser, Subcommand};
 use std::path::PathBuf;
-use token::actions::{compile_addresses, print_addresses};
+use token::{
+    actions::{compile_addresses, deploy_app, print_addresses},
+    token::Token,
+};
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -17,7 +21,7 @@ struct Cli {
 enum Command {
     CreateAccount {
         /// The name of the account to create.
-        account: String,
+        name: String,
     },
     PrintAddresses {
         /// The directory containing the pint files.
@@ -31,22 +35,26 @@ enum Command {
     Init {
         #[command(flatten)]
         server: ServerName,
-        /// The name of the token encoded as a hex string of 32 bytes.
-        hash: String,
+        /// The name of the token.
+        name: String,
     },
     Mint {
         #[command(flatten)]
         server: ServerName,
+        /// The amount of token to mint.
         amount: u64,
     },
     Burn {
         #[command(flatten)]
         server: ServerName,
+        /// The amount of token to burn.
         amount: u64,
     },
     Transfer {
         #[command(flatten)]
         server: ServerName,
+        /// The amount of transfer.
+        amount: u64,
         /// The account to transfer the token to.
         to: String,
     },
@@ -54,16 +62,6 @@ enum Command {
         #[command(flatten)]
         server: ServerName,
     },
-}
-
-#[derive(Args)]
-struct ServerName {
-    /// The address of the server to connect to.
-    server: String,
-    /// The name of the account to deploy the app with.
-    account: String,
-    /// The directory containing the pint files.
-    pint_directory: PathBuf,
 }
 
 #[tokio::main]
@@ -82,12 +80,99 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
         return Ok(());
     }
     let pass = rpassword::prompt_password("Enter password to unlock wallet: ")?;
-    let mut _wallet = match wallet {
+    let mut wallet = match wallet {
         Some(path) => essential_wallet::Wallet::new(&pass, path)?,
         None => essential_wallet::Wallet::with_default_path(&pass)?,
     };
-
-    // TODO: implement the rest of the commands
-
+    match command {
+        Command::CreateAccount { name } => {
+            wallet.new_key_pair(&name, essential_wallet::Scheme::Secp256k1)?;
+            println!("Created account: {}", name);
+        }
+        Command::DeployApp {
+            server:
+                ServerName {
+                    server,
+                    account,
+                    pint_directory,
+                },
+        } => {
+            let addrs = deploy_app(server, &mut wallet, &account, pint_directory).await?;
+            print_addresses(&addrs);
+        }
+        Command::Init {
+            server:
+                ServerName {
+                    server,
+                    account: _account,
+                    pint_directory,
+                },
+            name,
+        } => {
+            let deployed_intents = compile_addresses(pint_directory).await?;
+            let mut token = Token::new(server, deployed_intents, wallet)?;
+            token.init(&name).await?;
+            println!("Initialized token: {}", name);
+        }
+        Command::Mint {
+            server:
+                ServerName {
+                    server,
+                    account,
+                    pint_directory,
+                },
+            amount,
+        } => {
+            let deployed_intents = compile_addresses(pint_directory).await?;
+            let mut token = Token::new(server, deployed_intents, wallet)?;
+            token.mint(&account, amount.try_into().unwrap()).await?;
+            println!("Minted {} of token to {}", amount, account);
+        }
+        Command::Burn {
+            server:
+                ServerName {
+                    server,
+                    account,
+                    pint_directory,
+                },
+            amount,
+        } => {
+            let deployed_intents = compile_addresses(pint_directory).await?;
+            let mut token = Token::new(server, deployed_intents, wallet)?;
+            token.burn(&account, amount.try_into().unwrap()).await?;
+            println!("Burned {} of token from {}", amount, account);
+        }
+        Command::Transfer {
+            server:
+                ServerName {
+                    server,
+                    account,
+                    pint_directory,
+                },
+            amount,
+            to,
+        } => {
+            let deployed_intents = compile_addresses(pint_directory).await?;
+            let mut token = Token::new(server, deployed_intents, wallet)?;
+            token
+                .transfer(&account, &to, amount.try_into().unwrap())
+                .await?;
+            println!("Transferred {} of token from {} to {}", amount, account, to);
+        }
+        Command::Balance {
+            server:
+                ServerName {
+                    server,
+                    account,
+                    pint_directory,
+                },
+        } => {
+            let deployed_intents = compile_addresses(pint_directory).await?;
+            let mut token = Token::new(server, deployed_intents, wallet)?;
+            let balance = token.balance(&account).await?.unwrap_or_default();
+            println!("Account {} has balance: {}", account, balance);
+        }
+        Command::PrintAddresses { .. } => unreachable!(),
+    }
     Ok(())
 }

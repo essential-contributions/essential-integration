@@ -1,8 +1,8 @@
-use std::path::PathBuf;
-
 use anyhow::bail;
-use clap::{Args, Parser, Subcommand};
+use app_utils::cli::ServerName;
+use clap::{Parser, Subcommand};
 use nft_front_end::{compile_addresses, deploy_app, print_addresses, update_addresses, Nft};
+use std::path::PathBuf;
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -57,16 +57,6 @@ enum Command {
         /// The account to transfer the token to.
         to: String,
     },
-}
-
-#[derive(Args)]
-struct ServerName {
-    /// The address of the server to connect to.
-    server: String,
-    /// The name of the account to deploy the app with.
-    account: String,
-    /// The directory containing the pint files.
-    pint_directory: PathBuf,
 }
 
 #[tokio::main]
