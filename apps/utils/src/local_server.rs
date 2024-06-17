@@ -15,7 +15,8 @@ pub async fn setup_server() -> anyhow::Result<(String, Child)> {
         .arg("0.0.0.0:0")
         .arg("--loop-freq")
         .arg("1")
-        // this function returns `Child` so that it is not dropped prematurely despite this setting.        .kill_on_drop(true)
+        // this function returns `Child` so that it is not dropped prematurely despite this setting.
+        .kill_on_drop(true)
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .spawn()
