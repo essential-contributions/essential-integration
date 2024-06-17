@@ -62,7 +62,12 @@ impl Token {
         amount: i64,
     ) -> anyhow::Result<ContentAddress> {
         let key = self.get_hashed_key(account_name)?;
-        self.mint_inner(key, amount).await
+        let balance = self
+            .balance(account_name)
+            .await
+            .unwrap()
+            .unwrap_or_default();
+        self.mint_inner(key, amount, balance + amount).await
     }
 
     pub async fn transfer(
@@ -127,12 +132,17 @@ impl Token {
         self.client.submit_solution(solution).await
     }
 
-    async fn mint_inner(&mut self, key: [Word; 4], amount: Word) -> anyhow::Result<ContentAddress> {
+    async fn mint_inner(
+        &mut self,
+        key: [Word; 4],
+        amount: Word,
+        balance: Word,
+    ) -> anyhow::Result<ContentAddress> {
         let decision_variables = inputs::token::mint::DecVars {
             owner: key.into(),
             amount: amount.into(),
         };
-        let mutation = inputs::token::balances(key.into(), amount.into());
+        let mutation = inputs::token::balances(key.into(), balance.into());
         let solution = Solution {
             data: vec![SolutionData {
                 intent_to_solve: self.deployed_intents.mint.clone(),
