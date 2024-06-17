@@ -1,4 +1,4 @@
-use crate::inputs::{Int, WriteDecVars};
+use app_utils::inputs::{Int, WriteDecVars};
 
 pub type TransientData = crate::inputs::auth::TransientData;
 

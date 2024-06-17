@@ -1,6 +1,5 @@
+use app_utils::inputs::B256;
 use essential_types::Value;
-
-use crate::inputs::B256;
 
 pub struct DecVars {
     pub token: B256,

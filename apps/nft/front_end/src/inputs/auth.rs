@@ -1,6 +1,5 @@
+use app_utils::inputs::{index_mutation, Int, WriteDecVars, B256};
 use essential_types::{solution::Mutation, IntentAddress, Value};
-
-use super::{index_mutation, Int, WriteDecVars, B256};
 
 pub struct DecVars {
     pub auth_addr: IntentAddress,
