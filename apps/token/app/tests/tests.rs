@@ -130,6 +130,7 @@ pub async fn deploy_intents(
     Ok(Addresses {
         token: set_address,
         burn: addresses.get("burn").unwrap().clone(),
+        init: addresses.get("init").unwrap().clone(),
         mint: addresses.get("mint").unwrap().clone(),
         transfer: addresses.get("transfer").unwrap().clone(),
     })
@@ -140,6 +141,7 @@ async fn mint_and_transfer() {
     let app_name = "token".to_string();
     let intent_names = [
         "burn".to_string(),
+        "init".to_string(),
         "mint".to_string(),
         "transfer".to_string(),
     ];
@@ -164,6 +166,15 @@ async fn mint_and_transfer() {
 
     let mut token = Token::new(server_address, intent_addresses, wallet).unwrap();
 
+    // initialize token
+    let _init_solution_address = token.init("art").await.unwrap();
+    let mut name = token.name().await;
+    while name.is_err() {
+        tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+        name = token.name().await;
+    }
+    println!("token initialized");
+
     // alice mint 800 tokens
     let alice = "alice";
     token.create_account(&alice).unwrap();
@@ -182,14 +193,14 @@ async fn mint_and_transfer() {
     let second_mint_amount = 200;
     let mint_amount = first_mint_amount + second_mint_amount;
     let _mint_solution_address = token.mint(&alice, second_mint_amount).await.unwrap();
-    let mut balance = None;
-    while balance == None {
-        println!("{} balance {}", alice, 0);
+    let mut new_balance = balance;
+    while new_balance == balance {
+        println!("{} balance {}", alice, balance.unwrap());
         tokio::time::sleep(std::time::Duration::from_secs(1)).await;
-        balance = token.balance(&alice).await.unwrap();
+        new_balance = token.balance(&alice).await.unwrap();
     }
-    println!("{} balance {}", alice, balance.unwrap());
-    assert_eq!(balance.unwrap(), mint_amount);
+    println!("{} balance {}", alice, new_balance.unwrap());
+    assert_eq!(new_balance.unwrap(), mint_amount);
 
     // alice transfer 500 tokens to bob
     let bob = "bob";
@@ -198,7 +209,7 @@ async fn mint_and_transfer() {
     let _transfer_solution_address = token.transfer(&alice, &bob, transfer_amount).await.unwrap();
     let mut alice_balance = balance;
     while alice_balance == balance {
-        println!("{} balance {}", alice, balance.unwrap());
+        println!("{} balance {}", alice, new_balance.unwrap());
         tokio::time::sleep(std::time::Duration::from_secs(1)).await;
         alice_balance = token.balance(&alice).await.unwrap();
     }

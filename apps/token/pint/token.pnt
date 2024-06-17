@@ -1,6 +1,7 @@
 // TODO: authentication to follow
 
 storage {
+    name: b256,
     balances: (b256 => int),
 }
 
@@ -8,18 +9,34 @@ intent burn {
     var burner: b256;
     var amount: int;
 
+    state token_name = storage::name;
     state balance = storage::balances[burner];
 
+    constraint token_name != nil;
+    constraint __mut_keys_len() == 1;
     constraint amount <= balance;
     constraint balance' == balance - amount;
+}
+
+intent init {
+    var name: b256;
+
+    state token_name = storage::name;
+
+    constraint __mut_keys_len() == 1;
+    constraint token_name == nil;
+    constraint token_name' == name;
 }
 
 intent mint {
     var minter: b256;
     var amount: int;
 
+    state token_name = storage::name;
     state balance = storage::balances[minter];
 
+    constraint token_name != nil;
+    constraint __mut_keys_len() == 1;
     constraint (balance == nil && balance' == amount) ||  balance' == balance + amount;
 }
 
@@ -28,9 +45,12 @@ intent transfer {
     var sender: b256;
     var amount: int;
 
+    state token_name = storage::name;
     state receiver_balance = storage::balances[receiver];
     state sender_balance = storage::balances[sender];
 
+    constraint token_name != nil;
+    constraint __mut_keys_len() == 2;
     constraint sender_balance >= amount;
     constraint sender_balance' == sender_balance - amount;
     constraint (receiver_balance == nil && receiver_balance' == amount) ||  receiver_balance' == receiver_balance + amount;
