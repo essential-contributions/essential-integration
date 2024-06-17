@@ -1,13 +1,12 @@
+use crate::inputs::{self, token::query_balances};
 use essential_rest_client::EssentialClient;
 use essential_server_types::SolutionOutcome;
 use essential_types::{
     convert::word_4_from_u8_32,
     solution::{Solution, SolutionData},
-    ContentAddress, IntentAddress, Word,
+    ContentAddress, Hash, IntentAddress, Word,
 };
 use essential_wallet::Wallet;
-
-use crate::inputs::{self, token::query_balances};
 
 pub struct Token {
     client: EssentialClient,
@@ -19,6 +18,7 @@ pub struct Token {
 pub struct Addresses {
     pub token: ContentAddress,
     pub burn: IntentAddress,
+    pub init: IntentAddress,
     pub mint: IntentAddress,
     pub transfer: IntentAddress,
 }
@@ -54,6 +54,11 @@ impl Token {
             .unwrap()
             .unwrap_or_default();
         self.burn_inner(key, amount, balance - amount).await
+    }
+
+    pub async fn init(&mut self, name: &str) -> anyhow::Result<ContentAddress> {
+        let name = word_4_from_u8_32(essential_hash::hash(&name));
+        self.init_inner(name).await
     }
 
     pub async fn mint(
@@ -97,6 +102,16 @@ impl Token {
         self.client.solution_outcome(&solution_address.0).await
     }
 
+    pub async fn name(&mut self) -> anyhow::Result<Option<Hash>> {
+        let state = self.query(&self.deployed_intents.token, &[0]).await?;
+        let name = essential_types::convert::u8_32_from_word_4(
+            state
+                .try_into()
+                .map_err(|_| anyhow::anyhow!("Bad token state"))?,
+        );
+        Ok(Some(name))
+    }
+
     pub async fn balance(&mut self, account_name: &str) -> anyhow::Result<Option<i64>> {
         let key = self.get_hashed_key(account_name)?;
         let state = self
@@ -124,6 +139,20 @@ impl Token {
         let solution = Solution {
             data: vec![SolutionData {
                 intent_to_solve: self.deployed_intents.burn.clone(),
+                decision_variables: decision_variables.encode(),
+                transient_data: Default::default(),
+                state_mutations: vec![mutation],
+            }],
+        };
+        self.client.submit_solution(solution).await
+    }
+
+    async fn init_inner(&mut self, name: [Word; 4]) -> anyhow::Result<ContentAddress> {
+        let decision_variables = inputs::token::init::DecVars { name: name.into() };
+        let mutation = inputs::token::name(name.into());
+        let solution = Solution {
+            data: vec![SolutionData {
+                intent_to_solve: self.deployed_intents.init.clone(),
                 decision_variables: decision_variables.encode(),
                 transient_data: Default::default(),
                 state_mutations: vec![mutation],
