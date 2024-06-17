@@ -18,6 +18,7 @@ pub struct Token {
 #[derive(Debug, Clone)]
 pub struct Addresses {
     pub token: ContentAddress,
+    pub burn: IntentAddress,
     pub mint: IntentAddress,
     pub transfer: IntentAddress,
 }
@@ -39,6 +40,20 @@ impl Token {
     pub fn create_account(&mut self, account_name: &str) -> anyhow::Result<()> {
         self.wallet
             .new_key_pair(account_name, essential_wallet::Scheme::Secp256k1)
+    }
+
+    pub async fn burn(
+        &mut self,
+        account_name: &str,
+        amount: i64,
+    ) -> anyhow::Result<ContentAddress> {
+        let key = self.get_hashed_key(account_name)?;
+        let balance = self
+            .balance(account_name)
+            .await
+            .unwrap()
+            .unwrap_or_default();
+        self.burn_inner(key, amount, balance - amount).await
     }
 
     pub async fn mint(
@@ -90,6 +105,28 @@ impl Token {
         Ok(state)
     }
 
+    async fn burn_inner(
+        &mut self,
+        key: [Word; 4],
+        amount: Word,
+        balance: Word,
+    ) -> anyhow::Result<ContentAddress> {
+        let decision_variables = inputs::token::burn::DecVars {
+            burner: key.into(),
+            amount: amount.into(),
+        };
+        let mutation = inputs::token::balances(key.into(), balance.into());
+        let solution = Solution {
+            data: vec![SolutionData {
+                intent_to_solve: self.deployed_intents.burn.clone(),
+                decision_variables: decision_variables.encode(),
+                transient_data: Default::default(),
+                state_mutations: vec![mutation],
+            }],
+        };
+        self.client.submit_solution(solution).await
+    }
+
     async fn mint_inner(&mut self, key: [Word; 4], amount: Word) -> anyhow::Result<ContentAddress> {
         let decision_variables = inputs::token::mint::DecVars {
             owner: key.into(),
@@ -112,8 +149,8 @@ impl Token {
         from: [Word; 4],
         to: [Word; 4],
         amount: Word,
-        from_balance: i64,
-        to_balance: i64,
+        from_balance: Word,
+        to_balance: Word,
     ) -> anyhow::Result<ContentAddress> {
         let decision_variables = inputs::token::transfer::DecVars {
             receiver: to.into(),

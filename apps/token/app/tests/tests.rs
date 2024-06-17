@@ -1,10 +1,7 @@
 use essential_rest_client::EssentialClient;
 use essential_types::{intent::Intent, ContentAddress, IntentAddress};
 use std::{collections::HashMap, path::PathBuf, process::Stdio};
-use token::{
-    inputs::token::mint,
-    token::{Addresses, Token},
-};
+use token::token::{Addresses, Token};
 use tokio::{
     fs::File,
     io::{AsyncBufReadExt, AsyncReadExt, BufReader},
@@ -130,6 +127,7 @@ pub async fn deploy_intents(
         .collect::<HashMap<_, _>>();
     Ok(Addresses {
         token: set_address,
+        burn: addresses.get("burn").unwrap().clone(),
         mint: addresses.get("mint").unwrap().clone(),
         transfer: addresses.get("transfer").unwrap().clone(),
     })
@@ -138,7 +136,11 @@ pub async fn deploy_intents(
 #[tokio::test]
 async fn mint_and_transfer() {
     let app_name = "token".to_string();
-    let intent_names = ["mint".to_string(), "transfer".to_string()];
+    let intent_names = [
+        "burn".to_string(),
+        "mint".to_string(),
+        "transfer".to_string(),
+    ];
     let deployer_name = "deployer".to_string();
     let mut wallet = essential_wallet::Wallet::temp().unwrap();
     wallet
@@ -191,4 +193,17 @@ async fn mint_and_transfer() {
     println!("{} balance {}", bob, bob_balance.unwrap());
     assert_eq!(alice_balance.unwrap(), mint_amount - transfer_amount);
     assert_eq!(bob_balance.unwrap(), transfer_amount);
+    let burn_amount = 100;
+    let _burn_solution_address = token.burn(&alice, burn_amount).await.unwrap();
+    let mut alice_new_balance = alice_balance;
+    while alice_new_balance == alice_balance {
+        println!("{} balance {}", alice, alice_balance.unwrap());
+        tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+        alice_new_balance = token.balance(&alice).await.unwrap();
+    }
+    println!("{} balance {}", alice, alice_new_balance.unwrap());
+    assert_eq!(
+        alice_new_balance.unwrap(),
+        alice_balance.unwrap() - burn_amount
+    );
 }
