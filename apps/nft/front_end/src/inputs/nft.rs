@@ -1,6 +1,5 @@
+use app_utils::inputs::{index_key, B256};
 use essential_types::{solution::Mutation, Key};
-
-use super::{index_key, B256};
 
 pub mod mint;
 pub mod transfer;

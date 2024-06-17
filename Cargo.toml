@@ -2,7 +2,8 @@
 members = [
     "crates/*",
     "apps/nft/front_end",
-    "apps/token/app"
+    "apps/token/app", 
+    "apps/utils"
 ]
 resolver = "2"
 
@@ -24,4 +25,5 @@ serde = { version = "1.0.195", features = ["derive"] }
 serde_json = "1"
 tokio = { version = "1.36.0", features = ["full"] }
 
+app-utils = { path = "apps/utils" }
 essential-rest-client = { path = "crates/essential-rest-client" }

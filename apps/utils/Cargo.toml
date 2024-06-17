@@ -1,0 +1,14 @@
+[package]
+name = "app-utils"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = { workspace = true }
+essential-hash = { workspace = true }
+essential-sign = { workspace = true }
+essential-signer = { workspace = true }
+essential-types = { workspace = true }
+hex = { workspace = true }
+serde_json = { workspace = true }
+tokio = { workspace = true }

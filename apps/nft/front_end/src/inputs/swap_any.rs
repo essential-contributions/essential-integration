@@ -1,6 +1,5 @@
+use app_utils::inputs::B256;
 use essential_types::{solution::Mutation, Key};
-
-use super::B256;
 
 pub mod swap;
 
