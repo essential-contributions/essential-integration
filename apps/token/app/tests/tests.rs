@@ -1,3 +1,5 @@
+// TODO: restructure
+
 use essential_rest_client::EssentialClient;
 use essential_types::{intent::Intent, ContentAddress, IntentAddress};
 use std::{collections::HashMap, path::PathBuf, process::Stdio};
@@ -159,11 +161,27 @@ async fn mint_and_transfer() {
     )
     .await
     .unwrap();
+
     let mut token = Token::new(server_address, intent_addresses, wallet).unwrap();
+
+    // alice mint 800 tokens
     let alice = "alice";
     token.create_account(&alice).unwrap();
-    let mint_amount = 1000;
-    let _mint_solution_address = token.mint(&alice, mint_amount).await.unwrap();
+    let first_mint_amount = 800;
+    let _mint_solution_address = token.mint(&alice, first_mint_amount).await.unwrap();
+    let mut balance = None;
+    while balance == None {
+        println!("{} balance {}", alice, 0);
+        tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+        balance = token.balance(&alice).await.unwrap();
+    }
+    println!("{} balance {}", alice, balance.unwrap());
+    assert_eq!(balance.unwrap(), first_mint_amount);
+
+    // alice mint 200 tokens
+    let second_mint_amount = 200;
+    let mint_amount = first_mint_amount + second_mint_amount;
+    let _mint_solution_address = token.mint(&alice, second_mint_amount).await.unwrap();
     let mut balance = None;
     while balance == None {
         println!("{} balance {}", alice, 0);
@@ -172,7 +190,8 @@ async fn mint_and_transfer() {
     }
     println!("{} balance {}", alice, balance.unwrap());
     assert_eq!(balance.unwrap(), mint_amount);
-    // TODO: test minting twice to same account
+
+    // alice transfer 500 tokens to bob
     let bob = "bob";
     token.create_account(&bob).unwrap();
     let transfer_amount = 500;
@@ -193,6 +212,8 @@ async fn mint_and_transfer() {
     println!("{} balance {}", bob, bob_balance.unwrap());
     assert_eq!(alice_balance.unwrap(), mint_amount - transfer_amount);
     assert_eq!(bob_balance.unwrap(), transfer_amount);
+
+    // alice burn 100 tokens
     let burn_amount = 100;
     let _burn_solution_address = token.burn(&alice, burn_amount).await.unwrap();
     let mut alice_new_balance = alice_balance;
@@ -204,6 +225,6 @@ async fn mint_and_transfer() {
     println!("{} balance {}", alice, alice_new_balance.unwrap());
     assert_eq!(
         alice_new_balance.unwrap(),
-        alice_balance.unwrap() - burn_amount
+        mint_amount - transfer_amount - burn_amount
     );
 }
