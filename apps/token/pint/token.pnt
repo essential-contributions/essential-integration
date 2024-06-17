@@ -1,4 +1,4 @@
-// TODO: authentication to follow
+// TODO: authentication
 
 storage {
     name: b256,
