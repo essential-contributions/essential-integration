@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 anyhow = { workspace = true }
+app-utils = { workspace = true }
 clap = { workspace = true }
 essential-hash = { workspace = true }
 essential-rest-client = { workspace = true }

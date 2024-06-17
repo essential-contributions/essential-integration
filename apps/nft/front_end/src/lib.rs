@@ -1,18 +1,17 @@
-use std::{path::PathBuf, vec};
-
 use anyhow::bail;
+use app_utils::{
+    addresses::{contract_hash, get_addresses, replace_intent_address, replace_set_address},
+    compile::compile_pint_file,
+    print::{print_intent_address, print_set_address},
+};
 use essential_rest_client::EssentialClient;
 use essential_types::{
     convert::word_4_from_u8_32,
-    intent::Intent,
     solution::{Mutation, Solution, SolutionData},
     ContentAddress, Hash, IntentAddress, Word,
 };
 use inputs::nft::query_owners;
-use tokio::{
-    io::{AsyncReadExt, BufReader},
-    process::Command,
-};
+use std::{path::PathBuf, vec};
 
 mod inputs;
 
@@ -434,131 +433,25 @@ pub fn print_addresses(addresses: &Addresses) {
         swap_any_swap,
     } = addresses;
     print_set_address("nft", nft);
-    print_address("nft_mint", nft_mint);
-    print_address("nft_transfer", nft_transfer);
+    print_intent_address("nft_mint", nft_mint);
+    print_intent_address("nft_transfer", nft_transfer);
     print_set_address("auth", auth);
-    print_address("auth_auth", auth_auth);
+    print_intent_address("auth_auth", auth_auth);
     print_set_address("key", key);
-    print_address("key_key", key_key);
+    print_intent_address("key_key", key_key);
     print_set_address("swap_any", swap_any);
-    print_address("swap_any_init", swap_any_init);
-    print_address("swap_any_swap", swap_any_swap);
+    print_intent_address("swap_any_init", swap_any_init);
+    print_intent_address("swap_any_swap", swap_any_swap);
 }
 
 pub async fn update_addresses(pint_directory: PathBuf) -> anyhow::Result<()> {
     let addresses = compile_addresses(pint_directory.clone()).await?;
 
-    replace_address(pint_directory.clone(), "auth.pnt", &addresses.key_key).await?;
+    replace_intent_address(pint_directory.clone(), "auth.pnt", &addresses.key_key).await?;
 
-    replace_address(pint_directory.clone(), "nft.pnt", &addresses.auth_auth).await?;
+    replace_intent_address(pint_directory.clone(), "nft.pnt", &addresses.auth_auth).await?;
 
     replace_set_address(pint_directory, "swap_any.pnt", &addresses.nft).await?;
 
     Ok(())
-}
-
-async fn replace_address(
-    pint_directory: PathBuf,
-    name: &str,
-    address: &IntentAddress,
-) -> anyhow::Result<()> {
-    let mut intent = read_pint_file(pint_directory.clone(), name).await?;
-    let set =
-        find_address(&intent, 1).ok_or_else(|| anyhow::anyhow!("{} missing set address", name))?;
-    intent = intent.replace(set, &hex::encode_upper(address.set.0));
-    let intent_addr = find_address(&intent, 2)
-        .ok_or_else(|| anyhow::anyhow!("auth.pint missing intent address"))?;
-    intent = intent.replace(intent_addr, &hex::encode_upper(address.intent.0));
-    tokio::fs::write(pint_directory.join(name), intent).await?;
-    Ok(())
-}
-
-async fn replace_set_address(
-    pint_directory: PathBuf,
-    name: &str,
-    address: &ContentAddress,
-) -> anyhow::Result<()> {
-    let mut intent = read_pint_file(pint_directory.clone(), name).await?;
-    let set =
-        find_address(&intent, 1).ok_or_else(|| anyhow::anyhow!("{} missing set address", name))?;
-    intent = intent.replace(set, &hex::encode_upper(address.0));
-    tokio::fs::write(pint_directory.join(name), intent).await?;
-    Ok(())
-}
-
-fn find_address(intent: &str, num: usize) -> Option<&str> {
-    intent
-        .split("0x")
-        .nth(num)
-        .and_then(|s| s.split(&[' ', ')', ',']).next())
-        .map(|s| s.trim())
-}
-
-fn print_address(name: &str, address: &IntentAddress) {
-    println!(
-        "{}: set: {}, intent: {}",
-        name,
-        hex::encode_upper(address.set.0),
-        hex::encode_upper(address.intent.0),
-    );
-}
-
-fn print_set_address(name: &str, address: &ContentAddress) {
-    println!("{}: set: {}", name, hex::encode_upper(address.0),);
-}
-
-async fn read_pint_file(path: PathBuf, name: &str) -> anyhow::Result<String> {
-    let file = tokio::fs::read_to_string(path.join(name)).await?;
-    Ok(file)
-}
-
-async fn compile_pint_file(path: PathBuf, name: &str) -> anyhow::Result<Vec<Intent>> {
-    // Compile Pint files
-    let pint_path = path.join(name);
-    assert!(pint_path.exists());
-    let pint_target_path = path.join("target");
-    std::fs::create_dir(path).ok();
-
-    let output = Command::new("pintc")
-        .arg(pint_path.display().to_string())
-        .arg("--output")
-        .arg(pint_target_path.join(name))
-        .output()
-        .await?;
-
-    assert!(
-        output.status.success(),
-        "pintc failed: {}",
-        String::from_utf8_lossy(&output.stderr)
-    );
-    let file = tokio::fs::File::open(pint_target_path.join(name)).await?;
-    let mut bytes = Vec::new();
-    let mut reader = BufReader::new(file);
-    reader.read_to_end(&mut bytes).await?;
-
-    let intents: Vec<Intent> = serde_json::from_slice(&bytes)?;
-    Ok(intents)
-}
-
-fn get_addresses(intents: &[Intent]) -> (ContentAddress, Vec<IntentAddress>) {
-    let set = essential_hash::intent_set_addr::from_intents(intents);
-    let intents = intents
-        .iter()
-        .map(|intent| IntentAddress {
-            set: set.clone(),
-            intent: essential_hash::content_addr(intent),
-        })
-        .collect();
-    (set, intents)
-}
-
-fn contract_hash(contract: &IntentAddress) -> [Word; 4] {
-    let set_hash = essential_types::convert::word_4_from_u8_32(contract.set.0);
-    let intent_hash = essential_types::convert::word_4_from_u8_32(contract.intent.0);
-    let mut words = set_hash.to_vec();
-    words.extend_from_slice(&intent_hash);
-
-    let contract_hash = essential_hash::hash_words(&words);
-
-    essential_types::convert::word_4_from_u8_32(contract_hash)
 }

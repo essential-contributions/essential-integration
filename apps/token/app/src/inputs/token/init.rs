@@ -1,4 +1,4 @@
-use crate::inputs::B256;
+use app_utils::inputs::B256;
 use essential_types::Value;
 
 pub struct DecVars {

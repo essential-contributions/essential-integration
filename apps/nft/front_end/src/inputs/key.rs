@@ -1,6 +1,5 @@
+use app_utils::inputs::{index_key, Int, B256};
 use essential_types::{solution::Mutation, Key};
-
-use super::{index_key, Int, B256};
 
 #[allow(clippy::module_inception)]
 pub mod key;

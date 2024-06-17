@@ -1,4 +1,4 @@
-use crate::inputs::{Int, WriteDecVars};
+use app_utils::inputs::{Int, WriteDecVars};
 
 pub struct DecVars {
     pub auth_auth_pathway: Int,
