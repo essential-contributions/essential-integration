@@ -1,9 +1,17 @@
-// TODO: burn to follow
 // TODO: authentication to follow
-// TODO: removed total supply. maybe add a helper to retrieve that
 
 storage {
     balances: (b256 => int),
+}
+
+intent burn {
+    var burner: b256;
+    var amount: int;
+
+    state balance = storage::balances[burner];
+
+    constraint amount <= balance;
+    constraint balance' == balance - amount;
 }
 
 intent mint {

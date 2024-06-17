@@ -53,12 +53,8 @@ impl EssentialClient {
     pub async fn submit_solution(&self, solution: Solution) -> anyhow::Result<ContentAddress> {
         let url = self.url.join("/submit-solution")?;
         let response = self.client.post(url).json(&solution).send().await?;
-        dbg!(response.status());
         let text = response.text().await?;
-        dbg!(&text);
         Ok(serde_json::from_str(&text)?)
-
-        // Ok(response.json::<essential_types::ContentAddress>().await?)
     }
 
     pub async fn solution_outcome(
