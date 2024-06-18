@@ -1,1 +1,1 @@
-pub type TransientData = crate::inputs::auth::TransientData;
+pub type TransientData = crate::inputs::nft::Interface;

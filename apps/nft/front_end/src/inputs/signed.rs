@@ -1,8 +1,13 @@
 use app_utils::inputs::{index_key, Int, B256};
 use essential_types::{solution::Mutation, Key};
 
-#[allow(clippy::module_inception)]
-pub mod key;
+#[allow(dead_code)]
+pub mod cancel;
+pub mod transfer;
+#[allow(dead_code)]
+pub mod transfer_from;
+#[allow(dead_code)]
+pub mod transfer_from_to;
 
 pub fn nonce(key: B256, nonce: Int) -> Mutation {
     Mutation {
