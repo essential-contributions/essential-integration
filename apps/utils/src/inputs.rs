@@ -3,6 +3,7 @@ use essential_types::{
     Value, Word,
 };
 
+#[derive(Clone)]
 pub struct Instance {
     pub address: IntentAddress,
     pub path: Word,

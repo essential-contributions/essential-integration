@@ -32,12 +32,6 @@ enum Command {
         #[command(flatten)]
         server: ServerName,
     },
-    Init {
-        #[command(flatten)]
-        server: ServerName,
-        /// The name of the token.
-        name: String,
-    },
     Mint {
         #[command(flatten)]
         server: ServerName,
@@ -99,20 +93,6 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
         } => {
             let addrs = deploy_app(server, &mut wallet, &account, pint_directory).await?;
             print_addresses(&addrs);
-        }
-        Command::Init {
-            server:
-                ServerName {
-                    server,
-                    account: _account,
-                    pint_directory,
-                },
-            name,
-        } => {
-            let deployed_intents = compile_addresses(pint_directory).await?;
-            let mut token = Token::new(server, deployed_intents, wallet)?;
-            token.init(&name).await?;
-            println!("Initialized token: {}", name);
         }
         Command::Mint {
             server:
