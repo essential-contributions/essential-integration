@@ -1,12 +1,12 @@
 storage {
-    owners: (b256 => b256),
+    owners: (int => b256),
 }
 
 interface Auth {
     intent Auth {
         pub var key: b256;
-        pub var token: b256;
         pub var to: b256;
+        pub var token: int;
         pub var set: b256;
         pub var intent_addr: b256;
         pub var path: int;
@@ -14,7 +14,7 @@ interface Auth {
 }
 
 intent Mint {
-    var token: b256;
+    var token: int;
     var new_owner: b256;
 
     state owner = storage::owners[token];
@@ -25,8 +25,8 @@ intent Mint {
 }
 
 intent Transfer {
-    interface AuthInstance = Auth(0xDE1F5AF64BDD7F7C28B6E55DB97335C65A5ACDC021F3ABCE2EEDEA271E8D3DEA);
-    intent A = AuthInstance::Auth(0xA5706CAA21604DAC05D795CAFC3EA254D822AFABA1627336DD95EE0F1A44CB83);
+    interface AuthInstance = Auth(0x1006007ABC4764B5DA57B1D63067BA2E9A4E7A0FB28E3A05D4818ACC22AC40D2);
+    intent A = AuthInstance::Auth(0xFDC450568635A38999BA6FC50FB46818E59217DF980AA87EE755CF646A0F3611);
 
     state owner = storage::owners[A::token];
 
@@ -35,5 +35,4 @@ intent Transfer {
 
     lib::@is_this_intent(A);
     lib::@constrain_keys(A::token);
-
 }

@@ -8,8 +8,8 @@ use app_utils::{
 use essential_rest_client::EssentialClient;
 use essential_types::{
     convert::word_4_from_u8_32,
-    solution::{Mutation, Solution, SolutionData},
-    ContentAddress, Hash, IntentAddress, Word,
+    solution::{Solution, SolutionData},
+    ContentAddress, IntentAddress, Word,
 };
 use inputs::nft::query_owners;
 use std::{path::PathBuf, vec};
@@ -55,7 +55,7 @@ impl Nft {
             .new_key_pair(account_name, essential_wallet::Scheme::Secp256k1)
     }
 
-    async fn mint_inner(&mut self, key: [Word; 4], token: Hash) -> anyhow::Result<()> {
+    async fn mint_inner(&mut self, key: [Word; 4], token: Word) -> anyhow::Result<()> {
         let decision_variables = inputs::nft::mint::DecVars {
             token: token.into(),
             new_owner: key.into(),
@@ -75,7 +75,7 @@ impl Nft {
         Ok(())
     }
 
-    pub async fn mint(&mut self, account_name: &str, token: Hash) -> anyhow::Result<()> {
+    pub async fn mint(&mut self, account_name: &str, token: Word) -> anyhow::Result<()> {
         let key = self.get_hashed_key(account_name)?;
         self.mint_inner(key, token).await
     }
@@ -83,34 +83,34 @@ impl Nft {
     pub async fn mint_for_contract(
         &mut self,
         contract: &IntentAddress,
-        token: Hash,
+        token: Word,
     ) -> anyhow::Result<()> {
         let key = contract_hash(contract);
         self.mint_inner(key, token).await
     }
 
-    async fn do_i_own_inner(&mut self, key: [Word; 4], hash: Hash) -> anyhow::Result<bool> {
+    async fn do_i_own_inner(&mut self, key: [Word; 4], token: Word) -> anyhow::Result<bool> {
         let state = self
-            .query(&self.deployed_intents.nft, &query_owners(hash.into()))
+            .query(&self.deployed_intents.nft, &query_owners(token.into()))
             .await?;
         Ok(state[..] == key[..])
     }
 
-    pub async fn do_i_own(&mut self, account_name: &str, hash: Hash) -> anyhow::Result<bool> {
+    pub async fn do_i_own(&mut self, account_name: &str, token: Word) -> anyhow::Result<bool> {
         let key = self.get_hashed_key(account_name)?;
-        self.do_i_own_inner(key, hash).await
+        self.do_i_own_inner(key, token).await
     }
 
     pub async fn do_i_own_contract(
         &mut self,
         contract: &IntentAddress,
-        hash: Hash,
+        token: Word,
     ) -> anyhow::Result<bool> {
         let key = contract_hash(contract);
-        self.do_i_own_inner(key, hash).await
+        self.do_i_own_inner(key, token).await
     }
 
-    pub async fn init_swap_any(&mut self, token: Hash) -> anyhow::Result<()> {
+    pub async fn init_swap_any(&mut self, token: Word) -> anyhow::Result<()> {
         let solution = Solution {
             data: vec![SolutionData {
                 intent_to_solve: self.deployed_intents.swap_any_init.clone(),
@@ -124,7 +124,7 @@ impl Nft {
         Ok(())
     }
 
-    pub async fn swap_any_owns(&mut self) -> anyhow::Result<Option<Hash>> {
+    pub async fn swap_any_owns(&mut self) -> anyhow::Result<Option<Word>> {
         let state = self
             .query(
                 &self.deployed_intents.swap_any,
@@ -136,11 +136,9 @@ impl Nft {
             return Ok(None);
         }
 
-        let token = essential_types::convert::u8_32_from_word_4(
-            state
-                .try_into()
-                .map_err(|_| anyhow::anyhow!("Bad token state"))?,
-        );
+        let Ok([token]): Result<[Word; 1], _> = state.try_into() else {
+            bail!("Bad token state")
+        };
 
         Ok(Some(token))
     }
@@ -149,11 +147,10 @@ impl Nft {
         &mut self,
         account_name: &str,
         to: &str,
-        hash: Hash,
+        token: Word,
     ) -> anyhow::Result<()> {
         let key = self.get_hashed_key(account_name)?;
         let to = self.get_hashed_key(to)?;
-        let token = essential_types::convert::word_4_from_u8_32(hash);
 
         // Make key auth and transfer
         let solution = self
@@ -170,7 +167,7 @@ impl Nft {
         account_name: &str,
         key: [Word; 4],
         to: [Word; 4],
-        token: [Word; 4],
+        token: Word,
     ) -> anyhow::Result<Solution> {
         let nonce = self
             .query(
@@ -183,8 +180,8 @@ impl Nft {
 
         // Sign key, token, to
         let mut to_hash = key.to_vec();
-        to_hash.extend_from_slice(&token);
         to_hash.extend_from_slice(&to);
+        to_hash.push(token);
         to_hash.push(nonce);
         to_hash.extend(word_4_from_u8_32(self.deployed_intents.nft.0));
         to_hash.extend(word_4_from_u8_32(
@@ -206,8 +203,8 @@ impl Nft {
 
         let transient_data = inputs::key::key::TransientData {
             key: key.into(),
-            token: token.into(),
             to: to.into(),
+            token: token.into(),
             set: self.deployed_intents.nft.clone().into(),
             intent_addr: self.deployed_intents.nft_transfer.intent.clone().into(),
             path: 2.into(),
@@ -247,11 +244,10 @@ impl Nft {
     pub async fn swap_with_contract(
         &mut self,
         account_name: &str,
-        token: Hash,
+        token: Word,
     ) -> anyhow::Result<()> {
         let key = self.get_hashed_key(account_name)?;
         let to = contract_hash(&self.deployed_intents.swap_any_swap);
-        let token = essential_types::convert::word_4_from_u8_32(token);
 
         let mut solution = self
             .make_transfer_solution(account_name, key, to, token)
@@ -265,7 +261,7 @@ impl Nft {
             )
             .await?;
 
-        let Ok(current_token): Result<[Word; 4], _> = current_token.try_into() else {
+        let Ok([current_token]): Result<[Word; 1], _> = current_token.try_into() else {
             bail!("Bad token state")
         };
 
@@ -282,10 +278,7 @@ impl Nft {
             intent_to_solve: self.deployed_intents.swap_any_swap.clone(),
             decision_variables: Default::default(),
             transient_data: transient_data.encode(),
-            state_mutations: vec![Mutation {
-                key: vec![0],
-                value: token.to_vec(),
-            }],
+            state_mutations: vec![inputs::swap_any::token(token.into())],
         };
 
         let decision_variables = inputs::auth::DecVars {

@@ -1,6 +1,6 @@
-use anyhow::bail;
 use app_utils::cli::ServerName;
 use clap::{Parser, Subcommand};
+use essential_types::Word;
 use nft_front_end::{compile_addresses, deploy_app, print_addresses, update_addresses, Nft};
 use std::path::PathBuf;
 
@@ -37,23 +37,20 @@ enum Command {
     Mint {
         #[command(flatten)]
         server: ServerName,
-        /// The hash of the token to mint.
-        /// Encoded as a hex string of 32 bytes.
-        hash: String,
+        /// The token id
+        token: Word,
     },
     DoIOwn {
         #[command(flatten)]
         server: ServerName,
-        /// The hash of the token to check ownership of.
-        /// Encoded as a hex string of 32 bytes.
-        hash: String,
+        /// The token id
+        token: Word,
     },
     Transfer {
         #[command(flatten)]
         server: ServerName,
-        /// The hash of the token to transfer.
-        /// Encoded as a hex string of 32 bytes.
-        hash: String,
+        /// The token id
+        token: Word,
         /// The account to transfer the token to.
         to: String,
     },
@@ -109,18 +106,12 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
                     account,
                     pint_directory,
                 },
-            hash,
+            token,
         } => {
             let deployed_intents = compile_addresses(pint_directory).await?;
             let mut nft = Nft::new(server, deployed_intents, wallet)?;
-            let Ok(token): Result<[u8; 32], _> =
-                essential_signer::decode_str(hash.clone(), essential_signer::Encoding::Hex)?
-                    .try_into()
-            else {
-                bail!("Invalid hash: {}", hash);
-            };
             nft.mint(&account, token).await?;
-            println!("Minted token: {}", hash);
+            println!("Minted token: {}", token);
         }
         Command::DoIOwn {
             server:
@@ -129,21 +120,15 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
                     account,
                     pint_directory,
                 },
-            hash,
+            token,
         } => {
             let deployed_intents = compile_addresses(pint_directory).await?;
             let mut nft = Nft::new(server, deployed_intents, wallet)?;
-            let Ok(token): Result<[u8; 32], _> =
-                essential_signer::decode_str(hash.clone(), essential_signer::Encoding::Hex)?
-                    .try_into()
-            else {
-                bail!("Invalid hash: {}", hash);
-            };
             let owned = nft.do_i_own(&account, token).await?;
             if owned {
-                println!("You own token: {}", hash);
+                println!("You own token: {}", token);
             } else {
-                println!("You do not own token: {}", hash);
+                println!("You do not own token: {}", token);
             }
         }
         Command::Transfer {
@@ -153,19 +138,13 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
                     account,
                     pint_directory,
                 },
-            hash,
+            token,
             to,
         } => {
             let deployed_intents = compile_addresses(pint_directory).await?;
             let mut nft = Nft::new(server, deployed_intents, wallet)?;
-            let Ok(token): Result<[u8; 32], _> =
-                essential_signer::decode_str(hash.clone(), essential_signer::Encoding::Hex)?
-                    .try_into()
-            else {
-                bail!("Invalid hash: {}", hash);
-            };
             nft.transfer(&account, &to, token).await?;
-            println!("Transferred token: {} to {}", hash, to);
+            println!("Transferred token: {} to {}", token, to);
         }
         Command::PrintAddresses { .. } => unreachable!(),
         Command::UpdateAddresses { .. } => unreachable!(),

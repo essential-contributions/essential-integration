@@ -1,16 +1,16 @@
 
 storage {
-    token: b256,
+    token: int,
 }
 
 interface Nft {
     storage {
-        owners: (b256 => b256),
+        owners: (int => b256),
     }
 }
 
 intent Init {
-    interface NftInstance = Nft(0x3C166198F9DCFABB242FE7792E232FC4DD1B47ECC2D8E0A7C396535EC37E308A);
+    interface NftInstance = Nft(0x2D6722A09661CCAAA8FFC9BCC98BF9587C6A3286C8D01AB1A61894414671527E);
     
     state current_token = storage::token;
     state token_owner = NftInstance::storage::owners[current_token'];
@@ -19,11 +19,11 @@ intent Init {
 }
 
 intent Swap {
-    interface NftInstance = Nft(0x3C166198F9DCFABB242FE7792E232FC4DD1B47ECC2D8E0A7C396535EC37E308A);
+    interface NftInstance = Nft(0x2D6722A09661CCAAA8FFC9BCC98BF9587C6A3286C8D01AB1A61894414671527E);
     
     pub var key: b256;
-    pub var token: b256;
     pub var to: b256;
+    pub var token: int;
     
     state current_token = storage::token;
     state current_token_owner = NftInstance::storage::owners[current_token];
