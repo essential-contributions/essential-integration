@@ -86,7 +86,7 @@ async fn main() {
 async fn run(cli: Cli) -> anyhow::Result<()> {
     let Cli { address, commands } = cli;
     if let Some(commands) = commands {
-        let client = EssentialClient::new(address).await?;
+        let client = EssentialClient::new(address)?;
         match commands {
             Commands::DeployIntentSet { intents } => {
                 let intents = serde_json::from_str::<SignedSet>(&intents)?;
