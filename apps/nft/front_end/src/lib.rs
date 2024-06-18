@@ -183,7 +183,7 @@ impl Nft {
         let mut nonce = nonce.first().copied().unwrap_or_default();
         nonce += 1;
 
-        // Sign key, token, to
+        // Sign key, to, token
         let mut to_hash = key.to_vec();
         to_hash.extend_from_slice(&to);
         to_hash.push(token);

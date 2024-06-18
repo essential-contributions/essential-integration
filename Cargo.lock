@@ -2644,6 +2644,7 @@ dependencies = [
  "essential-signer",
  "essential-types",
  "essential-wallet",
+ "hex",
  "rpassword",
  "serde_json",
  "tokio",

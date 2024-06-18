@@ -1,18 +1,24 @@
-use app_utils::inputs::{Int, B256};
-use essential_types::Value;
+use app_utils::inputs::{Int, WriteDecVars, B256};
 
 pub struct DecVars {
-    pub owner: B256,
-    pub amount: Int,
+    pub token_name: B256,
+    pub token_symbol: B256,
+    pub decimals: Int,
 }
 
 impl DecVars {
-    pub fn encode(&self) -> Vec<Value> {
-        self.owner
-            .to_value()
-            .into_iter()
-            .chain(self.amount.to_value())
-            .map(|w| vec![w])
-            .collect()
+    pub fn encode(&self) -> Vec<essential_types::Value> {
+        let Self {
+            token_name,
+            token_symbol,
+            decimals,
+        } = self;
+        let mut decision_variables = vec![];
+
+        token_name.write_dec_var(&mut decision_variables);
+        token_symbol.write_dec_var(&mut decision_variables);
+        decimals.write_dec_var(&mut decision_variables);
+
+        decision_variables
     }
 }

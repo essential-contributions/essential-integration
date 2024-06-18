@@ -1,18 +1,16 @@
-use app_utils::inputs::{Int, B256};
-use essential_types::Value;
+use app_utils::inputs::{Instance, WriteDecVars};
 
 pub struct DecVars {
-    pub burner: B256,
-    pub amount: Int,
+    pub auth_addr: Instance,
 }
 
 impl DecVars {
-    pub fn encode(&self) -> Vec<Value> {
-        self.burner
-            .to_value()
-            .into_iter()
-            .chain(self.amount.to_value())
-            .map(|w| vec![w])
-            .collect()
+    pub fn encode(&self) -> Vec<essential_types::Value> {
+        let Self { auth_addr } = self;
+        let mut decision_variables = vec![];
+
+        auth_addr.write_dec_var(&mut decision_variables);
+
+        decision_variables
     }
 }

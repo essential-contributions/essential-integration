@@ -1,4 +1,4 @@
-use app_utils::local_server::setup_server;
+use app_utils::{local_server::setup_server, read::read_pint_file};
 use std::path::PathBuf;
 use token::{actions::deploy_app, token::Token};
 
@@ -26,7 +26,20 @@ async fn mint_and_transfer(server_address: String) {
         .new_key_pair(&deployer_name, essential_wallet::Scheme::Secp256k1)
         .ok();
 
+    let alice = "alice";
+    wallet
+        .new_key_pair(alice, essential_wallet::Scheme::Secp256k1)
+        .ok();
+
+    let alice_pub_key = wallet.get_public_key(alice).unwrap();
+
+    let alice_pub_key = to_hex(&alice_pub_key);
+
     let pint_directory = PathBuf::from(concat!(env!("CARGO_MANIFEST_DIR"), "/../pint"));
+
+    update_minter(pint_directory.clone(), &alice_pub_key)
+        .await
+        .unwrap();
 
     let intent_addresses = deploy_app(
         server_address.clone(),
@@ -39,19 +52,8 @@ async fn mint_and_transfer(server_address: String) {
 
     let mut token = Token::new(server_address, intent_addresses, wallet).unwrap();
 
-    // initialize token
-    let _init_solution_address = token.init("art").await.unwrap();
-    let mut name = token.name().await;
-    while name.is_err() {
-        tokio::time::sleep(std::time::Duration::from_secs(1)).await;
-        name = token.name().await;
-    }
-    println!("token initialized");
-
     // alice mint 800 tokens
-    let alice = "alice";
-    token.create_account(alice).unwrap();
-    let first_mint_amount = 800;
+    let first_mint_amount = 1000000;
     let _mint_solution_address = token.mint(alice, first_mint_amount).await.unwrap();
     let mut balance = None;
     while balance.is_none() {
@@ -62,19 +64,6 @@ async fn mint_and_transfer(server_address: String) {
     println!("{} balance {}", alice, balance.unwrap());
     assert_eq!(balance.unwrap(), first_mint_amount);
 
-    // alice mint 200 tokens
-    let second_mint_amount = 200;
-    let mint_amount = first_mint_amount + second_mint_amount;
-    let _mint_solution_address = token.mint(alice, second_mint_amount).await.unwrap();
-    let mut new_balance = balance;
-    while new_balance == balance {
-        println!("{} balance {}", alice, balance.unwrap());
-        tokio::time::sleep(std::time::Duration::from_secs(1)).await;
-        new_balance = token.balance(alice).await.unwrap();
-    }
-    println!("{} balance {}", alice, new_balance.unwrap());
-    assert_eq!(new_balance.unwrap(), mint_amount);
-
     // alice transfer 500 tokens to bob
     let bob = "bob";
     token.create_account(bob).unwrap();
@@ -82,7 +71,7 @@ async fn mint_and_transfer(server_address: String) {
     let _transfer_solution_address = token.transfer(alice, bob, transfer_amount).await.unwrap();
     let mut alice_balance = balance;
     while alice_balance == balance {
-        println!("{} balance {}", alice, new_balance.unwrap());
+        println!("{} balance {}", alice, balance.unwrap());
         tokio::time::sleep(std::time::Duration::from_secs(1)).await;
         alice_balance = token.balance(alice).await.unwrap();
     }
@@ -94,7 +83,7 @@ async fn mint_and_transfer(server_address: String) {
         bob_balance = token.balance(bob).await.unwrap();
     }
     println!("{} balance {}", bob, bob_balance.unwrap());
-    assert_eq!(alice_balance.unwrap(), mint_amount - transfer_amount);
+    assert_eq!(alice_balance.unwrap(), first_mint_amount - transfer_amount);
     assert_eq!(bob_balance.unwrap(), transfer_amount);
 
     // alice burn 100 tokens
@@ -109,6 +98,33 @@ async fn mint_and_transfer(server_address: String) {
     println!("{} balance {}", alice, alice_new_balance.unwrap());
     assert_eq!(
         alice_new_balance.unwrap(),
-        mint_amount - transfer_amount - burn_amount
+        first_mint_amount - transfer_amount - burn_amount
     );
+}
+
+fn to_hex(k: &essential_signer::PublicKey) -> String {
+    let k = match k {
+        essential_signer::PublicKey::Secp256k1(k) => k,
+        essential_signer::PublicKey::Ed25519(_) => unreachable!(),
+    };
+    let encoded = essential_sign::encode::public_key(k);
+    hex::encode_upper(essential_hash::hash_words(&encoded))
+}
+
+async fn update_minter(pint_directory: PathBuf, minter: &str) -> anyhow::Result<()> {
+    let name = "token.pnt";
+    let mut intent = read_pint_file(pint_directory.clone(), name).await?;
+    let set =
+        find_address(&intent, 3).ok_or_else(|| anyhow::anyhow!("{} missing set address", name))?;
+    intent = intent.replace(set, minter);
+    tokio::fs::write(pint_directory.join(name), intent).await?;
+    Ok(())
+}
+
+pub fn find_address(intent: &str, num: usize) -> Option<&str> {
+    intent
+        .split("0x")
+        .nth(num)
+        .and_then(|s| s.split(&[' ', ')', ',', ']']).next())
+        .map(|s| s.trim())
 }

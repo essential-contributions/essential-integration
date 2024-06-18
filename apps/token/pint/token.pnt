@@ -1,57 +1,65 @@
-// TODO: authentication
-
 storage {
-    name: b256,
+    init: bool,
     balances: (b256 => int),
 }
 
-intent burn {
-    var burner: b256;
-    var amount: int;
-
-    state token_name = storage::name;
-    state balance = storage::balances[burner];
-
-    constraint token_name != nil;
-    constraint __mut_keys_len() == 1;
-    constraint amount <= balance;
-    constraint balance' == balance - amount;
+interface Auth {
+    intent Intent {
+        pub var key: b256;
+        pub var to: b256;
+        pub var amount: int;
+        pub var set: b256;
+        pub var intent_addr: b256;
+        pub var path: int;
+    }
 }
 
-intent init {
-    var name: b256;
+intent Burn {
+    var auth_addr: std::lib::IntentAddress;
+    
+    interface AuthI = Auth(auth_addr.set);
+    intent A = AuthI::Intent(auth_addr.intent_addr);
 
-    state token_name = storage::name;
+    state balance = storage::balances[A::key];
 
-    constraint __mut_keys_len() == 1;
-    constraint token_name == nil;
-    constraint token_name' == name;
+    constraint A::amount > 0;
+    constraint std::lib::@delta(balance) == 0 - A::amount;
+    constraint balance' >= 0;
+    
+    std::lib::@constrain_keys(A::key);
+    std::auth::@authenticate(auth_addr; A; allowed::signed::@intents);
 }
 
-intent mint {
-    var minter: b256;
-    var amount: int;
+intent Mint {
+    var token_name: b256 = 0x0000000000000000000000000000000000000000000000000000000000000000;
+    var token_symbol: b256 = 0x0000000000000000000000000000000000000000000000000000000000000000;
+    var decimals: int = 18;
 
-    state token_name = storage::name;
-    state balance = storage::balances[minter];
-
-    constraint token_name != nil;
-    constraint __mut_keys_len() == 1;
-    constraint (balance == nil && balance' == amount) ||  balance' == balance + amount;
-}
-
-intent transfer {
-    var receiver: b256;
-    var sender: b256;
-    var amount: int;
-
-    state token_name = storage::name;
-    state receiver_balance = storage::balances[receiver];
-    state sender_balance = storage::balances[sender];
-
-    constraint token_name != nil;
+    state balance = storage::balances[0xF55AEEE772DB86A306F9BD943DDAEABC28F9EE6961681EFB2DFD004C252101DC];
+    state init = storage::init;
+    
+    constraint balance == nil;
+    constraint balance' == 1000000;
+    constraint init == nil;
+    constraint init' == true;
+    
     constraint __mut_keys_len() == 2;
-    constraint sender_balance >= amount;
-    constraint sender_balance' == sender_balance - amount;
-    constraint (receiver_balance == nil && receiver_balance' == amount) ||  receiver_balance' == receiver_balance + amount;
+}
+
+intent Transfer {
+    var auth_addr: std::lib::IntentAddress;
+    
+    interface AuthI = Auth(auth_addr.set);
+    intent A = AuthI::Intent(auth_addr.intent_addr);
+
+    state sender_balance = storage::balances[A::key];
+    state receiver_balance = storage::balances[A::to];
+
+    constraint A::amount > 0;
+    constraint sender_balance' >= 0;
+    constraint std::lib::@delta(sender_balance) == 0 - A::amount;
+    constraint std::lib::@init_delta(receiver_balance; A::amount);
+    
+    std::lib::@constrain_keys(A::sender; A::receiver);
+    std::auth::@authenticate(auth_addr; A; allowed::signed::@intents);
 }
