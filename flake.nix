@@ -42,6 +42,8 @@
           essential-cli = prev.callPackage ./pkgs/essential-cli.nix { };
           # Essential REST client.
           essential-rest-client = prev.callPackage ./pkgs/essential-rest-client.nix { };
+          # Essential deploy intent.
+          essential-deploy-intent = prev.callPackage ./pkgs/essential-deploy-intent.nix { };
           # All essential applications under one package.
           essential = final.callPackage ./pkgs/essential-all.nix { };
           # All app tests.
@@ -53,6 +55,7 @@
       packages = perSystemPkgs (pkgs: {
         essential-cli = pkgs.essential-cli;
         essential-rest-client = pkgs.essential-rest-client;
+        essential-deploy-intent = pkgs.essential-deploy-intent;
         essential = pkgs.essential;
         test-app-counter = pkgs.test-app-counter;
         default = inputs.self.packages.${pkgs.system}.essential;

@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use clap::{Parser, Subcommand};
-use essential_deploy::{deploy_bytes, deploy_signed_bytes};
+use essential_deploy_intent::{deploy_bytes, deploy_signed_bytes};
 use tokio::io::{AsyncReadExt, BufReader};
 
 #[derive(Parser)]
