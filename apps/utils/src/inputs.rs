@@ -31,6 +31,10 @@ impl B256 {
 }
 
 impl Int {
+    pub fn to_key(&self) -> Key {
+        vec![self.0]
+    }
+
     pub fn to_value(&self) -> Value {
         vec![self.0]
     }

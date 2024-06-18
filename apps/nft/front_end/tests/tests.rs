@@ -37,8 +37,7 @@ async fn mint_and_transfer(server_address: String) {
 
     let account_name = "alice";
 
-    let art = "this_is_art";
-    let token = essential_signer::hash_bytes(art.as_bytes()).unwrap();
+    let token = 0;
 
     let mut nft = Nft::new(server_address, addresses.clone(), wallet).unwrap();
 
@@ -68,8 +67,7 @@ async fn mint_and_transfer(server_address: String) {
     }
     println!("{} owns the nft!", to);
 
-    let diff_art = "different_art";
-    let art_token = essential_signer::hash_bytes(diff_art.as_bytes()).unwrap();
+    let art_token = 1;
 
     nft.mint_for_contract(&addresses.swap_any_swap, art_token)
         .await

@@ -4,8 +4,8 @@ storage {
 
 intent Key {
     pub var key: b256;
-    pub var token: b256;
     pub var to: b256;
+    pub var token: int;
     pub var set: b256;
     pub var intent_addr: b256;
     pub var path: int;
@@ -18,6 +18,6 @@ intent Key {
     
     constraint lib::@init(nonce);
     constraint new_nonce == nonce';
-    constraint lib::@recover({key, token, to, new_nonce, set, intent_addr, path}; sig; public_key);
+    constraint lib::@recover({key, to, token, new_nonce, set, intent_addr, path}; sig; public_key);
     constraint __sha256(public_key) == key;
 }
