@@ -1,6 +1,7 @@
 use app_utils::inputs::Int;
 use essential_types::{solution::Mutation, Key};
 
+pub mod init;
 pub mod swap;
 
 pub fn token(token: Int) -> Mutation {

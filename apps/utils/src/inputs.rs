@@ -3,6 +3,11 @@ use essential_types::{
     Value, Word,
 };
 
+pub struct Instance {
+    pub address: IntentAddress,
+    pub path: Word,
+}
+
 pub struct Int(pub Word);
 
 pub struct B256(pub [Word; 4]);
@@ -113,6 +118,14 @@ impl WriteDecVars for IntentAddress {
 impl WriteDecVars for ContentAddress {
     fn write_dec_var(&self, decision_variables: &mut Vec<Value>) {
         decision_variables.to_slots(word_4_from_u8_32(self.0));
+    }
+}
+
+impl WriteDecVars for Instance {
+    fn write_dec_var(&self, decision_variables: &mut Vec<Value>) {
+        self.address.set.write_dec_var(decision_variables);
+        self.address.intent.write_dec_var(decision_variables);
+        Int::from(self.path).write_dec_var(decision_variables);
     }
 }
 

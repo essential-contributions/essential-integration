@@ -3,7 +3,7 @@ storage {
 }
 
 interface Auth {
-    intent Auth {
+    intent Intent {
         pub var key: b256;
         pub var to: b256;
         pub var token: int;
@@ -22,17 +22,21 @@ intent Mint {
     constraint owner == nil;
 
     constraint owner' == new_owner;
+    
+    std::lib::@constrain_keys(token);
 }
 
 intent Transfer {
-    interface AuthInstance = Auth(0x1006007ABC4764B5DA57B1D63067BA2E9A4E7A0FB28E3A05D4818ACC22AC40D2);
-    intent A = AuthInstance::Auth(0xFDC450568635A38999BA6FC50FB46818E59217DF980AA87EE755CF646A0F3611);
+    var auth_addr: std::lib::IntentAddress;
+    
+    interface AuthI = Auth(auth_addr.set);
+    intent A = AuthI::Intent(auth_addr.intent_addr);
 
     state owner = storage::owners[A::token];
 
     constraint owner == A::key;
     constraint owner' == A::to;
 
-    lib::@is_this_intent(A);
-    lib::@constrain_keys(A::token);
+    std::lib::@constrain_keys(A::token);
+    std::auth::@authenticate(auth_addr; A; allowed::signed::@intents);
 }

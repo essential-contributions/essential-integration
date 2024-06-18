@@ -10,26 +10,32 @@ interface Nft {
 }
 
 intent Init {
-    interface NftInstance = Nft(0x2D6722A09661CCAAA8FFC9BCC98BF9587C6A3286C8D01AB1A61894414671527E);
+    var set: b256;
+    interface NftInstance = Nft(set);
     
     state current_token = storage::token;
     state token_owner = NftInstance::storage::owners[current_token'];
 
-    constraint current_token == nil;
+    constraint current_token == nil && token_owner' != nil;
+    
+    // TODO: Get hash of swap so that `token_owner'` can be constraint to the intent address of swap.
 }
 
 intent Swap {
-    interface NftInstance = Nft(0x2D6722A09661CCAAA8FFC9BCC98BF9587C6A3286C8D01AB1A61894414671527E);
-    
     pub var key: b256;
     pub var to: b256;
     pub var token: int;
+    pub var set: b256;
+    pub var intent_addr: b256;
+    pub var path: int;
+    
+    interface NftInstance = Nft(set);
     
     state current_token = storage::token;
     state current_token_owner = NftInstance::storage::owners[current_token];
     state new_token_owner = NftInstance::storage::owners[current_token'];
     
-    constraint new_token_owner' == lib::@hash_this_addr();
+    constraint new_token_owner' == std::lib::@hash_this_addr();
     constraint new_token_owner' == current_token_owner;
     constraint current_token_owner' == new_token_owner;
 
@@ -37,6 +43,7 @@ intent Swap {
         { key: key, token: token, to: to};
         {key: current_token_owner, token: current_token, to: new_token_owner}
     );
+
 }
 
 macro @check_auth($auth, $change) {
