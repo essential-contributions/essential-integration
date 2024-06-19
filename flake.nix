@@ -48,6 +48,8 @@
           essential = final.callPackage ./pkgs/essential-all.nix { };
           # All app tests.
           test-app-counter = final.callPackage ./pkgs/test-app-counter.nix { };
+          test-app-nft = final.callPackage ./pkgs/test-app-nft.nix { };
+          test-app-token = final.callPackage ./pkgs/test-app-token.nix { };
         };
         default = inputs.self.overlays.essential-integration;
       };
@@ -58,6 +60,8 @@
         essential-deploy-intent = pkgs.essential-deploy-intent;
         essential = pkgs.essential;
         test-app-counter = pkgs.test-app-counter;
+        test-app-nft = pkgs.test-app-nft;
+        test-app-token = pkgs.test-app-token;
         default = inputs.self.packages.${pkgs.system}.essential;
       });
 
