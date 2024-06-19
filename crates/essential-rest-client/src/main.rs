@@ -10,8 +10,8 @@ use std::{ops::Range, time::Duration};
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
 struct Cli {
-    #[arg(default_value_t = String::from("http://0.0.0.0:0"))]
     /// Server address to bind to. Default: "http://0.0.0.0:0"
+    #[arg(default_value_t = String::from("http://0.0.0.0:0"))]
     address: String,
     #[command(subcommand)]
     commands: Option<Commands>,

@@ -734,6 +734,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "essential-dry-run"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "clap 4.5.7",
+ "essential-rest-client",
+ "essential-types",
+ "essential-wallet",
+ "reqwest",
+ "rpassword",
+ "serde_json",
+ "tokio",
+]
+
+[[package]]
 name = "essential-hash"
 version = "0.1.0"
 source = "git+ssh://git@github.com/essential-contributions/essential-base.git#6df0326d2f101327a7567434fed28972eb091cb0"
@@ -828,7 +843,6 @@ dependencies = [
  "rusqlite",
  "serde",
  "serde_json",
- "tempfile",
 ]
 
 [[package]]
