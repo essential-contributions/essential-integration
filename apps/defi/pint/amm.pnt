@@ -1,0 +1,24 @@
+
+interface Token {
+    storage {
+        balances: (b256 => int),
+        nonce: (b256 => int),
+        token_name: b256,
+        token_symbol: b256,
+        decimals: int,
+    }
+}
+
+intent Amm {
+    // The token address
+    pub var set: b256;
+    pub var intent_addr: b256;
+
+    interface TokenA = Token(0x3C166198F9DCFABB242FE7792E232FC4DD1B47ECC2D8E0A7C396535EC37E308A);
+    interface TokenB = Token(0x3C166198F9DCFABB242FE7792E232FC4DD1B47ECC2D8E0A7C396535EC37E308A);
+
+    state reserve_a = TokenA::storage::balances[std::lib::@this_key()];
+    state reserve_b = TokenB::storage::balances[std::lib::@this_key()];
+
+    constraint reserve_a * reserve_b <= (reserve_a' * reserve_b' * 997 / 1000);
+}
