@@ -1,0 +1,8 @@
+// Hard coded whitelisted authorization intent addresses
+macro @whitelist($auth_addr, $check) {
+    // Burn
+    $check($auth_addr; { 
+        set: 0x18A9FBB2F7E57EEF8A7C2BA00A1AE03520FEC17047CFA511C2FE5539558A6794,
+        intent_addr: 0xF0483B95BA3B290CB6B8D33CA14659ED415993F76A8B35413ED5075586AA5C55,
+    })
+}

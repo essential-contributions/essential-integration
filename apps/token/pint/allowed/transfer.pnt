@@ -1,0 +1,13 @@
+// Hard coded whitelisted authorization intent addresses
+macro @whitelist($auth_addr, $check) {
+    // Transfer
+    $check($auth_addr; { 
+        set: 0x18A9FBB2F7E57EEF8A7C2BA00A1AE03520FEC17047CFA511C2FE5539558A6794,
+        intent_addr: 0xD76EA5C50DE71DCF75390FFBE58C572BC9D095E4C115A4DEEE2781DCD154B18D,
+    }) ||
+    // TransferFrom
+    $check($auth_addr; { 
+        set: 0x18A9FBB2F7E57EEF8A7C2BA00A1AE03520FEC17047CFA511C2FE5539558A6794,
+        intent_addr: 0x977272EBFD39AECD8EAB7F152C85F5B6C0821BD1A84B6472EB0F1AF3919CDD2D,
+    })
+}

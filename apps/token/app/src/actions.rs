@@ -21,9 +21,10 @@ pub async fn compile_addresses(pint_directory: PathBuf) -> anyhow::Result<Addres
         transfer: token_addresses.1[3].clone(),
         signed: signed_addresses.0.clone(),
         signed_burn: signed_addresses.1[0].clone(),
-        signed_mint: signed_addresses.1[1].clone(),
-        signed_transfer: signed_addresses.1[2].clone(),
-        signed_transfer_from: signed_addresses.1[3].clone(),
+        signed_cancel: signed_addresses.1[1].clone(),
+        signed_mint: signed_addresses.1[2].clone(),
+        signed_transfer: signed_addresses.1[3].clone(),
+        signed_transfer_from: signed_addresses.1[4].clone(),
     };
 
     Ok(addresses)
@@ -41,6 +42,7 @@ pub fn print_addresses(addresses: &Addresses) {
         signed_transfer_from,
         signed_mint,
         signed_burn,
+        signed_cancel,
     } = addresses;
     print_set_address("token", token);
     print_intent_address("burn", burn);
@@ -52,6 +54,7 @@ pub fn print_addresses(addresses: &Addresses) {
     print_intent_address("signed_transfer_from", signed_transfer_from);
     print_intent_address("signed_burn", signed_burn);
     print_intent_address("signed_mint", signed_mint);
+    print_intent_address("signed_cancel", signed_cancel);
 }
 
 pub async fn deploy_app(
@@ -74,9 +77,10 @@ pub async fn deploy_app(
         transfer: token_addresses.1[3].clone(),
         signed: signed_addresses.0.clone(),
         signed_burn: signed_addresses.1[0].clone(),
-        signed_mint: signed_addresses.1[1].clone(),
-        signed_transfer: signed_addresses.1[2].clone(),
-        signed_transfer_from: signed_addresses.1[3].clone(),
+        signed_cancel: signed_addresses.1[1].clone(),
+        signed_mint: signed_addresses.1[2].clone(),
+        signed_transfer: signed_addresses.1[3].clone(),
+        signed_transfer_from: signed_addresses.1[4].clone(),
     };
 
     let intents = wallet.sign_intent_set(token_intents, account_name)?;

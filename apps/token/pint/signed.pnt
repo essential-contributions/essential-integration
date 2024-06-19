@@ -23,6 +23,10 @@ interface Token {
         pub var amount: int;
         pub var decimals: int;
     }
+    
+    intent CancelI {
+        pub var key: b256;
+    }
 }
 
 // The interface of dependent constraints
@@ -69,7 +73,7 @@ intent Burn {
     @common({I::key, I::amount}; T; I);
 }
 
-intent Mint{
+intent Mint {
     // The token address
     pub var set: b256;
     pub var intent_addr: b256;
@@ -77,6 +81,16 @@ intent Mint{
     interface T = Token(set);
     intent I = T::MintI(intent_addr);
     @common({I::key, I::amount, I::decimals}; T; I);
+}
+
+intent Cancel {
+    // The token address
+    pub var set: b256;
+    pub var intent_addr: b256;
+
+    interface T = Token(set);
+    intent I = T::CancelI(intent_addr);
+    @common(I::key; T; I);
 }
 
 macro @common($data, $t, $i) {

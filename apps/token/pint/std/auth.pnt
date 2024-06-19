@@ -1,14 +1,17 @@
-
-macro @authenticate($auth_addr, $i, $key, $signed_auth) {
-    constraint $signed_auth($auth_addr; @signed_auth_check) || $key == __sha256($auth_addr);
+// Check the authorization intent is valid.
+macro @authenticate($auth_addr, $i, $key, $whitelist) {
+    // The authorixation intent must either be in the whitelist or the hash of it's
+    // address must match the key.
+    constraint $whitelist($auth_addr; @whitelist_check) || $key == __sha256($auth_addr);
     @is_this_intent($i);
 }
 
-// Check if the authorized intent is the key intent.
-macro @signed_auth_check($auth_addr, $signed_addr) {
+// Check if the authorization intent matches a whitelisted address.
+macro @whitelist_check($auth_addr, $signed_addr) {
     ($auth_addr.set == $signed_addr.set && $auth_addr.intent_addr == $signed_addr.intent_addr)
 }
 
+// Check if the authorization intent is pointing to the current intent.
 macro @is_this_intent($I) {
     constraint $I::set == __this_set_address();
     constraint $I::intent_addr == __this_address();

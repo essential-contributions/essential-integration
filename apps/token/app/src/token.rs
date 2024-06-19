@@ -28,6 +28,7 @@ pub struct Addresses {
     pub signed_transfer_from: IntentAddress,
     pub signed_mint: IntentAddress,
     pub signed_burn: IntentAddress,
+    pub signed_cancel: IntentAddress,
 }
 
 impl Token {
@@ -49,22 +50,60 @@ impl Token {
             .new_key_pair(account_name, essential_wallet::Scheme::Secp256k1)
     }
 
+    /// Create and submit solution that solves the token burn intent
+    /// and the signed burn intent
     pub async fn burn(
         &mut self,
         account_name: &str,
         amount: i64,
     ) -> anyhow::Result<ContentAddress> {
+        // Get the hashed public key of the account
         let key = self.get_hashed_key(account_name)?;
-        self.burn_inner(account_name, key, amount).await
+
+        // Increment the nonce
+        let nonce = self.increment_nonce(key).await?;
+
+        // Solve the token burn intent
+        let token_burn = self.create_token_burn(nonce, key, amount, 1.into()).await?;
+
+        // Solve the signed authorization for the burn intent
+        let signed_burn = self.create_signed_burn(account_name, nonce, key, amount, 0.into())?;
+
+        let solution = Solution {
+            data: vec![token_burn, signed_burn],
+        };
+
+        // Submit the solution
+        self.client.submit_solution(solution).await
     }
 
     pub async fn mint(
         &mut self,
         account_name: &str,
-        amount: Word,
+        balance: Word,
     ) -> anyhow::Result<ContentAddress> {
+        // Get the hashed public key of the account
         let key = self.get_hashed_key(account_name)?;
-        self.mint_inner(account_name, key, amount).await
+
+        // Increment the nonce
+        let nonce = self.increment_nonce(key).await?;
+
+        // Set the number of decimals for the token
+        let decimals = 18;
+
+        // Solve the token mint intent
+        let mint = self.create_token_mint(nonce, key, balance, decimals, 1.into())?;
+
+        // Solve the signed authorization for the mint intent
+        let mint_auth =
+            self.create_signed_mint(account_name, nonce, key, balance, decimals, 0.into())?;
+
+        let solution = Solution {
+            data: vec![mint, mint_auth],
+        };
+
+        // Submit the solution
+        self.client.submit_solution(solution).await
     }
 
     pub async fn transfer(
@@ -73,12 +112,33 @@ impl Token {
         to_name: &str,
         amount: i64,
     ) -> anyhow::Result<ContentAddress> {
-        let from_key = self.get_hashed_key(from_name)?;
-        let to_key = self.get_hashed_key(to_name)?;
-        self.transfer_inner(from_name, from_key, to_key, amount)
-            .await
+        // Get the hashed public key of the from account
+        let key = self.get_hashed_key(from_name)?;
+
+        // Get the hashed public key of the to account
+        let to = self.get_hashed_key(to_name)?;
+
+        // Increment the nonce
+        let nonce = self.increment_nonce(key).await?;
+
+        // Solve the token transfer intent
+        let token_transfer = self
+            .create_token_transfer(nonce, key, to, amount, 1.into())
+            .await?;
+
+        // Solve the signed authorization for the transfer intent
+        let signed_transfer =
+            self.create_signed_transfer(from_name, nonce, key, to, amount, 0.into())?;
+
+        let solution = Solution {
+            data: vec![token_transfer, signed_transfer],
+        };
+
+        // Submit the solution
+        self.client.submit_solution(solution).await
     }
 
+    /// Query the outcome of a solution
     pub async fn solution_outcome(
         &mut self,
         solution_address: ContentAddress,
@@ -86,6 +146,7 @@ impl Token {
         self.client.solution_outcome(&solution_address.0).await
     }
 
+    /// Query the balance of the account
     pub async fn balance(&mut self, account_name: &str) -> anyhow::Result<Option<i64>> {
         let key = self.get_hashed_key(account_name)?;
         let state = self
@@ -94,51 +155,53 @@ impl Token {
         Ok(state.first().copied())
     }
 
-    pub async fn nonce(&mut self, key: &[Word; 4]) -> anyhow::Result<Word> {
+    /// Query the nonce of the account
+    pub async fn nonce(&self, key: [Word; 4]) -> anyhow::Result<Word> {
         let nonce = self
             .query(
                 &self.deployed_intents.token,
-                &inputs::token::query_nonce((*key).into()),
+                &inputs::token::query_nonce((key).into()),
             )
             .await?;
         Ok(nonce.first().copied().unwrap_or_default())
     }
 
+    // Query state
     async fn query(&self, set_address: &ContentAddress, key: &[Word]) -> anyhow::Result<Vec<Word>> {
         let state = self.client.query_state(set_address, &key.to_vec()).await?;
         Ok(state)
     }
 
-    async fn burn_inner(
-        &mut self,
-        account_name: &str,
+    async fn create_token_burn(
+        &self,
+        nonce: Word,
         key: [Word; 4],
         amount: Word,
-    ) -> anyhow::Result<ContentAddress> {
-        let mut nonce = self.nonce(&key).await?;
-        nonce += 1;
+        auth_path: Word,
+    ) -> anyhow::Result<SolutionData> {
+        // Calculate the new balance of the account after the burn
+        let new_from_balance = self.calculate_from_balance(key, amount).await?;
 
-        let state = self
-            .query(&self.deployed_intents.token, &query_balances(key.into()))
-            .await?;
-        let from_balance = state.first().copied().unwrap_or_default();
-        let Some(from_new_balance) = from_balance.checked_sub(amount) else {
-            bail!("Insufficient balance")
-        };
-
+        // Set the key and amount to be burned
         let transient_data = inputs::token::burn::TransientData {
             key: key.into(),
             amount: amount.into(),
         };
 
+        // Set the instance of the authentication intent
         let decision_variables = inputs::token::burn::DecVars {
             auth_addr: Instance {
                 address: self.deployed_intents.signed_burn.clone(),
-                path: 1.into(),
+                path: auth_path,
             },
         };
-        let burn_mutation = inputs::token::balances(key.into(), from_new_balance.into());
+
+        // Create the burn mutation which sets the balance of the account to the new balance.
+        let burn_mutation = inputs::token::balances(key.into(), new_from_balance.into());
+
+        // Create the nonce mutation which increments the nonce of the account
         let nonce_mutation = inputs::token::nonce(key.into(), nonce.into());
+
         let token_burn = SolutionData {
             intent_to_solve: self.deployed_intents.burn.clone(),
             decision_variables: decision_variables.encode(),
@@ -146,69 +209,99 @@ impl Token {
             state_mutations: vec![burn_mutation, nonce_mutation],
         };
 
+        Ok(token_burn)
+    }
+
+    fn create_signed_burn(
+        &mut self,
+        account_name: &str,
+        nonce: Word,
+        key: [Word; 4],
+        amount: Word,
+        burn_path: Word,
+    ) -> anyhow::Result<SolutionData> {
+        // The instance of the token burn intent
         let instance = Instance {
             address: self.deployed_intents.burn.clone(),
-            path: 0.into(),
+            path: burn_path,
         };
 
+        // Hash and sign the key and amount to be burned
         let mut data = key.to_vec();
         data.push(amount);
-        let sig = self.hash_data(account_name, data, nonce, instance.address.clone())?;
 
+        let sig = self.sign_data(account_name, data, nonce, instance.address.clone())?;
+
+        // Set the path of the token burn intent,
+        // the signature of the key and amount to be burned,
+        // and the public key of the account
         let decision_variables = inputs::signed::burn::DecVars {
             token_path: instance.path.into(),
             sig,
             public_key: self.get_pub_key(account_name)?,
         };
 
+        // Set the address of the token to be burned
         let transient_data = inputs::signed::burn::TransientData {
             token_address: instance.address,
         };
 
-        let signed_transfer = SolutionData {
+        let signed_burn = SolutionData {
             intent_to_solve: self.deployed_intents.signed_burn.clone(),
             decision_variables: decision_variables.encode(),
             transient_data: transient_data.encode(),
             state_mutations: vec![],
         };
 
-        let solution = Solution {
-            data: vec![token_burn, signed_transfer],
-        };
-        self.client.submit_solution(solution).await
+        Ok(signed_burn)
     }
 
-    async fn mint_inner(
-        &mut self,
-        account_name: &str,
+    fn create_token_mint(
+        &self,
+        nonce: Word,
         key: [Word; 4],
         balance: Word,
-    ) -> anyhow::Result<ContentAddress> {
-        let mut nonce = self.nonce(&key).await?;
-        nonce += 1;
-
+        decimals: Word,
+        auth_path: Word,
+    ) -> anyhow::Result<SolutionData> {
+        // Set the instance of the authentication intent
         let auth_instance = Instance {
             address: self.deployed_intents.signed_mint.clone(),
-            path: 1.into(),
+            path: auth_path,
         };
 
+        // Set the name and symbol of the token.
+        // Set the address of the authentication intent.
         let decision_variables = inputs::token::mint::DecVars {
             name: [0; 4].into(),
             symbol: [0; 4].into(),
-            auth_addr: auth_instance.clone(),
+            auth_addr: auth_instance,
         };
 
+        // Set the key, balance, and decimals of the token to be minted.
         let transient_data = inputs::token::mint::TransientData {
             key: key.into(),
             amount: balance.into(),
-            decimals: 18.into(),
+            decimals: decimals.into(),
         };
 
+        // Create the mutations.
+
+        // Set the balance of the account to the new balance.
         let bal_mutation = inputs::token::balances(key.into(), balance.into());
+
+        // Set the name of the token.
         let name_mutation = inputs::token::token_name(decision_variables.name);
+
+        // Set the symbol of the token.
         let symbol_mutation = inputs::token::token_symbol(decision_variables.symbol);
+
+        // Set the decimals of the token.
         let decimals_mutation = inputs::token::decimals(18.into());
+
+        // Increment the nonce of the account.
         let nonce_mutation = inputs::token::nonce(key.into(), nonce.into());
+
         let mint = SolutionData {
             intent_to_solve: self.deployed_intents.mint.clone(),
             decision_variables: decision_variables.encode(),
@@ -221,23 +314,39 @@ impl Token {
                 decimals_mutation,
             ],
         };
+        Ok(mint)
+    }
 
+    fn create_signed_mint(
+        &mut self,
+        account_name: &str,
+        nonce: Word,
+        key: [Word; 4],
+        balance: Word,
+        decimals: Word,
+        mint_path: Word,
+    ) -> anyhow::Result<SolutionData> {
+        // Hash and sign the key, balance, and decimals of the token to be minted.
         let mut data = key.to_vec();
         data.push(balance);
-        data.push(transient_data.decimals.0);
-        let sig = self.hash_data(
+        data.push(decimals);
+        let sig = self.sign_data(
             account_name,
             data,
             nonce,
             self.deployed_intents.mint.clone(),
         )?;
 
+        // Set the path of the token mint intent,
+        // the signature of the key, balance, and decimals of the token to be minted,
+        // and the public key of the account.
         let decision_variables = inputs::signed::mint::DecVars {
-            token_path: 0.into(),
+            token_path: mint_path.into(),
             sig,
             public_key: self.get_pub_key(account_name)?,
         };
 
+        // Set the address of the token to be minted.
         let transient_data = inputs::signed::mint::TransientData {
             token_address: self.deployed_intents.mint.clone(),
         };
@@ -249,35 +358,28 @@ impl Token {
             state_mutations: vec![],
         };
 
-        let solution = Solution {
-            data: vec![mint, mint_auth],
-        };
-        self.client.submit_solution(solution).await
+        Ok(mint_auth)
     }
 
-    async fn transfer_inner(
-        &mut self,
-        account_name: &str,
+    async fn create_token_transfer(
+        &self,
+        nonce: Word,
         key: [Word; 4],
         to: [Word; 4],
         amount: Word,
-    ) -> anyhow::Result<ContentAddress> {
-        let mut nonce = self.nonce(&key).await?;
-        nonce += 1;
-
+        auth_path: Word,
+    ) -> anyhow::Result<SolutionData> {
+        // Set the instance of the authentication intent
         let decision_variables = inputs::token::transfer::DecVars {
             auth_addr: Instance {
                 address: self.deployed_intents.signed_transfer.clone(),
-                path: 1.into(),
+                path: auth_path,
             },
         };
-        let state = self
-            .query(&self.deployed_intents.token, &query_balances(key.into()))
-            .await?;
-        let from_balance = state.first().copied().unwrap_or_default();
-        let Some(from_new_balance) = from_balance.checked_sub(amount) else {
-            bail!("Insufficient balance")
-        };
+
+        // Calculate the new balances.
+        let new_from_balance = self.calculate_from_balance(key, amount).await?;
+
         let state = self
             .query(&self.deployed_intents.token, &query_balances(to.into()))
             .await?;
@@ -286,14 +388,24 @@ impl Token {
             bail!("Overflow error")
         };
 
+        // Set the key to transfer from,
+        // the address to transfer to
+        // and amount to be transferred.
         let transient_data = inputs::token::transfer::TransientData {
             key: key.into(),
             to: to.into(),
             amount: amount.into(),
         };
 
-        let from_mutation = inputs::token::balances(key.into(), from_new_balance.into());
+        // Create the mutations.
+
+        // Set the balance of the from account.
+        let from_mutation = inputs::token::balances(key.into(), new_from_balance.into());
+
+        // Set the balance of the to account.
         let to_mutation = inputs::token::balances(to.into(), to_new_balance.into());
+
+        // Increment the nonce of the account.
         let nonce_mutation = inputs::token::nonce(key.into(), nonce.into());
 
         let token_transfer = SolutionData {
@@ -303,28 +415,46 @@ impl Token {
             state_mutations: vec![from_mutation, to_mutation, nonce_mutation],
         };
 
+        Ok(token_transfer)
+    }
+
+    fn create_signed_transfer(
+        &mut self,
+        account_name: &str,
+        nonce: Word,
+        key: [Word; 4],
+        to: [Word; 4],
+        amount: Word,
+        token_path: Word,
+    ) -> anyhow::Result<SolutionData> {
+        // The instance of the token transfer intent
         let instance = Instance {
             address: self.deployed_intents.transfer.clone(),
-            path: 0.into(),
+            path: token_path,
         };
 
+        // Hash and sign the key, address, and amount to be transferred
         let mut data = key.to_vec();
         data.extend(to);
         data.push(amount);
 
-        let sig = self.hash_data(
+        let sig = self.sign_data(
             account_name,
             data,
             nonce,
             self.deployed_intents.transfer.clone(),
         )?;
 
+        // Set the path of the token transfer intent,
+        // the signature of the key, address, and amount to be transferred,
+        // and the public key of the account.
         let decision_variables = inputs::signed::transfer::DecVars {
             sig,
             public_key: self.get_pub_key(account_name)?,
             token_path: instance.path.into(),
         };
 
+        // Set the address of the token to be transferred
         let transient_data = inputs::signed::transfer::TransientData {
             token_address: instance.address,
         };
@@ -336,13 +466,33 @@ impl Token {
             state_mutations: vec![],
         };
 
-        let solution = Solution {
-            data: vec![token_transfer, signed_transfer],
-        };
-        self.client.submit_solution(solution).await
+        Ok(signed_transfer)
     }
 
-    fn hash_data(
+    async fn calculate_from_balance(&self, key: [Word; 4], amount: Word) -> anyhow::Result<Word> {
+        let state = self
+            .query(&self.deployed_intents.token, &query_balances(key.into()))
+            .await?;
+        let from_balance = if state.is_empty() {
+            0
+        } else {
+            let [from_balance] = &state[..] else {
+                bail!("Invalid state");
+            };
+            *from_balance
+        };
+        let Some(new_from_balance) = from_balance.checked_sub(amount) else {
+            bail!("Insufficient balance")
+        };
+        Ok(new_from_balance)
+    }
+
+    async fn increment_nonce(&self, key: [Word; 4]) -> anyhow::Result<Word> {
+        let nonce = self.nonce(key).await?;
+        Ok(nonce + 1)
+    }
+
+    fn sign_data(
         &mut self,
         account_name: &str,
         mut data: Vec<Word>,
@@ -351,7 +501,7 @@ impl Token {
     ) -> anyhow::Result<essential_signer::secp256k1::ecdsa::RecoverableSignature> {
         data.push(nonce);
 
-        // Sign the token transfer instance
+        // Sign the token instance
         data.extend(word_4_from_u8_32(address.set.0));
         data.extend(word_4_from_u8_32(address.intent.0));
 

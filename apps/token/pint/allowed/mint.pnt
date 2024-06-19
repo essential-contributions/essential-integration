@@ -1,0 +1,8 @@
+// Hard coded whitelisted authorization intent addresses
+macro @whitelist($auth_addr, $check) {
+    // Mint 
+    $check($auth_addr; { 
+        set: 0x18A9FBB2F7E57EEF8A7C2BA00A1AE03520FEC17047CFA511C2FE5539558A6794,
+        intent_addr: 0x5FD3ABD8D3935DA2268B07C7BDDD98F2AAD5556F0B287C48E1F34DEE5B7B2AAE,
+    })
+}
