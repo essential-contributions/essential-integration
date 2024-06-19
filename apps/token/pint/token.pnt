@@ -1,65 +1,108 @@
 storage {
-    init: bool,
     balances: (b256 => int),
+    nonce: (b256 => int),
+    token_name: b256,
+    token_symbol: b256,
+    decimals: int,
 }
 
 interface Auth {
     intent Intent {
-        pub var key: b256;
-        pub var to: b256;
-        pub var amount: int;
         pub var set: b256;
         pub var intent_addr: b256;
-        pub var path: int;
     }
 }
 
 intent Burn {
-    var auth_addr: std::lib::IntentAddress;
+    // The address that the amount is being sent key
+    pub var key: b256;
+    // The amount being burnt
+    pub var amount: int;
     
-    interface AuthI = Auth(auth_addr.set);
-    intent A = AuthI::Intent(auth_addr.intent_addr);
+    state balance = storage::balances[key];
+    state nonce = storage::nonce[key];
 
-    state balance = storage::balances[A::key];
-
-    constraint A::amount > 0;
-    constraint std::lib::@delta(balance) == 0 - A::amount;
+    constraint amount > 0;
+    constraint std::lib::@delta(balance) == 0 - amount;
     constraint balance' >= 0;
+    constraint ::std::lib::@safe_increment(nonce);
     
-    std::lib::@constrain_keys(A::key);
-    std::auth::@authenticate(auth_addr; A; allowed::signed::@intents);
+    constraint __mut_keys_len() == 2;
+    
+    var auth_addr: std::lib::IntentAddress;
+    @auth();
 }
 
 intent Mint {
-    var token_name: b256 = 0x0000000000000000000000000000000000000000000000000000000000000000;
-    var token_symbol: b256 = 0x0000000000000000000000000000000000000000000000000000000000000000;
-    var decimals: int = 18;
+    pub var key: b256;
+    pub var amount: int;
+    pub var decimals: int;
+    // The name and the symbol are hard coded so 
+    // that if they change we get a new contract.
+    var name: b256 = 0x0000000000000000000000000000000000000000000000000000000000000000;
+    var symbol: b256 = 0x0000000000000000000000000000000000000000000000000000000000000000;
+    
+    state balance = storage::balances[key];
+    state nonce = storage::nonce[key];
+    state token_name = storage::token_name;
+    state token_symbol = storage::token_symbol;
+    state token_decimals = storage::decimals;
 
-    state balance = storage::balances[0xF55AEEE772DB86A306F9BD943DDAEABC28F9EE6961681EFB2DFD004C252101DC];
-    state init = storage::init;
+    // The only authorized minting address.
+    constraint key == 0x5DC67FD2333E7B51FCB2A26DE75EAE2AEDFA667CB1F36FD295EBAA382A6D6E34;
     
-    constraint balance == nil;
-    constraint balance' == 1000000;
-    constraint init == nil;
-    constraint init' == true;
+    constraint std::lib::@init_once(balance; amount);
+    constraint std::lib::@init_once(token_name; name);
+    constraint std::lib::@init_once(token_symbol; symbol);
+    constraint std::lib::@init_once(token_decimals; decimals);
+    constraint std::lib::@init_once(nonce; 1);
+
+    constraint __mut_keys_len() == 5;
     
-    constraint __mut_keys_len() == 2;
+    var auth_addr: std::lib::IntentAddress;
+    @auth();
 }
 
 intent Transfer {
-    var auth_addr: std::lib::IntentAddress;
+    // The address that the amount is being sent key
+    pub var key: b256;
+    // The address that the amount is being sent to
+    pub var to: b256;
+    // The amount being transfered 
+    pub var amount: int;
+
+    state sender_balance = storage::balances[key];
+    state receiver_balance = storage::balances[to];
+    state nonce = storage::nonce[key];
+
+    constraint amount > 0;
+    constraint sender_balance' >= 0;
+    constraint std::lib::@delta(sender_balance) == 0 - amount;
+    constraint std::lib::@init_delta(receiver_balance; amount);
+    constraint ::std::lib::@safe_increment(nonce);
     
+    constraint __mut_keys_len() == 3;
+    
+    var auth_addr: std::lib::IntentAddress;
+    @auth();
+}
+
+intent Cancel {
+    pub var key: b256;
+    
+    state nonce = storage::nonce[key];
+
+    constraint ::std::lib::@safe_increment(nonce);
+
+    constraint __mut_keys_len() == 1;
+    
+    var auth_addr: std::lib::IntentAddress;
+    @auth();
+}
+
+macro @auth() {
     interface AuthI = Auth(auth_addr.set);
     intent A = AuthI::Intent(auth_addr.intent_addr);
+    std::auth::@authenticate(auth_addr; A; key; allowed::signed::@intents);
 
-    state sender_balance = storage::balances[A::key];
-    state receiver_balance = storage::balances[A::to];
-
-    constraint A::amount > 0;
-    constraint sender_balance' >= 0;
-    constraint std::lib::@delta(sender_balance) == 0 - A::amount;
-    constraint std::lib::@init_delta(receiver_balance; A::amount);
-    
-    std::lib::@constrain_keys(A::sender; A::receiver);
-    std::auth::@authenticate(auth_addr; A; allowed::signed::@intents);
 }

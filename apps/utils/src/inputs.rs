@@ -9,8 +9,10 @@ pub struct Instance {
     pub path: Word,
 }
 
+#[derive(Clone, Copy)]
 pub struct Int(pub Word);
 
+#[derive(Clone, Copy)]
 pub struct B256(pub [Word; 4]);
 
 pub fn index_key(index: Word, key: Key) -> Key {

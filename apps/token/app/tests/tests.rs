@@ -125,6 +125,6 @@ pub fn find_address(intent: &str, num: usize) -> Option<&str> {
     intent
         .split("0x")
         .nth(num)
-        .and_then(|s| s.split(&[' ', ')', ',', ']']).next())
+        .and_then(|s| s.split(&[' ', ')', ',', ']', ';']).next())
         .map(|s| s.trim())
 }

@@ -1,6 +1,6 @@
 
-macro @authenticate($auth_addr, $i, $signed_auth) {
-    constraint $signed_auth($auth_addr; @signed_auth_check) || $i::key == __sha256($auth_addr);
+macro @authenticate($auth_addr, $i, $key, $signed_auth) {
+    constraint $signed_auth($auth_addr; @signed_auth_check) || $key == __sha256($auth_addr);
     @is_this_intent($i);
 }
 
@@ -12,5 +12,4 @@ macro @signed_auth_check($auth_addr, $signed_addr) {
 macro @is_this_intent($I) {
     constraint $I::set == __this_set_address();
     constraint $I::intent_addr == __this_address();
-    constraint $I::path == __this_pathway();
 }

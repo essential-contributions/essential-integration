@@ -4,6 +4,9 @@ type Secp256k1Signature = { b256, b256, int };
 
 type Secp256k1PublicKey = { b256, int };
 
+macro @init_once($s, $v) {
+    $s == nil && $s' == $v
+}
 
 macro @init_delta($s, $eq) {
     ($s == nil && $s' == $eq) || @delta($s) == $eq

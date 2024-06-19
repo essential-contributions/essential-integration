@@ -16,13 +16,14 @@ pub async fn compile_addresses(pint_directory: PathBuf) -> anyhow::Result<Addres
     let addresses = Addresses {
         token: token_addresses.0.clone(),
         burn: token_addresses.1[0].clone(),
-        mint: token_addresses.1[1].clone(),
-        transfer: token_addresses.1[2].clone(),
+        cancel: token_addresses.1[1].clone(),
+        mint: token_addresses.1[2].clone(),
+        transfer: token_addresses.1[3].clone(),
         signed: signed_addresses.0.clone(),
-        signed_cancel: signed_addresses.1[0].clone(),
-        signed_transfer: signed_addresses.1[1].clone(),
-        signed_transfer_from: signed_addresses.1[2].clone(),
-        signed_transfer_from_to: signed_addresses.1[3].clone(),
+        signed_burn: signed_addresses.1[0].clone(),
+        signed_mint: signed_addresses.1[1].clone(),
+        signed_transfer: signed_addresses.1[2].clone(),
+        signed_transfer_from: signed_addresses.1[3].clone(),
     };
 
     Ok(addresses)
@@ -34,21 +35,23 @@ pub fn print_addresses(addresses: &Addresses) {
         burn,
         mint,
         transfer,
+        cancel,
         signed,
-        signed_cancel,
         signed_transfer,
-        signed_transfer_from_to,
         signed_transfer_from,
+        signed_mint,
+        signed_burn,
     } = addresses;
     print_set_address("token", token);
     print_intent_address("burn", burn);
+    print_intent_address("cancel", cancel);
     print_intent_address("mint", mint);
     print_intent_address("transfer", transfer);
     print_set_address("signed", signed);
-    print_intent_address("signed_cancel", signed_cancel);
     print_intent_address("signed_transfer", signed_transfer);
     print_intent_address("signed_transfer_from", signed_transfer_from);
-    print_intent_address("signed_transfer_from_to", signed_transfer_from_to);
+    print_intent_address("signed_burn", signed_burn);
+    print_intent_address("signed_mint", signed_mint);
 }
 
 pub async fn deploy_app(
@@ -66,13 +69,14 @@ pub async fn deploy_app(
     let addresses = Addresses {
         token: token_addresses.0.clone(),
         burn: token_addresses.1[0].clone(),
-        mint: token_addresses.1[1].clone(),
-        transfer: token_addresses.1[2].clone(),
+        cancel: token_addresses.1[1].clone(),
+        mint: token_addresses.1[2].clone(),
+        transfer: token_addresses.1[3].clone(),
         signed: signed_addresses.0.clone(),
-        signed_cancel: signed_addresses.1[0].clone(),
-        signed_transfer: signed_addresses.1[1].clone(),
-        signed_transfer_from: signed_addresses.1[2].clone(),
-        signed_transfer_from_to: signed_addresses.1[3].clone(),
+        signed_burn: signed_addresses.1[0].clone(),
+        signed_mint: signed_addresses.1[1].clone(),
+        signed_transfer: signed_addresses.1[2].clone(),
+        signed_transfer_from: signed_addresses.1[3].clone(),
     };
 
     let intents = wallet.sign_intent_set(token_intents, account_name)?;

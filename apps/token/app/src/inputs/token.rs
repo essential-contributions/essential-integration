@@ -1,60 +1,77 @@
-use app_utils::inputs::{index_key, index_mutation, Int, B256};
-use essential_types::{solution::Mutation, Key, Word};
+use app_utils::inputs::{index_key, Instance, Int, WriteDecVars, B256};
+use essential_types::{solution::Mutation, Key};
 
 pub mod burn;
+pub mod cancel;
 pub mod mint;
 pub mod transfer;
 
 pub fn balances(owner: B256, amount: Int) -> Mutation {
     Mutation {
-        key: index_key(1, owner.to_key()),
+        key: index_key(0, owner.to_key()),
         value: amount.to_value(),
     }
 }
 
 pub fn query_balances(owner: B256) -> Key {
-    index_key(1, owner.to_key())
+    index_key(0, owner.to_key())
 }
 
-pub fn init() -> Mutation {
+pub fn nonce(key: B256, nonce: Int) -> Mutation {
     Mutation {
-        key: vec![0],
-        value: vec![Word::from(true)],
+        key: index_key(1, key.to_key()),
+        value: nonce.to_value(),
     }
 }
 
-pub fn query_init() -> Key {
-    vec![0]
+pub fn query_nonce(key: B256) -> Key {
+    index_key(1, key.to_key())
 }
 
-pub struct Interface {
-    pub key: B256,
-    pub to: B256,
-    pub amount: Int,
-    pub set: B256,
-    pub intent_addr: B256,
-    pub path: Int,
+pub fn token_name(name: B256) -> Mutation {
+    Mutation {
+        key: vec![2],
+        value: name.to_value(),
+    }
 }
 
-impl Interface {
-    pub fn encode(&self) -> Vec<Mutation> {
-        let Self {
-            key,
-            to,
-            amount,
-            set,
-            intent_addr,
-            path,
-        } = self;
-        let mutations = vec![
-            index_mutation(0, key.to_value()),
-            index_mutation(1, to.to_value()),
-            index_mutation(2, amount.to_value()),
-            index_mutation(3, set.to_value()),
-            index_mutation(4, intent_addr.to_value()),
-            index_mutation(5, path.to_value()),
-        ];
+pub fn query_name() -> Key {
+    vec![2]
+}
 
-        mutations
+pub fn token_symbol(symbol: B256) -> Mutation {
+    Mutation {
+        key: vec![3],
+        value: symbol.to_value(),
+    }
+}
+
+pub fn query_symbol() -> Key {
+    vec![3]
+}
+
+pub fn decimals(decimals: Int) -> Mutation {
+    Mutation {
+        key: vec![4],
+        value: decimals.to_value(),
+    }
+}
+
+pub fn query_decimals() -> Key {
+    vec![4]
+}
+
+pub struct DecVars {
+    pub auth_addr: Instance,
+}
+
+impl DecVars {
+    pub fn encode(&self) -> Vec<essential_types::Value> {
+        let Self { auth_addr } = self;
+        let mut decision_variables = vec![];
+
+        auth_addr.write_dec_var(&mut decision_variables);
+
+        decision_variables
     }
 }

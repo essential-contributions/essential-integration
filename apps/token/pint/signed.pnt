@@ -1,97 +1,92 @@
-storage {
-    nonce: (b256 => int),
+interface Token {
+    storage {
+        balances: (b256 => int),
+        nonce: (b256 => int),
+        token_name: b256,
+        token_symbol: b256,
+        decimals: int,
+    }
+
+    intent TransferI {
+        pub var key: b256;
+        pub var to: b256;
+        pub var amount: int;
+    }
+
+    intent BurnI {
+        pub var key: b256;
+        pub var amount: int;
+    }
+
+    intent MintI {
+        pub var key: b256;
+        pub var amount: int;
+        pub var decimals: int;
+    }
 }
 
 // The interface of dependent constraints
 interface OtherConstraints {
     intent Constraints {
+        pub var key: b256;
     }
 }
 
 intent Transfer {
-    // The address that the amount is being sent key
-    pub var key: b256;
-    // The address that the amount is being sent to
-    pub var to: b256;
-    // The amount being transfered 
-    pub var amount: int;
-    // The instance of the transfer intent
+    // The token address
     pub var set: b256;
     pub var intent_addr: b256;
-    pub var path: int;
 
-    var sig: ::std::lib::Secp256k1Signature;
-    var public_key: ::std::lib::Secp256k1PublicKey;
-    
-    state nonce = storage::nonce[key];
-    
-    constraint ::std::lib::@recover({key, to, amount, nonce', set, intent_addr, path}; sig; public_key);
-    
-    @common();
-}
-
-intent TransferFromTo {
-    // The address that the amount is being sent key
-    pub var key: b256;
-    // The address that the amount is being sent to
-    pub var to: b256;
-    // The amount being transfered 
-    pub var amount: int;
-    // The instance of the transfer intent
-    pub var set: b256;
-    pub var intent_addr: b256;
-    pub var path: int;
-
-    var sig: ::std::lib::Secp256k1Signature;
-    var public_key: ::std::lib::Secp256k1PublicKey;
-    var constraints: ::std::lib::IntentAddress;
-    
-    state nonce = storage::nonce[key];
-    
-    constraint ::std::lib::@recover({key, to, constraints.set, constraints.intent_addr, nonce', set, intent_addr, path}; sig; public_key);
-    ::std::lib::@solution_contains(OtherConstraints; Constraints; constraints);
-
-    @common();
+    interface T = Token(set);
+    intent I = T::TransferI(intent_addr);
+    @common({I::key, I::to, I::amount}; T; I);
 }
 
 intent TransferFrom {
-    // The address that the amount is being sent key
-    pub var key: b256;
-    // The address that the amount is being sent to
-    pub var to: b256;
-    // The amount being transfered 
-    pub var amount: int;
-    // The instance of the transfer intent
+    // The token address
     pub var set: b256;
     pub var intent_addr: b256;
-    pub var path: int;
 
-    var sig: ::std::lib::Secp256k1Signature;
-    var public_key: ::std::lib::Secp256k1PublicKey;
-    var constraints: ::std::lib::IntentAddress;
+    interface T = Token(set);
+    intent I = T::TransferI(intent_addr);
     
-    state nonce = storage::nonce[key];
+    @common({I::key, I::to, I::amount}; T; I);
     
-    constraint ::std::lib::@recover({key, constraints.set, constraints.intent_addr, nonce', set, intent_addr, path}; sig; public_key);
-    ::std::lib::@solution_contains(OtherConstraints; Constraints; constraints);
-    
-    @common();
+    var constraints: std::lib::IntentAddress;
+    interface Other = OtherConstraints(constraints.set);
+    intent O = Other::Constraints(constraints.intent_addr);
+    constraint O::key == I::key;
 }
 
-intent Cancel {
-    var key: b256;
-    var sig: ::std::lib::Secp256k1Signature;
-    var public_key: ::std::lib::Secp256k1PublicKey;
-    
-    state nonce = storage::nonce[key];
-    
-    constraint ::std::lib::@recover({key, nonce'}; sig; public_key);
 
-    @common();
+intent Burn {
+    // The token address
+    pub var set: b256;
+    pub var intent_addr: b256;
+
+    interface T = Token(set);
+    intent I = T::BurnI(intent_addr);
+    @common({I::key, I::amount}; T; I);
 }
 
-macro @common() {
-    constraint ::std::lib::@safe_increment(nonce);
-    constraint __sha256(public_key) == key;
-    ::std::lib::@constrain_keys(key);
+intent Mint{
+    // The token address
+    pub var set: b256;
+    pub var intent_addr: b256;
+
+    interface T = Token(set);
+    intent I = T::MintI(intent_addr);
+    @common({I::key, I::amount, I::decimals}; T; I);
+}
+
+macro @common($data, $t, $i) {
+    var sig: std::lib::Secp256k1Signature;
+    var public_key: std::lib::Secp256k1PublicKey;
+    
+    state nonce = $t::storage::nonce[$i::key];
+    
+    constraint __recover_secp256k1(__sha256({$data, nonce', set, intent_addr}), sig) == public_key;
+    
+    constraint __sha256(public_key) == $i::key;
+    constraint __mut_keys_len() == 0;
 }
