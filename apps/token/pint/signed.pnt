@@ -63,10 +63,10 @@ intent TransferWith {
     
     state nonce = T::storage::nonce[I::key];
     
-    constraint mode == TransferMode::All && __recover_secp256k1(__sha256({I::key, I::to, I::amount, nonce', set, intent_addr}), sig) == public_key;
-    constraint mode == TransferMode::Key && __recover_secp256k1(__sha256({I::key, nonce', set, intent_addr}), sig) == public_key;
-    constraint mode == TransferMode::KeyTo && __recover_secp256k1(__sha256({I::key, I::to, nonce', set, intent_addr}), sig) == public_key;
-    constraint mode == TransferMode::KeyAmount && __recover_secp256k1(__sha256({I::key, I::amount, nonce', set, intent_addr}), sig) == public_key;
+    constraint (mode == TransferMode::All && __recover_secp256k1(__sha256({I::key, I::to, I::amount, nonce', set, intent_addr, constraints.set, constraints.intent_addr}), sig) == public_key) || true;
+    constraint (mode == TransferMode::Key && __recover_secp256k1(__sha256({I::key, nonce', set, intent_addr, constraints.set, constraints.intent_addr}), sig) == public_key) || true;
+    constraint (mode == TransferMode::KeyTo && __recover_secp256k1(__sha256({I::key, I::to, nonce', set, intent_addr, constraints.set, constraints.intent_addr}), sig) == public_key) || true;
+    constraint (mode == TransferMode::KeyAmount && __recover_secp256k1(__sha256({I::key, I::amount, nonce', set, intent_addr, constraints.set, constraints.intent_addr}), sig) == public_key) || true;
     
     constraint __sha256(public_key) == I::key;
     constraint __mut_keys_len() == 0;
