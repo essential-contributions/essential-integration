@@ -1,6 +1,8 @@
-use app_utils::{local_server::setup_server, read::read_pint_file};
+use app_utils::local_server::setup_server;
 use std::path::PathBuf;
 use token::{actions::deploy_app, token::Token};
+
+const PRIV_KEY: &str = "128A3D2146A69581FD8FC4C0A9B7A96A5755D85255D4E47F814AFA69D7726C8D";
 
 #[tokio::test]
 #[ignore = "Will break CI because it requires the essential-rest-server to be on the path"]
@@ -27,19 +29,22 @@ async fn mint_and_transfer(server_address: String) {
         .ok();
 
     let alice = "alice";
+    let key = hex::decode(PRIV_KEY).unwrap();
     wallet
-        .new_key_pair(alice, essential_wallet::Scheme::Secp256k1)
-        .ok();
+        .insert_key(
+            alice,
+            essential_signer::Key::Secp256k1(
+                essential_signer::secp256k1::SecretKey::from_slice(&key).unwrap(),
+            ),
+        )
+        .unwrap();
 
     let alice_pub_key = wallet.get_public_key(alice).unwrap();
 
     let alice_pub_key = to_hex(&alice_pub_key);
+    println!("alice public key: {}", alice_pub_key);
 
     let pint_directory = PathBuf::from(concat!(env!("CARGO_MANIFEST_DIR"), "/../pint"));
-
-    update_minter(pint_directory.clone(), &alice_pub_key)
-        .await
-        .unwrap();
 
     let intent_addresses = deploy_app(
         server_address.clone(),
@@ -109,16 +114,6 @@ fn to_hex(k: &essential_signer::PublicKey) -> String {
     };
     let encoded = essential_sign::encode::public_key(k);
     hex::encode_upper(essential_hash::hash_words(&encoded))
-}
-
-async fn update_minter(pint_directory: PathBuf, minter: &str) -> anyhow::Result<()> {
-    let name = "token.pnt";
-    let mut intent = read_pint_file(pint_directory.clone(), name).await?;
-    let set =
-        find_address(&intent, 3).ok_or_else(|| anyhow::anyhow!("{} missing set address", name))?;
-    intent = intent.replace(set, minter);
-    tokio::fs::write(pint_directory.join(name), intent).await?;
-    Ok(())
 }
 
 pub fn find_address(intent: &str, num: usize) -> Option<&str> {

@@ -80,7 +80,7 @@ intent Mint {
 
     // The only authorized minting address.
     // Note that changing this also creates a new token.
-    constraint key == 0x5ECF17A317908A042E437388C3AA5EC63EC1930A06E3A77F4DC3857465AD27C6;
+    constraint key == 0x1ECBB0067FC057261A6B199A0F121B5CD653B93DE9195CA5F836CE0D4D2A6E21;
     
     // Initialize all state.
     // This enforces the pre state must be null 

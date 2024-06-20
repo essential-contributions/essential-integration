@@ -25,7 +25,7 @@ pub struct Addresses {
     pub cancel: IntentAddress,
     pub signed: ContentAddress,
     pub signed_transfer: IntentAddress,
-    pub signed_transfer_from: IntentAddress,
+    pub signed_transfer_with: IntentAddress,
     pub signed_mint: IntentAddress,
     pub signed_burn: IntentAddress,
     pub signed_cancel: IntentAddress,
