@@ -740,10 +740,9 @@ dependencies = [
  "anyhow",
  "clap 4.5.7",
  "essential-rest-client",
+ "essential-server-types",
  "essential-types",
- "essential-wallet",
  "reqwest",
- "rpassword",
  "serde_json",
  "tokio",
 ]
