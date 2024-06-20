@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "apps/counter/app",
+    "apps/defi/app",
     "apps/nft/front_end",
     "apps/token/app",
     "apps/utils",
@@ -30,3 +31,4 @@ tokio = { version = "1.36.0", features = ["full"] }
 app-utils = { path = "apps/utils" }
 essential-deploy-contract = { path = "crates/essential-deploy-contract" }
 essential-rest-client = { path = "crates/essential-rest-client" }
+token = { path = "apps/token/app" }

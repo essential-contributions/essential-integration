@@ -623,6 +623,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "defi-app"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "app-utils",
+ "essential-deploy-contract",
+ "essential-hash",
+ "essential-rest-client",
+ "essential-sign",
+ "essential-signer",
+ "essential-types",
+ "essential-wallet",
+ "hex",
+ "serde_json",
+ "token",
+ "tokio",
+]
+
+[[package]]
 name = "der"
 version = "0.7.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
