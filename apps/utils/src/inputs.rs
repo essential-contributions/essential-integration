@@ -76,9 +76,6 @@ trait Slots {
     fn to_slots<I>(&mut self, iter: I)
     where
         I: IntoIterator<Item = Word>;
-    fn to_slots_ref<'a, I>(&mut self, iter: I)
-    where
-        I: IntoIterator<Item = &'a Word>;
 }
 
 pub trait WriteDecVars {
@@ -138,13 +135,6 @@ impl Slots for Vec<Value> {
         I: IntoIterator<Item = Word>,
     {
         self.extend(to_slots(iter));
-    }
-
-    fn to_slots_ref<'a, I>(&mut self, iter: I)
-    where
-        I: IntoIterator<Item = &'a Word>,
-    {
-        self.extend(to_slots_ref(iter));
     }
 }
 
