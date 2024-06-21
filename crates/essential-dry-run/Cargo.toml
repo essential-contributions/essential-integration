@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 anyhow = { workspace = true }
 clap = { workspace = true }
+essential-read = { workspace = true }
 essential-rest-client = { workspace = true }
 essential-server-types = { workspace = true }
 essential-types = { workspace = true }
