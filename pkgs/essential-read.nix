@@ -37,4 +37,4 @@ rustPlatform.buildRustPackage {
   };
 
   doCheck = false
-}
+    }
