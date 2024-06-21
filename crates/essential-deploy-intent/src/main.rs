@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use clap::{Parser, Subcommand};
 use essential_deploy_intent::{deploy_bytes, deploy_signed_bytes};
-use tokio::io::{AsyncReadExt, BufReader};
+use essential_read::read_bytes;
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -90,12 +90,4 @@ fn get_wallet(path: Option<PathBuf>) -> anyhow::Result<essential_wallet::Wallet>
         None => essential_wallet::Wallet::with_default_path(&pass)?,
     };
     Ok(wallet)
-}
-
-async fn read_bytes(path: PathBuf) -> anyhow::Result<Vec<u8>> {
-    let file = tokio::fs::File::open(path).await?;
-    let mut bytes = Vec::new();
-    let mut reader = BufReader::new(file);
-    reader.read_to_end(&mut bytes).await?;
-    Ok(bytes)
 }

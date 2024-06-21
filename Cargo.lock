@@ -725,6 +725,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "clap 4.5.7",
+ "essential-read",
  "essential-rest-client",
  "essential-types",
  "essential-wallet",
@@ -742,6 +743,16 @@ dependencies = [
  "postcard",
  "serde",
  "sha2 0.10.8",
+]
+
+[[package]]
+name = "essential-read"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "essential-types",
+ "serde_json",
+ "tokio",
 ]
 
 [[package]]
