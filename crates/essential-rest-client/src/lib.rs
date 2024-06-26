@@ -24,7 +24,7 @@ impl EssentialClient {
         Ok(Self { client, url })
     }
 
-    pub async fn deploy_intent_set(
+    pub async fn deploy_contract(
         &self,
         intents: intent::SignedSet,
     ) -> anyhow::Result<ContentAddress> {
@@ -66,7 +66,7 @@ impl EssentialClient {
         Ok(response.json::<Vec<SolutionOutcome>>().await?)
     }
 
-    pub async fn get_intent(&self, address: &IntentAddress) -> anyhow::Result<Option<Intent>> {
+    pub async fn get_predicate(&self, address: &IntentAddress) -> anyhow::Result<Option<Intent>> {
         let url = self
             .url
             .join(&format!("/get-intent/{}/{}", address.set, address.intent,))?;
@@ -74,7 +74,7 @@ impl EssentialClient {
         Ok(response.json::<Option<Intent>>().await?)
     }
 
-    pub async fn get_intent_set(
+    pub async fn get_contract(
         &self,
         address: &ContentAddress,
     ) -> anyhow::Result<Option<intent::SignedSet>> {
@@ -83,10 +83,10 @@ impl EssentialClient {
         Ok(response.json::<Option<intent::SignedSet>>().await?)
     }
 
-    pub async fn list_intent_sets(
+    pub async fn list_contracts(
         &self,
         time_range: Option<Range<Duration>>,
-        page: Option<usize>,
+        page: Option<u64>,
     ) -> anyhow::Result<Vec<Vec<Intent>>> {
         let mut url = self.url.join("/list-intent-sets")?;
         if let Some(time_range) = time_range {
@@ -103,7 +103,7 @@ impl EssentialClient {
         Ok(response.json::<Vec<Vec<Intent>>>().await?)
     }
 
-    pub async fn list_solutions_pool(&self, page: Option<usize>) -> anyhow::Result<Vec<Solution>> {
+    pub async fn list_solutions_pool(&self, page: Option<u64>) -> anyhow::Result<Vec<Solution>> {
         let mut url = self.url.join("list-solutions-pool")?;
         if let Some(page) = page {
             url.query_pairs_mut()
@@ -116,7 +116,7 @@ impl EssentialClient {
     pub async fn list_winning_blocks(
         &self,
         time_range: Option<Range<Duration>>,
-        page: Option<usize>,
+        page: Option<u64>,
     ) -> anyhow::Result<Vec<Block>> {
         let mut url = self.url.join("/list-winning-blocks")?;
         if let Some(time_range) = time_range {

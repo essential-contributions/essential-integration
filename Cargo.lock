@@ -720,7 +720,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "essential-deploy-intent"
+name = "essential-deploy-contract"
 version = "0.1.0"
 dependencies = [
  "anyhow",
@@ -753,6 +753,7 @@ dependencies = [
  "clap 4.5.7",
  "essential-server-types",
  "essential-types",
+ "hex",
  "reqwest",
  "serde",
  "serde_json",
