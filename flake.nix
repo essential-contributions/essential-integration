@@ -9,7 +9,8 @@
 
     # The essential server.
     essential-server = {
-      url = "git+ssh://git@github.com/essential-contributions/essential-server";
+      # url = "git+ssh://git@github.com/essential-contributions/essential-server";
+      url = "git+ssh://git@github.com/essential-contributions/essential-server?ref=freesig/rename";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.systems.follows = "nixpkgs";
     };

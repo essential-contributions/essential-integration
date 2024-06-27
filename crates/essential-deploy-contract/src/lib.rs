@@ -1,38 +1,38 @@
 use essential_rest_client::EssentialClient;
 use essential_types::{
-    intent::{Intent, SignedSet},
+    contract::{Contract, SignedContract},
     ContentAddress,
 };
 
 /// Deploy a contract to the server.
-/// The signed contract is expected to be a JSON serialized `SignedSet`.
+/// The signed contract is expected to be a JSON serialized `SignedContract`.
 pub async fn deploy_signed_bytes(
     addr: String,
-    signed_intents: Vec<u8>,
+    signed_predicates: Vec<u8>,
 ) -> anyhow::Result<ContentAddress> {
-    let signed_intents: SignedSet = serde_json::from_slice(&signed_intents)?;
-    deploy_signed(addr, signed_intents).await
+    let signed_predicates: SignedContract = serde_json::from_slice(&signed_predicates)?;
+    deploy_signed(addr, signed_predicates).await
 }
 
 /// Sign and deploy a unsigned contract to the server.
-/// The unsigned contract is expected to be a JSON serialized `Vec<Intent>`.
+/// The unsigned contract is expected to be a JSON serialized `Contract`.
 pub async fn deploy_bytes(
     addr: String,
     account_name: &str,
     wallet: &mut essential_wallet::Wallet,
-    intents: Vec<u8>,
+    contract: Vec<u8>,
 ) -> anyhow::Result<ContentAddress> {
-    let intents: Vec<Intent> = serde_json::from_slice(&intents)?;
-    sign_and_deploy(addr, account_name, wallet, intents).await
+    let contract: Contract = serde_json::from_slice(&contract)?;
+    sign_and_deploy(addr, account_name, wallet, contract).await
 }
 
 /// Deploy a signed contract to the server.
 pub async fn deploy_signed(
     addr: String,
-    signed_intents: SignedSet,
+    signed_predicates: SignedContract,
 ) -> anyhow::Result<ContentAddress> {
     let client = EssentialClient::new(addr)?;
-    client.deploy_contract(signed_intents).await
+    client.deploy_contract(signed_predicates).await
 }
 
 /// Sign and deploy a unsigned contract to the server.
@@ -40,8 +40,8 @@ pub async fn sign_and_deploy(
     addr: String,
     account_name: &str,
     wallet: &mut essential_wallet::Wallet,
-    intents: Vec<Intent>,
+    contract: Contract,
 ) -> anyhow::Result<ContentAddress> {
-    let signed_intents = wallet.sign_intent_set(intents, account_name)?;
-    deploy_signed(addr, signed_intents).await
+    let signed_predicates = wallet.sign_contract(contract, account_name)?;
+    deploy_signed(addr, signed_predicates).await
 }

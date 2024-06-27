@@ -1,7 +1,5 @@
 [workspace]
-members = [
-    "crates/*"
-]
+members = ["apps/counter/app", "crates/*"]
 resolver = "2"
 
 [workspace.dependencies]
@@ -9,7 +7,7 @@ anyhow = "1.0.80"
 base64 = "0.22.0"
 clap = { version = "4.5.4", features = ["derive"] }
 essential-hash = { git = "ssh://git@github.com/essential-contributions/essential-base.git" }
-essential-server-types = { git = "ssh://git@github.com/essential-contributions/essential-server.git" }
+essential-server-types = { git = "ssh://git@github.com/essential-contributions/essential-server.git", branch = "freesig/rename" }
 essential-sign = { git = "ssh://git@github.com/essential-contributions/essential-base.git" }
 essential-signer = { git = "ssh://git@github.com/essential-contributions/essential-wallet.git" }
 essential-types = { git = "ssh://git@github.com/essential-contributions/essential-base.git" }
@@ -22,4 +20,5 @@ serde = { version = "1.0.195", features = ["derive"] }
 serde_json = "1"
 tokio = { version = "1.36.0", features = ["full"] }
 
+essential-deploy-contract = { path = "crates/essential-deploy-contract" }
 essential-rest-client = { path = "crates/essential-rest-client" }

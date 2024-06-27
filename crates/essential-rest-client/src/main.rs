@@ -1,10 +1,10 @@
 use clap::{Parser, Subcommand};
 use essential_rest_client::EssentialClient;
 use essential_types::{
+    contract::{Contract, SignedContract},
     convert::{bytes_from_word, word_from_bytes},
-    intent::{Intent, SignedSet},
     solution::Solution,
-    ContentAddress, IntentAddress,
+    ContentAddress, PredicateAddress,
 };
 use std::{path::PathBuf, str::FromStr, time::Duration};
 
@@ -24,7 +24,7 @@ struct Cli {
 enum Commands {
     /// Deploy a contract to the server.
     DeployContract {
-        /// Path to the contract file as a json `SignedSet`.
+        /// Path to the contract file as a json `SignedContract`.
         contract: PathBuf,
     },
     /// Check a solution against the server.
@@ -33,11 +33,11 @@ enum Commands {
         solution: PathBuf,
     },
     /// Check a solution against the server with data.
-    CheckSolutionWithData {
+    CheckSolutionWithContracts {
         /// Path to the solution file as a json `Solution`.
         solution: PathBuf,
-        /// Path to the contract file as a json `Vec<Intent>`.
-        contract: PathBuf,
+        /// Paths to the contract files as a json `Contract`.
+        contracts: Vec<PathBuf>,
     },
     /// Submit a solution to the server.
     SubmitSolution {
@@ -109,7 +109,7 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
         match commands {
             Commands::DeployContract { contract } => {
                 let contract = from_file(contract).await?;
-                let contract = serde_json::from_str::<SignedSet>(&contract)?;
+                let contract = serde_json::from_str::<SignedContract>(&contract)?;
                 let output = client.deploy_contract(contract).await?;
                 print!("{}", output);
             }
@@ -118,10 +118,17 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
                 let output = client.check_solution(solution).await?;
                 print!("{:#?}", output);
             }
-            Commands::CheckSolutionWithData { solution, contract } => {
+            Commands::CheckSolutionWithContracts {
+                solution,
+                contracts,
+            } => {
                 let solution = serde_json::from_str::<Solution>(&from_file(solution).await?)?;
-                let intents = serde_json::from_str::<Vec<Intent>>(&from_file(contract).await?)?;
-                let output = client.check_solution_with_data(solution, intents).await?;
+                let mut c = Vec::new();
+                for contract in contracts {
+                    let contract = serde_json::from_str::<Contract>(&from_file(contract).await?)?;
+                    c.push(contract);
+                }
+                let output = client.check_solution_with_contracts(solution, c).await?;
                 print!("{:#?}", output);
             }
             Commands::SubmitSolution { solution } => {
@@ -137,9 +144,9 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
                 contract,
                 predicate,
             } => {
-                let address = IntentAddress {
-                    set: contract,
-                    intent: predicate,
+                let address = PredicateAddress {
+                    contract,
+                    predicate,
                 };
                 let output = client.get_predicate(&address).await?;
                 print!("{}", serde_json::to_string(&output)?);

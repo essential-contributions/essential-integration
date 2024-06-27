@@ -1,10 +1,10 @@
-use base64::Engine as _;
 use essential_server_types::{CheckSolution, CheckSolutionOutput, SolutionOutcome};
 use essential_types::{
+    contract::{Contract, SignedContract},
     convert::bytes_from_word,
-    intent::{self, Intent},
+    predicate::Predicate,
     solution::Solution,
-    Block, ContentAddress, Hash, IntentAddress, Key, Word,
+    Block, ContentAddress, Hash, Key, PredicateAddress, Word,
 };
 use reqwest::{Client, ClientBuilder, Response};
 use std::{ops::Range, time::Duration};
@@ -26,11 +26,17 @@ impl EssentialClient {
 
     pub async fn deploy_contract(
         &self,
-        intents: intent::SignedSet,
+        predicates: SignedContract,
     ) -> anyhow::Result<ContentAddress> {
-        let url = self.url.join("/deploy-intent-set")?;
-        let response = self.client.post(url).json(&intents).send().await?;
-        Ok(response.json::<ContentAddress>().await?)
+        let url = self.url.join("/deploy-contract")?;
+        let response = self.client.post(url).json(&predicates).send().await?;
+        if response.status().is_success() {
+            Ok(response.json::<ContentAddress>().await?)
+        } else {
+            let text = response.text().await?;
+            Err(anyhow::anyhow!("{}", text))
+        }
+        // Ok(response.json::<ContentAddress>().await?)
     }
 
     pub async fn check_solution(&self, solution: Solution) -> anyhow::Result<CheckSolutionOutput> {
@@ -39,13 +45,16 @@ impl EssentialClient {
         Ok(response.json::<CheckSolutionOutput>().await?)
     }
 
-    pub async fn check_solution_with_data(
+    pub async fn check_solution_with_contracts(
         &self,
         solution: Solution,
-        intents: Vec<Intent>,
+        contracts: Vec<Contract>,
     ) -> anyhow::Result<CheckSolutionOutput> {
-        let url = self.url.join("/check-solution-with-data")?;
-        let input = CheckSolution { solution, intents };
+        let url = self.url.join("/check-solution-with-contracts")?;
+        let input = CheckSolution {
+            solution,
+            contracts,
+        };
         let response = self.client.post(url).json(&input).send().await?;
         Ok(response.json::<CheckSolutionOutput>().await?)
     }
@@ -53,7 +62,13 @@ impl EssentialClient {
     pub async fn submit_solution(&self, solution: Solution) -> anyhow::Result<ContentAddress> {
         let url = self.url.join("/submit-solution")?;
         let response = self.client.post(url).json(&solution).send().await?;
-        Ok(response.json::<essential_types::ContentAddress>().await?)
+        // Ok(response.json::<essential_types::ContentAddress>().await?)
+        if response.status().is_success() {
+            Ok(response.json::<essential_types::ContentAddress>().await?)
+        } else {
+            let text = response.text().await?;
+            Err(anyhow::anyhow!("{}", text))
+        }
     }
 
     pub async fn solution_outcome(
@@ -66,29 +81,33 @@ impl EssentialClient {
         Ok(response.json::<Vec<SolutionOutcome>>().await?)
     }
 
-    pub async fn get_predicate(&self, address: &IntentAddress) -> anyhow::Result<Option<Intent>> {
-        let url = self
-            .url
-            .join(&format!("/get-intent/{}/{}", address.set, address.intent,))?;
+    pub async fn get_predicate(
+        &self,
+        address: &PredicateAddress,
+    ) -> anyhow::Result<Option<Predicate>> {
+        let url = self.url.join(&format!(
+            "/get-predicate/{}/{}",
+            address.contract, address.predicate,
+        ))?;
         let response = handle_error(self.client.get(url).send().await?).await?;
-        Ok(response.json::<Option<Intent>>().await?)
+        Ok(response.json::<Option<Predicate>>().await?)
     }
 
     pub async fn get_contract(
         &self,
         address: &ContentAddress,
-    ) -> anyhow::Result<Option<intent::SignedSet>> {
-        let url = self.url.join(&format!("/get-intent-set/{address}"))?;
+    ) -> anyhow::Result<Option<SignedContract>> {
+        let url = self.url.join(&format!("/get-contract/{address}"))?;
         let response = handle_error(self.client.get(url).send().await?).await?;
-        Ok(response.json::<Option<intent::SignedSet>>().await?)
+        Ok(response.json::<Option<SignedContract>>().await?)
     }
 
     pub async fn list_contracts(
         &self,
         time_range: Option<Range<Duration>>,
         page: Option<u64>,
-    ) -> anyhow::Result<Vec<Vec<Intent>>> {
-        let mut url = self.url.join("/list-intent-sets")?;
+    ) -> anyhow::Result<Vec<Vec<Predicate>>> {
+        let mut url = self.url.join("/list-contracts")?;
         if let Some(time_range) = time_range {
             url.query_pairs_mut()
                 .append_pair("start", time_range.start.as_secs().to_string().as_str())
@@ -100,7 +119,7 @@ impl EssentialClient {
         }
 
         let response = handle_error(self.client.get(url).send().await?).await?;
-        Ok(response.json::<Vec<Vec<Intent>>>().await?)
+        Ok(response.json::<Vec<Vec<Predicate>>>().await?)
     }
 
     pub async fn list_solutions_pool(&self, page: Option<u64>) -> anyhow::Result<Vec<Solution>> {
@@ -139,7 +158,7 @@ impl EssentialClient {
     ) -> anyhow::Result<Vec<Word>> {
         let url = self.url.join(&format!(
             "/query-state/{address}/{}",
-            essential_types::serde::hash::BASE64.encode(
+            hex::encode_upper(
                 key.iter()
                     .flat_map(|w: &i64| bytes_from_word(*w))
                     .collect::<Vec<u8>>()

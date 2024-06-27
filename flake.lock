@@ -10,26 +10,27 @@
         ]
       },
       "locked": {
-        "lastModified": 1717637494,
-        "narHash": "sha256-nM62VA9O+mhpcWZNiXKAPybwIUPED4t8t7qNkLOWsLA=",
-        "ref": "refs/heads/main",
-        "rev": "394652532bed83d0b65a5e2062cc8a9605b4e0b9",
-        "revCount": 72,
+        "lastModified": 1719479130,
+        "narHash": "sha256-L1cq57fz/PlvVh2d1IDn1R7ZnlXXO9esZK5TR0h8k/4=",
+        "ref": "freesig/rename",
+        "rev": "eb9ecf9b4b6dcac5d6cafdf43369a2e720305c09",
+        "revCount": 80,
         "type": "git",
         "url": "ssh://git@github.com/essential-contributions/essential-server"
       },
       "original": {
+        "ref": "freesig/rename",
         "type": "git",
         "url": "ssh://git@github.com/essential-contributions/essential-server"
       }
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1715787315,
-        "narHash": "sha256-cYApT0NXJfqBkKcci7D9Kr4CBYZKOQKDYA23q8XNuWg=",
+        "lastModified": 1719254875,
+        "narHash": "sha256-ECni+IkwXjusHsm9Sexdtq8weAq/yUyt1TWIemXt3Ko=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "33d1e753c82ffc557b4a585c77de43d4c922ebb5",
+        "rev": "2893f56de08021cffd9b6b6dfc70fd9ccd51eb60",
         "type": "github"
       },
       "original": {
@@ -50,11 +51,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1717644480,
-        "narHash": "sha256-33/2VWAZIqwRbZ3cCH4OX8eyFev6YhJG+1NwRn3fmj4=",
+        "lastModified": 1719485564,
+        "narHash": "sha256-+PZNDWvvPjjxXeY57HKK0pabjNI2A7xHDYnlsQ3p1Pw=",
         "ref": "refs/heads/main",
-        "rev": "b7219bc7c623638f78e71e0e08c4d7bace02f208",
-        "revCount": 58,
+        "rev": "3000192614d00b297a5719f9ffa70148dc64c964",
+        "revCount": 71,
         "type": "git",
         "url": "ssh://git@github.com/essential-contributions/pint.nix"
       },
@@ -66,11 +67,11 @@
     "pint-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1717641702,
-        "narHash": "sha256-01+y40iT5AVif3gCyIYjp3zFtK3MWoSFGkdWSwWSbsE=",
+        "lastModified": 1719475319,
+        "narHash": "sha256-4jpId6FfFwARa+qe2mu7KkbW8rFJFIR5oXhE28nHBzk=",
         "ref": "refs/heads/master",
-        "rev": "b263a9aa79db071fc01041b4d507d1650a29bcca",
-        "revCount": 1248,
+        "rev": "3eeead79e78768c2dafddad6cee91620b07d8444",
+        "revCount": 1387,
         "type": "git",
         "url": "ssh://git@github.com/essential-contributions/pint"
       },

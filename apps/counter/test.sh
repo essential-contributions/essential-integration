@@ -1,10 +1,10 @@
 # This test script does the following:
 #
 # 1. Builds the pint contract.
-# 2. Signs the intent set.
-# 3. Deploys the intent set.
-# 4. Solves the `init` intent and waits for inclusion in a block.
-# 5. Solves the `increment` intent and waits for inclusion in a block.
+# 2. Signs the contract.
+# 3. Deploys the contract.
+# 4. Solves the `init` predicate and waits for inclusion in a block.
+# 5. Solves the `increment` predicate and waits for inclusion in a block.
 
 set -eo pipefail
 temp_dir=$(mktemp -d)
@@ -21,42 +21,42 @@ fi
 
 NAME="counter"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PINT_FILE="$SCRIPT_DIR/$NAME.pnt"
+PINT_FILE="$SCRIPT_DIR/pint/pint.toml"
 echo "Building $PINT_FILE"
-pintc "$PINT_FILE" --output "$temp_dir/$NAME.json"
+pint --manifest-path "$PINT_FILE" 
 echo "Built $PINT_FILE"
 
 # ---------------------------------------------------------
 # SIGN
 # ---------------------------------------------------------
 
-# Create a keypair and sign the intent set.
+# Create a keypair and sign the contract.
 INTENT_SET_JSON_FILE="$temp_dir/$NAME.json"
 echo "Signing $INTENT_SET_JSON_FILE"
 KEYPAIR_JSON=$(essential generate-keys)
 PRIVATE_KEY_JSON=$(echo $KEYPAIR_JSON | jq -c ."private")
-SIGNED_INTENT_SET_JSON=$(essential sign-intent-set \
+SIGNED_INTENT_SET_JSON=$(essential sign-contract \
   --private-key-json "$PRIVATE_KEY_JSON" $INTENT_SET_JSON_FILE)
 
 # ---------------------------------------------------------
 # DEPLOY
 # ---------------------------------------------------------
 
-# Deploy the intent set. Assumes the following server port.
-echo "Deploying signed intent set"
+# Deploy the contract. Assumes the following server port.
+echo "Deploying signed contract"
 echo $SIGNED_INTENT_SET_JSON | jq '.'
 RESPONSE=$(curl -X POST --http2-prior-knowledge -H "Content-Type: application/json" \
   -d "$SIGNED_INTENT_SET_JSON" \
-  "http://localhost:$SERVER_PORT/deploy-intent-set")
+  "http://localhost:$SERVER_PORT/deploy-predicate-set")
 echo "$RESPONSE" | jq '.'
 
-# Retrieve the intent addresses (ordered by name).
-INTENT_ADDRESSES=$(essential intent-addresses $INTENT_SET_JSON_FILE)
+# Retrieve the predicate addresses (ordered by name).
+INTENT_ADDRESSES=$(essential predicate-addresses $INTENT_SET_JSON_FILE)
 INTENT_ADDRESS_INCREMENT=$(echo $INTENT_ADDRESSES | jq -c '.[0]')
 INTENT_ADDRESS_INIT=$(echo $INTENT_ADDRESSES | jq -c '.[1]')
 INTENT_SET_CA=$(echo $INTENT_ADDRESSES | jq -c '.[0]."set"')
 
-# Make sure the deploy response matches our intent set CA.
+# Make sure the deploy response matches our contract CA.
 if [ "$RESPONSE" != "$INTENT_SET_CA" ]; then
   echo "Error: RESPONSE does not match INTENT_SET_CA"
   echo "RESPONSE: $RESPONSE"
@@ -70,12 +70,12 @@ fi
 
 # Construct a solution to initialise the `counter` to `0`.
 SOLUTION=$(jq -n \
-  --argjson intent_addr "$INTENT_ADDRESS_INIT" \
+  --argjson predicate_addr "$INTENT_ADDRESS_INIT" \
 '
 {
   data: [
     {
-      intent_to_solve: $intent_addr,
+      predicate_to_solve: $predicate_addr,
       decision_variables: [],
       state_mutations: [
         {
@@ -157,13 +157,13 @@ PREV_COUNT=$(echo $RESPONSE | jq '.[0]')
 NEXT_COUNT=$(expr $PREV_COUNT + 1)
 SOLUTION=$(jq -n \
   --argjson answer "42" \
-  --argjson intent_addr "$INTENT_ADDRESS_INCREMENT" \
+  --argjson predicate_addr "$INTENT_ADDRESS_INCREMENT" \
   --argjson next_count "$NEXT_COUNT" \
 '
 {
   data: [
     {
-      intent_to_solve: $intent_addr,
+      predicate_to_solve: $predicate_addr,
       decision_variables: [[$answer]],
       state_mutations: [
         {
