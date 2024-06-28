@@ -31,12 +31,12 @@ echo "Built $PINT_FILE"
 # ---------------------------------------------------------
 
 # Create a keypair and sign the contract.
-INTENT_SET_JSON_FILE="$temp_dir/$NAME.json"
-echo "Signing $INTENT_SET_JSON_FILE"
+CONTRACT_JSON_FILE="$temp_dir/$NAME.json"
+echo "Signing $CONTRACT_JSON_FILE"
 KEYPAIR_JSON=$(essential generate-keys)
 PRIVATE_KEY_JSON=$(echo $KEYPAIR_JSON | jq -c ."private")
-SIGNED_INTENT_SET_JSON=$(essential sign-contract \
-  --private-key-json "$PRIVATE_KEY_JSON" $INTENT_SET_JSON_FILE)
+SIGNED_CONTRACT_JSON=$(essential sign-contract \
+  --private-key-json "$PRIVATE_KEY_JSON" $CONTRACT_JSON_FILE)
 
 # ---------------------------------------------------------
 # DEPLOY
@@ -44,23 +44,23 @@ SIGNED_INTENT_SET_JSON=$(essential sign-contract \
 
 # Deploy the contract. Assumes the following server port.
 echo "Deploying signed contract"
-echo $SIGNED_INTENT_SET_JSON | jq '.'
+echo $SIGNED_CONTRACT_JSON | jq '.'
 RESPONSE=$(curl -X POST --http2-prior-knowledge -H "Content-Type: application/json" \
-  -d "$SIGNED_INTENT_SET_JSON" \
+  -d "$SIGNED_CONTRACT_JSON" \
   "http://localhost:$SERVER_PORT/deploy-predicate-set")
 echo "$RESPONSE" | jq '.'
 
 # Retrieve the predicate addresses (ordered by name).
-INTENT_ADDRESSES=$(essential predicate-addresses $INTENT_SET_JSON_FILE)
-INTENT_ADDRESS_INCREMENT=$(echo $INTENT_ADDRESSES | jq -c '.[0]')
-INTENT_ADDRESS_INIT=$(echo $INTENT_ADDRESSES | jq -c '.[1]')
-INTENT_SET_CA=$(echo $INTENT_ADDRESSES | jq -c '.[0]."set"')
+PREDICATE_ADDRESSES=$(essential predicate-addresses $CONTRACT_JSON_FILE)
+PREDICATE_ADDRESS_INCREMENT=$(echo $PREDICATE_ADDRESSES | jq -c '.[0]')
+PREDICATE_ADDRESS_INIT=$(echo $PREDICATE_ADDRESSES | jq -c '.[1]')
+CONTRACT_CA=$(echo $PREDICATE_ADDRESSES | jq -c '.[0]."set"')
 
-# Make sure the deploy response matches our contract CA.
-if [ "$RESPONSE" != "$INTENT_SET_CA" ]; then
-  echo "Error: RESPONSE does not match INTENT_SET_CA"
+# Make sure the deploy response matches our contract content address.
+if [ "$RESPONSE" != "$CONTRACT_CA" ]; then
+  echo "Error: RESPONSE does not match CONTRACT_CA"
   echo "RESPONSE: $RESPONSE"
-  echo "INTENT_SET_CA: $INTENT_SET_CA"
+  echo "CONTRACT_CA: $CONTRACT_CA"
   exit 1
 fi
 
@@ -70,7 +70,7 @@ fi
 
 # Construct a solution to initialise the `counter` to `0`.
 SOLUTION=$(jq -n \
-  --argjson predicate_addr "$INTENT_ADDRESS_INIT" \
+  --argjson predicate_addr "$PREDICATE_ADDRESS_INIT" \
 '
 {
   data: [
@@ -141,7 +141,7 @@ await_solution_outcome $SOLUTION_CA
 # CHECK STATE
 # ---------------------------------------------------------
 
-ADDRESS=$(echo $INTENT_SET_CA | jq -r '.')
+ADDRESS=$(echo $CONTRACT_CA | jq -r '.')
 KEY="AAAAAAAAAAAAAAAA" # Key `[0u8; 8]` as base64url
 echo "Querying state $ADDRESS/$KEY"
 RESPONSE=$(curl -X GET --http2-prior-knowledge -H "Content-Type: application/json" \
@@ -157,7 +157,7 @@ PREV_COUNT=$(echo $RESPONSE | jq '.[0]')
 NEXT_COUNT=$(expr $PREV_COUNT + 1)
 SOLUTION=$(jq -n \
   --argjson answer "42" \
-  --argjson predicate_addr "$INTENT_ADDRESS_INCREMENT" \
+  --argjson predicate_addr "$PREDICATE_ADDRESS_INCREMENT" \
   --argjson next_count "$NEXT_COUNT" \
 '
 {

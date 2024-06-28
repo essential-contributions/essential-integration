@@ -39,7 +39,7 @@ This command allows you to deploy a contract that you've already signed and seri
 The json contract should be saved as a file. \
 The file should deserialize into a `SignedContract`.
 ```
-Usage: essential-deploy-contract deploy-signed <SERVER> <SIGNED_INTENTS>
+Usage: essential-deploy-contract deploy-signed <SERVER> <SIGNED_CONTRACT>
 
 Arguments:
   <SERVER>          The address of the server to connect to
