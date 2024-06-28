@@ -14,7 +14,7 @@ enum EssentialCli {
     /// ```
     GenerateKeys,
     PredicateAddresses(PredicateAddresses),
-    SignPredicateSet(SignPredicateSet),
+    SignContract(SignContract),
 }
 
 /// Given a path to an contract JSON file, output a JSON list with an
@@ -29,7 +29,7 @@ struct PredicateAddresses {
 /// Given a path to an contract JSON file, deserialize and sign the contract
 /// and output the signed contract as JSON.
 #[derive(Debug, clap::Args)]
-struct SignPredicateSet {
+struct SignContract {
     /// The [`secp256k1::PrivateKey`] in its JSON-serialized form (e.g. `[12, 211, 1, 4, /* ..etc */]`).
     #[arg(long)]
     private_key_json: String,
@@ -66,7 +66,7 @@ fn predicate_addresses(cmd: PredicateAddresses) {
     println!("{}", serde_json::to_string(&predicate_addrs).unwrap());
 }
 
-fn sign_contract(cmd: SignPredicateSet) {
+fn sign_contract(cmd: SignContract) {
     let sk_bytes: [u8; 32] = serde_json::from_str(&cmd.private_key_json)
         .expect("failed to deserialize JSON private key to `[u8; 32]`");
     let sk = secp256k1::SecretKey::from_slice(&sk_bytes)
@@ -89,6 +89,6 @@ fn main() {
     match EssentialCli::parse() {
         EssentialCli::GenerateKeys => generate_keys(),
         EssentialCli::PredicateAddresses(cmd) => predicate_addresses(cmd),
-        EssentialCli::SignPredicateSet(cmd) => sign_contract(cmd),
+        EssentialCli::SignContract(cmd) => sign_contract(cmd),
     }
 }

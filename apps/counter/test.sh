@@ -3,8 +3,8 @@
 # 1. Builds the pint contract.
 # 2. Signs the contract.
 # 3. Deploys the contract.
-# 4. Solves the `init` predicate and waits for inclusion in a block.
-# 5. Solves the `increment` predicate and waits for inclusion in a block.
+# 4. Solves the `increment` predicate for the first time and waits for inclusion in a block.
+# 5. Solves the `increment` predicate again and waits for inclusion in a block.
 
 set -eo pipefail
 temp_dir=$(mktemp -d)
@@ -19,9 +19,9 @@ fi
 # BUILD
 # ---------------------------------------------------------
 
-NAME="counter"
+NAME="contract"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PINT_FILE="$SCRIPT_DIR/pint/$NAME.pnt"
+PINT_FILE="$SCRIPT_DIR/pint/src/$NAME.pnt"
 echo "Building $PINT_FILE"
 pintc "$PINT_FILE" --output "$temp_dir/$NAME.json"
 echo "Built $PINT_FILE"
@@ -47,14 +47,13 @@ echo "Deploying signed contract"
 echo $SIGNED_CONTRACT_JSON | jq '.'
 RESPONSE=$(curl -X POST --http2-prior-knowledge -H "Content-Type: application/json" \
   -d "$SIGNED_CONTRACT_JSON" \
-  "http://localhost:$SERVER_PORT/deploy-predicate-set")
+  "http://localhost:$SERVER_PORT/deploy-contract")
 echo "$RESPONSE" | jq '.'
 
-# Retrieve the predicate addresses (ordered by name).
+# Retrieve the predicate addresses.
 PREDICATE_ADDRESSES=$(essential predicate-addresses $CONTRACT_JSON_FILE)
 PREDICATE_ADDRESS_INCREMENT=$(echo $PREDICATE_ADDRESSES | jq -c '.[0]')
-PREDICATE_ADDRESS_INIT=$(echo $PREDICATE_ADDRESSES | jq -c '.[1]')
-CONTRACT_CA=$(echo $PREDICATE_ADDRESSES | jq -c '.[0]."set"')
+CONTRACT_CA=$(echo $PREDICATE_ADDRESSES | jq -c '.[0]."contract"')
 
 # Make sure the deploy response matches our contract content address.
 if [ "$RESPONSE" != "$CONTRACT_CA" ]; then
@@ -65,12 +64,12 @@ if [ "$RESPONSE" != "$CONTRACT_CA" ]; then
 fi
 
 # ---------------------------------------------------------
-# SOLVE `init`
+# SOLVE `increment`
 # ---------------------------------------------------------
 
-# Construct a solution to initialise the `counter` to `0`.
+# Construct a solution to increment the counter for the first time.
 SOLUTION=$(jq -n \
-  --argjson predicate_addr "$PREDICATE_ADDRESS_INIT" \
+  --argjson predicate_addr "$PREDICATE_ADDRESS_INCREMENT" \
 '
 {
   data: [
@@ -80,7 +79,7 @@ SOLUTION=$(jq -n \
       state_mutations: [
         {
           key: [0],
-          value: [0]
+          value: [1]
         }
       ],
       transient_data: []
@@ -88,7 +87,7 @@ SOLUTION=$(jq -n \
   ]
 }')
 
-echo "Submitting 'init' solution"
+echo "Submitting 'increment' solution"
 echo $SOLUTION | jq '.'
 RESPONSE=$(curl -X POST --http2-prior-knowledge -H "Content-Type: application/json" \
   -d "$SOLUTION" \
@@ -142,7 +141,7 @@ await_solution_outcome $SOLUTION_CA
 # ---------------------------------------------------------
 
 ADDRESS=$(echo $CONTRACT_CA | jq -r '.')
-KEY="AAAAAAAAAAAAAAAA" # Key `[0u8; 8]` as base64url
+KEY="0000000000000000" # Key `[0u8; 8]` as hex
 echo "Querying state $ADDRESS/$KEY"
 RESPONSE=$(curl -X GET --http2-prior-knowledge -H "Content-Type: application/json" \
   "http://localhost:$SERVER_PORT/query-state/$ADDRESS/$KEY")
@@ -152,7 +151,7 @@ echo "$RESPONSE" | jq .
 # SOLVE `increment`
 # ---------------------------------------------------------
 
-# Construct a solution to increment the counter.
+# Construct a solution to increment the counter to 2.
 PREV_COUNT=$(echo $RESPONSE | jq '.[0]')
 NEXT_COUNT=$(expr $PREV_COUNT + 1)
 SOLUTION=$(jq -n \
