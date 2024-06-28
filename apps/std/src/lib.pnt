@@ -25,10 +25,10 @@ macro @recover($data, $sig, $key) {
     __recover_secp256k1(__sha256($data), $sig) == $key
 }
 
-macro @solution_contains($other, $predicate, $predicate_address) {
-    interface Other = $other($predicate_address.set);
-    predicate O = Other::$predicate($predicate_address.predicate_addr);
-}
+// macro @solution_contains($other, $predicate, $predicate_address) {
+//     interface Other = $other($predicate_address.contract);
+//     predicate O = Other::$predicate($predicate_address.predicate_addr);
+// }
 
 // Constrain the mutable keys so nothing else can be modified.
 macro @constrain_keys($key, &rest) {

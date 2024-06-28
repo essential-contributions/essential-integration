@@ -1,3 +1,5 @@
+use std::lib::PredicateAddress;
+
 storage {
     owners: (int => b256),
 }
@@ -7,8 +9,7 @@ interface Auth {
         pub var key: b256;
         pub var to: b256;
         pub var token: int;
-        pub var contract:b256;
-        pub var predicate_addr: b256;
+        pub var predicate_addr: { contract: b256, predicate_addr: b256 };
         pub var path: int;
     }
 }
@@ -27,9 +28,9 @@ predicate Mint {
 }
 
 predicate Transfer {
-    var auth_addr: std::lib::PredicateAddress;
+    var auth_addr: PredicateAddress;
     
-    interface AuthI = Auth(auth_addr.set);
+    interface AuthI = Auth(auth_addr.contract);
     predicate A = AuthI::Predicate(auth_addr.predicate_addr);
 
     state owner = storage::owners[A::token];
@@ -38,5 +39,5 @@ predicate Transfer {
     constraint owner' == A::to;
 
     std::lib::@constrain_keys(A::token);
-    std::auth::@authenticate(auth_addr; A; allowed::signed::@predicates);
+    // std::auth::@authenticate(auth_addr; A; allowed::signed::@predicates);
 }

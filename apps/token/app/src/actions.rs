@@ -1,7 +1,7 @@
 use crate::token::Addresses;
 use app_utils::{
     addresses::get_addresses,
-    compile::compile_pint_file,
+    compile::compile_pint_project,
     print::{print_contract_address, print_predicate_address},
 };
 use essential_rest_client::EssentialClient;
@@ -9,10 +9,10 @@ use std::path::PathBuf;
 
 pub async fn compile_addresses(pint_directory: PathBuf) -> anyhow::Result<Addresses> {
     let token_contract =
-        compile_pint_file(pint_directory.clone().join("token"), "token.toml").await?;
+        compile_pint_project(pint_directory.clone().join("token"), "token.toml").await?;
     let token_addresses = get_addresses(&token_contract);
     let signed_contract =
-        compile_pint_file(pint_directory.clone().join("signed"), "signed.toml").await?;
+        compile_pint_project(pint_directory.clone().join("signed"), "signed.toml").await?;
     let signed_addresses = get_addresses(&signed_contract);
 
     let addresses = Addresses {
@@ -67,10 +67,10 @@ pub async fn deploy_app(
 ) -> anyhow::Result<Addresses> {
     let client = EssentialClient::new(addr)?;
     let token_contract =
-        compile_pint_file(pint_directory.clone().join("token"), "token.toml").await?;
+        compile_pint_project(pint_directory.clone().join("token"), "token.toml").await?;
     let token_addresses = get_addresses(&token_contract);
     let signed_contract =
-        compile_pint_file(pint_directory.clone().join("signed"), "signed.toml").await?;
+        compile_pint_project(pint_directory.clone().join("signed"), "signed.toml").await?;
     let signed_addresses = get_addresses(&signed_contract);
 
     let addresses = Addresses {

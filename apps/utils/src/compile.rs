@@ -5,8 +5,8 @@ use tokio::{
     process::Command,
 };
 
-pub async fn compile_pint_file(path: PathBuf, name: &str) -> anyhow::Result<Contract> {
-    let pint_manifest_path = path.join(format!("{}.toml", name));
+pub async fn compile_pint_project(path: PathBuf, name: &str) -> anyhow::Result<Contract> {
+    let pint_manifest_path = path.join(name).join("pint.toml");
     assert!(pint_manifest_path.exists());
 
     let output = Command::new("pint")

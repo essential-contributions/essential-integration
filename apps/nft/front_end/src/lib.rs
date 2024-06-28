@@ -1,7 +1,7 @@
 use anyhow::bail;
 use app_utils::{
     addresses::{contract_hash, get_addresses},
-    compile::compile_pint_file,
+    compile::compile_pint_project,
     inputs::Instance,
     print::{print_contract_address, print_predicate_address},
 };
@@ -342,13 +342,13 @@ pub async fn deploy_app(
     pint_directory: PathBuf,
 ) -> anyhow::Result<Addresses> {
     let client = EssentialClient::new(addr)?;
-    let signed_contract = compile_pint_file(pint_directory.clone(), "signed").await?;
+    let signed_contract = compile_pint_project(pint_directory.clone(), "signed").await?;
     let signed_addresses = get_addresses(&signed_contract);
 
-    let nft_contract = compile_pint_file(pint_directory.clone(), "nft").await?;
+    let nft_contract = compile_pint_project(pint_directory.clone(), "nft").await?;
     let nft_addresses = get_addresses(&nft_contract);
 
-    let swap_any_predicates = compile_pint_file(pint_directory.clone(), "swap_any").await?;
+    let swap_any_predicates = compile_pint_project(pint_directory.clone(), "swap_any").await?;
     let swap_any_addresses = get_addresses(&swap_any_predicates);
 
     let addresses = Addresses {
@@ -376,13 +376,13 @@ pub async fn deploy_app(
 }
 
 pub async fn compile_addresses(pint_directory: PathBuf) -> anyhow::Result<Addresses> {
-    let signed_contract = compile_pint_file(pint_directory.clone(), "signed.pnt").await?;
+    let signed_contract = compile_pint_project(pint_directory.clone(), "signed").await?;
     let signed_addresses = get_addresses(&signed_contract);
 
-    let nft_contract = compile_pint_file(pint_directory.clone(), "nft.pnt").await?;
+    let nft_contract = compile_pint_project(pint_directory.clone(), "nft").await?;
     let nft_addresses = get_addresses(&nft_contract);
 
-    let swap_any_predicates = compile_pint_file(pint_directory.clone(), "swap_any.pnt").await?;
+    let swap_any_predicates = compile_pint_project(pint_directory.clone(), "swap_any").await?;
     let swap_any_addresses = get_addresses(&swap_any_predicates);
 
     let addresses = Addresses {

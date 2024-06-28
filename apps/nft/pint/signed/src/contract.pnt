@@ -16,7 +16,7 @@ predicate Transfer {
     // The token being transfered 
     pub var token: int;
     // The instance of the transfer predicate
-    pub var contract:b256;
+    pub var contract: b256;
     pub var predicate_addr: b256;
     pub var path: int;
 
@@ -25,7 +25,7 @@ predicate Transfer {
     
     state nonce = storage::nonce[key];
     
-    constraint ::std::lib::@recover({key, to, token, nonce', set, predicate_addr, path}; sig; public_key);
+    constraint ::std::lib::@recover({key, to, token, nonce', contract, predicate_addr, path}; sig; public_key);
     
     @common();
 }
@@ -38,7 +38,7 @@ predicate TransferFromTo {
     // The token being transfered 
     pub var token: int;
     // The instance of the transfer predicate
-    pub var contract:b256;
+    pub var contract: b256;
     pub var predicate_addr: b256;
     pub var path: int;
 
@@ -48,8 +48,8 @@ predicate TransferFromTo {
     
     state nonce = storage::nonce[key];
     
-    constraint ::std::lib::@recover({key, to, constraints.set, constraints.predicate_addr, nonce', set, predicate_addr, path}; sig; public_key);
-    ::std::lib::@solution_contains(OtherConstraints; Constraints; constraints);
+    constraint ::std::lib::@recover({key, to, constraints.contract, constraints.predicate_addr, nonce', contract, predicate_addr, path}; sig; public_key);
+    // ::std::lib::@solution_contains(OtherConstraints; Constraints; constraints);
 
     @common();
 }
@@ -62,7 +62,7 @@ predicate TransferFrom {
     // The token being transfered 
     pub var token: int;
     // The instance of the transfer predicate
-    pub var contract:b256;
+    pub var contract: b256;
     pub var predicate_addr: b256;
     pub var path: int;
 
@@ -72,8 +72,8 @@ predicate TransferFrom {
     
     state nonce = storage::nonce[key];
     
-    constraint ::std::lib::@recover({key, constraints.set, constraints.predicate_addr, nonce', set, predicate_addr, path}; sig; public_key);
-    ::std::lib::@solution_contains(OtherConstraints; Constraints; constraints);
+    constraint ::std::lib::@recover({key, constraints.contract, constraints.predicate_addr, nonce', contract, predicate_addr, path}; sig; public_key);
+    // ::std::lib::@solution_contains(OtherConstraints; Constraints; constraints);
     
     @common();
 }
