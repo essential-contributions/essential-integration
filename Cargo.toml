@@ -7,7 +7,7 @@ anyhow = "1.0.80"
 base64 = "0.22.0"
 clap = { version = "4.5.4", features = ["derive"] }
 essential-hash = { git = "ssh://git@github.com/essential-contributions/essential-base.git" }
-essential-server-types = { git = "ssh://git@github.com/essential-contributions/essential-server.git", branch = "freesig/rename" }
+essential-server-types = { git = "ssh://git@github.com/essential-contributions/essential-server.git" }
 essential-sign = { git = "ssh://git@github.com/essential-contributions/essential-base.git" }
 essential-signer = { git = "ssh://git@github.com/essential-contributions/essential-wallet.git" }
 essential-types = { git = "ssh://git@github.com/essential-contributions/essential-base.git" }

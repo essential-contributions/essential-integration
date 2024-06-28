@@ -1,5 +1,21 @@
 {
   "nodes": {
+    "cargo-readme-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1699295280,
+        "narHash": "sha256-dqArkeKJMCzbSLcIZKerm7uGsS2itJSKZI4UiocfpsU=",
+        "owner": "webern",
+        "repo": "cargo-readme",
+        "rev": "e0683641c02856a2171ee18a306a8c571cace0ec",
+        "type": "github"
+      },
+      "original": {
+        "owner": "webern",
+        "repo": "cargo-readme",
+        "type": "github"
+      }
+    },
     "essential-server": {
       "inputs": {
         "nixpkgs": [
@@ -10,16 +26,15 @@
         ]
       },
       "locked": {
-        "lastModified": 1719479130,
-        "narHash": "sha256-L1cq57fz/PlvVh2d1IDn1R7ZnlXXO9esZK5TR0h8k/4=",
-        "ref": "freesig/rename",
-        "rev": "eb9ecf9b4b6dcac5d6cafdf43369a2e720305c09",
-        "revCount": 80,
+        "lastModified": 1719537902,
+        "narHash": "sha256-8ytymP40dXyLEqxFp+B/rnUqGbnjkE0cwAXXEbeQpwA=",
+        "ref": "refs/heads/main",
+        "rev": "09f289226c462c7d646a4165b2a67f482f31ac6c",
+        "revCount": 78,
         "type": "git",
         "url": "ssh://git@github.com/essential-contributions/essential-server"
       },
       "original": {
-        "ref": "freesig/rename",
         "type": "git",
         "url": "ssh://git@github.com/essential-contributions/essential-server"
       }
@@ -51,11 +66,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1719485564,
-        "narHash": "sha256-+PZNDWvvPjjxXeY57HKK0pabjNI2A7xHDYnlsQ3p1Pw=",
+        "lastModified": 1719549258,
+        "narHash": "sha256-9mqTINlN/UOOrYjUtdIDqXRPNl0qsRR0K4GM85ClZCo=",
         "ref": "refs/heads/main",
-        "rev": "3000192614d00b297a5719f9ffa70148dc64c964",
-        "revCount": 71,
+        "rev": "37efaec1188dc6e8310d3412932a0c0ab618c799",
+        "revCount": 73,
         "type": "git",
         "url": "ssh://git@github.com/essential-contributions/pint.nix"
       },
@@ -67,11 +82,11 @@
     "pint-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1719475319,
-        "narHash": "sha256-4jpId6FfFwARa+qe2mu7KkbW8rFJFIR5oXhE28nHBzk=",
+        "lastModified": 1719548698,
+        "narHash": "sha256-xaS5IXDIvO9BoP+YXhmdAyDyANKAb0/BgjmAHt2jPf8=",
         "ref": "refs/heads/master",
-        "rev": "3eeead79e78768c2dafddad6cee91620b07d8444",
-        "revCount": 1387,
+        "rev": "9151b25d6ca09ac544515c114696617916aa452c",
+        "revCount": 1394,
         "type": "git",
         "url": "ssh://git@github.com/essential-contributions/pint"
       },
@@ -82,6 +97,7 @@
     },
     "root": {
       "inputs": {
+        "cargo-readme-src": "cargo-readme-src",
         "essential-server": "essential-server",
         "nixpkgs": "nixpkgs",
         "pint": "pint",

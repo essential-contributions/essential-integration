@@ -21,9 +21,9 @@ fi
 
 NAME="counter"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PINT_FILE="$SCRIPT_DIR/pint/pint.toml"
+PINT_FILE="$SCRIPT_DIR/pint/$NAME.pnt"
 echo "Building $PINT_FILE"
-pint --manifest-path "$PINT_FILE" 
+pintc "$PINT_FILE" --output "$temp_dir/$NAME.json"
 echo "Built $PINT_FILE"
 
 # ---------------------------------------------------------

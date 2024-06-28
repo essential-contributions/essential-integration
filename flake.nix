@@ -9,8 +9,7 @@
 
     # The essential server.
     essential-server = {
-      # url = "git+ssh://git@github.com/essential-contributions/essential-server";
-      url = "git+ssh://git@github.com/essential-contributions/essential-server?ref=freesig/rename";
+      url = "git+ssh://git@github.com/essential-contributions/essential-server";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.systems.follows = "nixpkgs";
     };
@@ -20,6 +19,11 @@
       url = "git+ssh://git@github.com/essential-contributions/pint.nix";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.systems.follows = "nixpkgs";
+    };
+
+    cargo-readme-src = {
+      url = "github:webern/cargo-readme";
+      flake = false;
     };
   };
 
@@ -47,6 +51,8 @@
           essential-deploy-contract = prev.callPackage ./pkgs/essential-deploy-contract.nix { };
           # All essential applications under one package.
           essential = final.callPackage ./pkgs/essential-all.nix { };
+          # Build cargo readme.
+          cargo-readme = final.callPackage ./pkgs/cargo-readme.nix { inherit (inputs) cargo-readme-src; };
           # All app tests.
           test-app-counter = final.callPackage ./pkgs/test-app-counter.nix { };
         };
@@ -59,6 +65,7 @@
         essential-deploy-contract = pkgs.essential-deploy-contract;
         essential = pkgs.essential;
         test-app-counter = pkgs.test-app-counter;
+        cargo-readme = pkgs.cargo-readme;
         default = inputs.self.packages.${pkgs.system}.essential;
       });
 

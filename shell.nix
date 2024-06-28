@@ -5,6 +5,7 @@
 , xxd
 , darwin
 , cargo-toml-lint
+, cargo-readme
 , clippy
 , rqlite
 , rust-analyzer
@@ -16,6 +17,7 @@
 }:
 mkShell {
   buildInputs = [
+    cargo-readme
     essential
     jq
     xxd

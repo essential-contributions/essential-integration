@@ -750,7 +750,7 @@ dependencies = [
 [[package]]
 name = "essential-hash"
 version = "0.1.0"
-source = "git+ssh://git@github.com/essential-contributions/essential-base.git#9e731f4070a56b92414245a16e26d3f6329f6dca"
+source = "git+ssh://git@github.com/essential-contributions/essential-base.git#9688d1eda34e0775dc59ecb9e58f27dedc66dde5"
 dependencies = [
  "essential-types",
  "postcard",
@@ -765,8 +765,10 @@ dependencies = [
  "anyhow",
  "base64",
  "clap 4.5.7",
+ "essential-hash",
  "essential-server-types",
  "essential-types",
+ "essential-wallet",
  "hex",
  "reqwest",
  "serde",
@@ -777,7 +779,7 @@ dependencies = [
 [[package]]
 name = "essential-server-types"
 version = "0.1.0"
-source = "git+ssh://git@github.com/essential-contributions/essential-server.git?branch=freesig/rename#eb9ecf9b4b6dcac5d6cafdf43369a2e720305c09"
+source = "git+ssh://git@github.com/essential-contributions/essential-server.git#09f289226c462c7d646a4165b2a67f482f31ac6c"
 dependencies = [
  "essential-types",
  "serde",
@@ -786,7 +788,7 @@ dependencies = [
 [[package]]
 name = "essential-sign"
 version = "0.1.0"
-source = "git+ssh://git@github.com/essential-contributions/essential-base.git#9e731f4070a56b92414245a16e26d3f6329f6dca"
+source = "git+ssh://git@github.com/essential-contributions/essential-base.git#9688d1eda34e0775dc59ecb9e58f27dedc66dde5"
 dependencies = [
  "essential-hash",
  "essential-types",
@@ -818,7 +820,7 @@ dependencies = [
 [[package]]
 name = "essential-types"
 version = "0.1.0"
-source = "git+ssh://git@github.com/essential-contributions/essential-base.git#9e731f4070a56b92414245a16e26d3f6329f6dca"
+source = "git+ssh://git@github.com/essential-contributions/essential-base.git#9688d1eda34e0775dc59ecb9e58f27dedc66dde5"
 dependencies = [
  "hex",
  "serde",
