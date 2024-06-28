@@ -2,16 +2,18 @@ use crate::token::Addresses;
 use app_utils::{
     addresses::get_addresses,
     compile::compile_pint_file,
-    print::{print_intent_address, print_set_address},
+    print::{print_contract_address, print_predicate_address},
 };
 use essential_rest_client::EssentialClient;
 use std::path::PathBuf;
 
 pub async fn compile_addresses(pint_directory: PathBuf) -> anyhow::Result<Addresses> {
-    let token_intents = compile_pint_file(pint_directory.clone(), "token.pnt").await?;
-    let token_addresses = get_addresses(&token_intents);
-    let signed_intents = compile_pint_file(pint_directory.clone(), "signed.pnt").await?;
-    let signed_addresses = get_addresses(&signed_intents);
+    let token_contract =
+        compile_pint_file(pint_directory.clone().join("token"), "token.toml").await?;
+    let token_addresses = get_addresses(&token_contract);
+    let signed_contract =
+        compile_pint_file(pint_directory.clone().join("signed"), "signed.toml").await?;
+    let signed_addresses = get_addresses(&signed_contract);
 
     let addresses = Addresses {
         token: token_addresses.0.clone(),
@@ -44,17 +46,17 @@ pub fn print_addresses(addresses: &Addresses) {
         signed_burn,
         signed_cancel,
     } = addresses;
-    print_set_address("token", token);
-    print_intent_address("burn", burn);
-    print_intent_address("cancel", cancel);
-    print_intent_address("mint", mint);
-    print_intent_address("transfer", transfer);
-    print_set_address("signed", signed);
-    print_intent_address("signed_transfer", signed_transfer);
-    print_intent_address("signed_transfer_with", signed_transfer_with);
-    print_intent_address("signed_burn", signed_burn);
-    print_intent_address("signed_mint", signed_mint);
-    print_intent_address("signed_cancel", signed_cancel);
+    print_contract_address("token", token);
+    print_predicate_address("burn", burn);
+    print_predicate_address("cancel", cancel);
+    print_predicate_address("mint", mint);
+    print_predicate_address("transfer", transfer);
+    print_contract_address("signed", signed);
+    print_predicate_address("signed_transfer", signed_transfer);
+    print_predicate_address("signed_transfer_with", signed_transfer_with);
+    print_predicate_address("signed_burn", signed_burn);
+    print_predicate_address("signed_mint", signed_mint);
+    print_predicate_address("signed_cancel", signed_cancel);
 }
 
 pub async fn deploy_app(
@@ -64,10 +66,12 @@ pub async fn deploy_app(
     pint_directory: PathBuf,
 ) -> anyhow::Result<Addresses> {
     let client = EssentialClient::new(addr)?;
-    let token_intents = compile_pint_file(pint_directory.clone(), "token.pnt").await?;
-    let token_addresses = get_addresses(&token_intents);
-    let signed_intents = compile_pint_file(pint_directory.clone(), "signed.pnt").await?;
-    let signed_addresses = get_addresses(&signed_intents);
+    let token_contract =
+        compile_pint_file(pint_directory.clone().join("token"), "token.toml").await?;
+    let token_addresses = get_addresses(&token_contract);
+    let signed_contract =
+        compile_pint_file(pint_directory.clone().join("signed"), "signed.toml").await?;
+    let signed_addresses = get_addresses(&signed_contract);
 
     let addresses = Addresses {
         token: token_addresses.0.clone(),
@@ -83,10 +87,10 @@ pub async fn deploy_app(
         signed_transfer_with: signed_addresses.1[4].clone(),
     };
 
-    let intents = wallet.sign_intent_set(token_intents, account_name)?;
-    client.deploy_intent_set(intents).await?;
-    let intents = wallet.sign_intent_set(signed_intents, account_name)?;
-    client.deploy_intent_set(intents).await?;
+    let predicates = wallet.sign_contract(token_contract, account_name)?;
+    client.deploy_contract(predicates).await?;
+    let predicates = wallet.sign_contract(signed_contract, account_name)?;
+    client.deploy_contract(predicates).await?;
 
     Ok(addresses)
 }

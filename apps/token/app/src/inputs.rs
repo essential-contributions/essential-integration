@@ -3,7 +3,7 @@ use app_utils::inputs::Instance;
 use essential_types::{
     convert::word_4_from_u8_32,
     solution::{Solution, SolutionData},
-    ContentAddress, IntentAddress, Word,
+    ContentAddress, PredicateAddress, Word,
 };
 use essential_wallet::Wallet;
 
@@ -16,8 +16,8 @@ const BURN_PATH: Word = 1;
 const MINT_PATH: Word = 1;
 
 pub struct SignedTransfer {
-    pub auth_address: IntentAddress,
-    pub token_address: IntentAddress,
+    pub auth_address: PredicateAddress,
+    pub token_address: PredicateAddress,
     pub from_account_name: String,
     pub to_account_name: String,
     pub new_nonce: Word,
@@ -27,8 +27,8 @@ pub struct SignedTransfer {
 }
 
 pub struct SignedBurn {
-    pub auth_address: IntentAddress,
-    pub burn_address: IntentAddress,
+    pub auth_address: PredicateAddress,
+    pub burn_address: PredicateAddress,
     pub from_account_name: String,
     pub new_nonce: Word,
     pub amount: Word,
@@ -36,8 +36,8 @@ pub struct SignedBurn {
 }
 
 pub struct SignedMint {
-    pub auth_address: IntentAddress,
-    pub mint_address: IntentAddress,
+    pub auth_address: PredicateAddress,
+    pub mint_address: PredicateAddress,
     pub account_name: String,
     pub new_nonce: Word,
     pub amount: Word,
@@ -58,7 +58,7 @@ impl SignedTransfer {
         let key = get_hashed_key(wallet, &self.from_account_name)?;
         let to = get_hashed_key(wallet, &self.to_account_name)?;
         let amount = self.amount;
-        // Set the instance of the authentication intent
+        // Set the instance of the authentication predicate
         let decision_variables = token::transfer::DecVars {
             auth_addr: Instance {
                 address: self.auth_address.clone(),
@@ -89,7 +89,7 @@ impl SignedTransfer {
         let nonce_mutation = token::nonce(key.into(), self.new_nonce.into());
 
         let token_transfer = SolutionData {
-            intent_to_solve: self.token_address.clone(),
+            predicate_to_solve: self.token_address.clone(),
             decision_variables: decision_variables.encode(),
             transient_data: transient_data.encode(),
             state_mutations: vec![from_mutation, to_mutation, nonce_mutation],
@@ -101,7 +101,7 @@ impl SignedTransfer {
     fn create_signed_transfer(&self, wallet: &mut Wallet) -> anyhow::Result<SolutionData> {
         let key = get_hashed_key(wallet, &self.from_account_name)?;
         let to = get_hashed_key(wallet, &self.to_account_name)?;
-        // The instance of the token transfer intent
+        // The instance of the token transfer predicate
         let instance = Instance {
             address: self.token_address.clone(),
             path: TOKEN_PATH,
@@ -120,7 +120,7 @@ impl SignedTransfer {
             self.token_address.clone(),
         )?;
 
-        // Set the path of the token transfer intent,
+        // Set the path of the token transfer predicate,
         // the signature of the key, address, and amount to be transferred,
         // and the public key of the account.
         let decision_variables = signed::transfer::DecVars {
@@ -135,7 +135,7 @@ impl SignedTransfer {
         };
 
         let signed_transfer = SolutionData {
-            intent_to_solve: self.auth_address.clone(),
+            predicate_to_solve: self.auth_address.clone(),
             decision_variables: decision_variables.encode(),
             transient_data: transient_data.encode(),
             state_mutations: vec![],
@@ -162,7 +162,7 @@ impl SignedBurn {
             amount: self.amount.into(),
         };
 
-        // Set the instance of the authentication intent
+        // Set the instance of the authentication predicate
         let decision_variables = token::burn::DecVars {
             auth_addr: Instance {
                 address: self.auth_address.clone(),
@@ -177,7 +177,7 @@ impl SignedBurn {
         let nonce_mutation = token::nonce(key.into(), self.new_nonce.into());
 
         let token_burn = SolutionData {
-            intent_to_solve: self.burn_address.clone(),
+            predicate_to_solve: self.burn_address.clone(),
             decision_variables: decision_variables.encode(),
             transient_data: transient_data.encode(),
             state_mutations: vec![burn_mutation, nonce_mutation],
@@ -188,7 +188,7 @@ impl SignedBurn {
 
     fn create_signed_burn(&self, wallet: &mut Wallet) -> anyhow::Result<SolutionData> {
         let key = get_hashed_key(wallet, &self.from_account_name)?;
-        // The instance of the token burn intent
+        // The instance of the token burn predicate
         let instance = Instance {
             address: self.burn_address.clone(),
             path: BURN_PATH,
@@ -206,7 +206,7 @@ impl SignedBurn {
             instance.address.clone(),
         )?;
 
-        // Set the path of the token burn intent,
+        // Set the path of the token burn predicate,
         // the signature of the key and amount to be burned,
         // and the public key of the account
         let decision_variables = signed::burn::DecVars {
@@ -221,7 +221,7 @@ impl SignedBurn {
         };
 
         let signed_burn = SolutionData {
-            intent_to_solve: self.auth_address.clone(),
+            predicate_to_solve: self.auth_address.clone(),
             decision_variables: decision_variables.encode(),
             transient_data: transient_data.encode(),
             state_mutations: vec![],
@@ -242,14 +242,14 @@ impl SignedMint {
     fn create_token_mint(&self, wallet: &mut Wallet) -> anyhow::Result<SolutionData> {
         let key = get_hashed_key(wallet, &self.account_name)?;
 
-        // Set the instance of the authentication intent
+        // Set the instance of the authentication predicate
         let auth_instance = Instance {
             address: self.auth_address.clone(),
             path: AUTH_PATH,
         };
 
         // Set the name and symbol of the token.
-        // Set the address of the authentication intent.
+        // Set the address of the authentication predicate.
         let decision_variables = token::mint::DecVars {
             name: self.name.into(),
             symbol: self.symbol.into(),
@@ -281,7 +281,7 @@ impl SignedMint {
         let nonce_mutation = token::nonce(key.into(), self.new_nonce.into());
 
         let mint = SolutionData {
-            intent_to_solve: self.mint_address.clone(),
+            predicate_to_solve: self.mint_address.clone(),
             decision_variables: decision_variables.encode(),
             transient_data: transient_data.encode(),
             state_mutations: vec![
@@ -310,7 +310,7 @@ impl SignedMint {
             self.mint_address.clone(),
         )?;
 
-        // Set the path of the token mint intent,
+        // Set the path of the token mint predicate,
         // the signature of the key, balance, and decimals of the token to be minted,
         // and the public key of the account.
         let decision_variables = signed::mint::DecVars {
@@ -325,7 +325,7 @@ impl SignedMint {
         };
 
         let mint_auth = SolutionData {
-            intent_to_solve: self.auth_address.clone(),
+            predicate_to_solve: self.auth_address.clone(),
             decision_variables: decision_variables.encode(),
             transient_data: transient_data.encode(),
             state_mutations: vec![],
@@ -340,13 +340,13 @@ fn sign_data(
     account_name: &str,
     mut data: Vec<Word>,
     nonce: Word,
-    address: IntentAddress,
+    address: PredicateAddress,
 ) -> anyhow::Result<essential_signer::secp256k1::ecdsa::RecoverableSignature> {
     data.push(nonce);
 
     // Sign the token instance
-    data.extend(word_4_from_u8_32(address.set.0));
-    data.extend(word_4_from_u8_32(address.intent.0));
+    data.extend(word_4_from_u8_32(address.contract.0));
+    data.extend(word_4_from_u8_32(address.predicate.0));
 
     let sig = wallet.sign_words(&data, account_name)?;
     let sig = match sig {
@@ -378,9 +378,9 @@ fn get_pub_key(
 
 fn blank_solution() -> Solution {
     let data = SolutionData {
-        intent_to_solve: IntentAddress {
-            set: ContentAddress([0; 32]),
-            intent: ContentAddress([0; 32]),
+        predicate_to_solve: PredicateAddress {
+            contract: ContentAddress([0; 32]),
+            predicate: ContentAddress([0; 32]),
         },
         decision_variables: Default::default(),
         transient_data: Default::default(),

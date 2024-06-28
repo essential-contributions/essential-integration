@@ -1,11 +1,11 @@
 use essential_types::{
-    convert::word_4_from_u8_32, solution::Mutation, ContentAddress, Hash, IntentAddress, Key,
+    convert::word_4_from_u8_32, solution::Mutation, ContentAddress, Hash, Key, PredicateAddress,
     Value, Word,
 };
 
 #[derive(Clone)]
 pub struct Instance {
-    pub address: IntentAddress,
+    pub address: PredicateAddress,
     pub path: Word,
 }
 
@@ -108,10 +108,10 @@ impl WriteDecVars for essential_signer::secp256k1::PublicKey {
     }
 }
 
-impl WriteDecVars for IntentAddress {
+impl WriteDecVars for PredicateAddress {
     fn write_dec_var(&self, decision_variables: &mut Vec<Value>) {
-        self.set.write_dec_var(decision_variables);
-        self.intent.write_dec_var(decision_variables);
+        self.contract.write_dec_var(decision_variables);
+        self.predicate.write_dec_var(decision_variables);
     }
 }
 
@@ -123,8 +123,8 @@ impl WriteDecVars for ContentAddress {
 
 impl WriteDecVars for Instance {
     fn write_dec_var(&self, decision_variables: &mut Vec<Value>) {
-        self.address.set.write_dec_var(decision_variables);
-        self.address.intent.write_dec_var(decision_variables);
+        self.address.contract.write_dec_var(decision_variables);
+        self.address.predicate.write_dec_var(decision_variables);
         Int::from(self.path).write_dec_var(decision_variables);
     }
 }

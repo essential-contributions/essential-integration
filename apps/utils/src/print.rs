@@ -1,14 +1,14 @@
-use essential_types::{ContentAddress, IntentAddress};
+use essential_types::{ContentAddress, PredicateAddress};
 
-pub fn print_intent_address(name: &str, address: &IntentAddress) {
+pub fn print_predicate_address(name: &str, address: &PredicateAddress) {
     println!(
-        "{}: set: {}, intent: {}",
+        "{}: contract:{}, predicate: {}",
         name,
-        hex::encode_upper(address.set.0),
-        hex::encode_upper(address.intent.0),
+        hex::encode_upper(address.contract.0),
+        hex::encode_upper(address.predicate.0),
     );
 }
 
-pub fn print_set_address(name: &str, address: &ContentAddress) {
-    println!("{}: set: {}", name, hex::encode_upper(address.0),);
+pub fn print_contract_address(name: &str, address: &ContentAddress) {
+    println!("{}: contract:{}", name, hex::encode_upper(address.0),);
 }

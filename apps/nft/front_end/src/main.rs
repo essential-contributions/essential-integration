@@ -1,7 +1,7 @@
 use app_utils::cli::ServerName;
 use clap::{Parser, Subcommand};
 use essential_types::Word;
-use nft_front_end::{compile_addresses, deploy_app, print_addresses, update_addresses, Nft};
+use nft_front_end::{compile_addresses, deploy_app, print_addresses, Nft};
 use std::path::PathBuf;
 
 #[derive(Parser)]
@@ -27,10 +27,6 @@ enum Command {
         server: ServerName,
     },
     PrintAddresses {
-        /// The directory containing the pint files.
-        pint_directory: PathBuf,
-    },
-    UpdateAddresses {
         /// The directory containing the pint files.
         pint_directory: PathBuf,
     },
@@ -65,17 +61,10 @@ async fn main() {
 }
 
 async fn run(cli: Cli) -> anyhow::Result<()> {
-    match &cli.command {
-        Command::PrintAddresses { pint_directory } => {
-            let deployed_intents = compile_addresses(pint_directory.clone()).await?;
-            print_addresses(&deployed_intents);
-            return Ok(());
-        }
-        Command::UpdateAddresses { pint_directory } => {
-            update_addresses(pint_directory.clone()).await?;
-            return Ok(());
-        }
-        _ => (),
+    if let Command::PrintAddresses { pint_directory } = &cli.command {
+        let deployed_predicates = compile_addresses(pint_directory.clone()).await?;
+        print_addresses(&deployed_predicates);
+        return Ok(());
     }
     let pass = rpassword::prompt_password("Enter password to unlock wallet: ")?;
     let mut wallet = match cli.path {
@@ -108,8 +97,8 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
                 },
             token,
         } => {
-            let deployed_intents = compile_addresses(pint_directory).await?;
-            let mut nft = Nft::new(server, deployed_intents, wallet)?;
+            let deployed_predicates = compile_addresses(pint_directory).await?;
+            let mut nft = Nft::new(server, deployed_predicates, wallet)?;
             nft.mint(&account, token).await?;
             println!("Minted token: {}", token);
         }
@@ -122,8 +111,8 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
                 },
             token,
         } => {
-            let deployed_intents = compile_addresses(pint_directory).await?;
-            let mut nft = Nft::new(server, deployed_intents, wallet)?;
+            let deployed_predicates = compile_addresses(pint_directory).await?;
+            let mut nft = Nft::new(server, deployed_predicates, wallet)?;
             let owned = nft.do_i_own(&account, token).await?;
             if owned {
                 println!("You own token: {}", token);
@@ -141,13 +130,12 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
             token,
             to,
         } => {
-            let deployed_intents = compile_addresses(pint_directory).await?;
-            let mut nft = Nft::new(server, deployed_intents, wallet)?;
+            let deployed_predicates = compile_addresses(pint_directory).await?;
+            let mut nft = Nft::new(server, deployed_predicates, wallet)?;
             nft.transfer(&account, &to, token).await?;
             println!("Transferred token: {} to {}", token, to);
         }
         Command::PrintAddresses { .. } => unreachable!(),
-        Command::UpdateAddresses { .. } => unreachable!(),
     }
     Ok(())
 }

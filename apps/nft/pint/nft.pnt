@@ -3,17 +3,17 @@ storage {
 }
 
 interface Auth {
-    intent Intent {
+    predicate Predicate {
         pub var key: b256;
         pub var to: b256;
         pub var token: int;
-        pub var set: b256;
-        pub var intent_addr: b256;
+        pub var contract:b256;
+        pub var predicate_addr: b256;
         pub var path: int;
     }
 }
 
-intent Mint {
+predicate Mint {
     var token: int;
     var new_owner: b256;
 
@@ -26,11 +26,11 @@ intent Mint {
     std::lib::@constrain_keys(token);
 }
 
-intent Transfer {
-    var auth_addr: std::lib::IntentAddress;
+predicate Transfer {
+    var auth_addr: std::lib::PredicateAddress;
     
     interface AuthI = Auth(auth_addr.set);
-    intent A = AuthI::Intent(auth_addr.intent_addr);
+    predicate A = AuthI::Predicate(auth_addr.predicate_addr);
 
     state owner = storage::owners[A::token];
 
@@ -38,5 +38,5 @@ intent Transfer {
     constraint owner' == A::to;
 
     std::lib::@constrain_keys(A::token);
-    std::auth::@authenticate(auth_addr; A; allowed::signed::@intents);
+    std::auth::@authenticate(auth_addr; A; allowed::signed::@predicates);
 }

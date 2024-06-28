@@ -8,7 +8,7 @@ pub async fn setup_server() -> anyhow::Result<(String, Child)> {
     let mut child = Command::new("essential-rest-server")
         .env(
             "RUST_LOG",
-            "[run_loop]=trace,[check_intent]=trace,[constraint]=trace,[recover_secp256k1]=trace",
+            "[run_loop]=trace,[check_predicate]=trace,[constraint]=trace,[recover_secp256k1]=trace",
         )
         .arg("--db")
         .arg("memory")

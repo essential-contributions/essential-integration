@@ -19,8 +19,8 @@ pub struct Interface {
     pub key: B256,
     pub to: B256,
     pub token: Int,
-    pub set: B256,
-    pub intent_addr: B256,
+    pub contract: B256,
+    pub predicate_addr: B256,
     pub path: Int,
 }
 
@@ -30,16 +30,16 @@ impl Interface {
             key,
             to,
             token,
-            set,
-            intent_addr,
+            contract,
+            predicate_addr,
             path,
         } = self;
         let mutations = vec![
             index_mutation(0, key.to_value()),
             index_mutation(1, to.to_value()),
             index_mutation(2, token.to_value()),
-            index_mutation(3, set.to_value()),
-            index_mutation(4, intent_addr.to_value()),
+            index_mutation(3, contract.to_value()),
+            index_mutation(4, predicate_addr.to_value()),
             index_mutation(5, path.to_value()),
         ];
 

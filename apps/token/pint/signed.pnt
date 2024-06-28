@@ -7,104 +7,104 @@ interface Token {
         decimals: int,
     }
 
-    intent TransferI {
+    predicate TransferI {
         pub var key: b256;
         pub var to: b256;
         pub var amount: int;
     }
 
-    intent BurnI {
+    predicate BurnI {
         pub var key: b256;
         pub var amount: int;
     }
 
-    intent MintI {
+    predicate MintI {
         pub var key: b256;
         pub var amount: int;
         pub var decimals: int;
     }
     
-    intent CancelI {
+    predicate CancelI {
         pub var key: b256;
     }
 }
 
 // The interface of dependent constraints
 interface OtherConstraints {
-    intent Constraints {
+    predicate Constraints {
         pub var key: b256;
     }
 }
 
 enum TransferMode = All | Key | KeyTo | KeyAmount;
 
-intent Transfer {
+predicate Transfer {
     // The token address
-    pub var set: b256;
-    pub var intent_addr: b256;
+    pub var contract:b256;
+    pub var predicate_addr: b256;
 
     interface T = Token(set);
-    intent I = T::TransferI(intent_addr);
+    predicate I = T::TransferI(predicate_addr);
     @common({I::key, I::to, I::amount}; T; I);
 }
 
-intent TransferWith {
+predicate TransferWith {
     // The token address
-    pub var set: b256;
-    pub var intent_addr: b256;
+    pub var contract:b256;
+    pub var predicate_addr: b256;
 
     var mode: TransferMode;
 
     interface T = Token(set);
-    intent I = T::TransferI(intent_addr);
+    predicate I = T::TransferI(predicate_addr);
     
     var sig: std::lib::Secp256k1Signature;
     var public_key: std::lib::Secp256k1PublicKey;
     
     state nonce = T::storage::nonce[I::key];
     
-    constraint (mode == TransferMode::All && __recover_secp256k1(__sha256({I::key, I::to, I::amount, nonce', set, intent_addr, constraints.set, constraints.intent_addr}), sig) == public_key) || true;
-    constraint (mode == TransferMode::Key && __recover_secp256k1(__sha256({I::key, nonce', set, intent_addr, constraints.set, constraints.intent_addr}), sig) == public_key) || true;
-    constraint (mode == TransferMode::KeyTo && __recover_secp256k1(__sha256({I::key, I::to, nonce', set, intent_addr, constraints.set, constraints.intent_addr}), sig) == public_key) || true;
-    constraint (mode == TransferMode::KeyAmount && __recover_secp256k1(__sha256({I::key, I::amount, nonce', set, intent_addr, constraints.set, constraints.intent_addr}), sig) == public_key) || true;
+    constraint (mode == TransferMode::All && __recover_secp256k1(__sha256({I::key, I::to, I::amount, nonce', set, predicate_addr, constraints.set, constraints.predicate_addr}), sig) == public_key) || true;
+    constraint (mode == TransferMode::Key && __recover_secp256k1(__sha256({I::key, nonce', set, predicate_addr, constraints.set, constraints.predicate_addr}), sig) == public_key) || true;
+    constraint (mode == TransferMode::KeyTo && __recover_secp256k1(__sha256({I::key, I::to, nonce', set, predicate_addr, constraints.set, constraints.predicate_addr}), sig) == public_key) || true;
+    constraint (mode == TransferMode::KeyAmount && __recover_secp256k1(__sha256({I::key, I::amount, nonce', set, predicate_addr, constraints.set, constraints.predicate_addr}), sig) == public_key) || true;
     
     constraint __sha256(public_key) == I::key;
     constraint __mut_keys_len() == 0;
     
-    var constraints: std::lib::IntentAddress;
+    var constraints: std::lib::PredicateAddress;
     interface Other = OtherConstraints(constraints.set);
-    intent O = Other::Constraints(constraints.intent_addr);
+    predicate O = Other::Constraints(constraints.predicate_addr);
     constraint O::key == I::key;
 }
 
 
-intent Burn {
+predicate Burn {
     // The token address
-    pub var set: b256;
-    pub var intent_addr: b256;
+    pub var contract:b256;
+    pub var predicate_addr: b256;
 
     interface T = Token(set);
-    intent I = T::BurnI(intent_addr);
+    predicate I = T::BurnI(predicate_addr);
     @common({I::key, I::amount}; T; I);
 }
 
-intent Mint {
+predicate Mint {
     // The token address
-    pub var set: b256;
-    pub var intent_addr: b256;
+    pub var contract:b256;
+    pub var predicate_addr: b256;
 
     interface T = Token(set);
-    intent I = T::MintI(intent_addr);
+    predicate I = T::MintI(predicate_addr);
     @common({I::key, I::amount, I::decimals}; T; I);
 }
 
-intent Cancel {
+predicate Cancel {
     // The token address
-    pub var set: b256;
-    pub var intent_addr: b256;
+    pub var contract:b256;
+    pub var predicate_addr: b256;
 
     interface T = Token(set);
-    intent I = T::CancelI(intent_addr);
+    predicate I = T::CancelI(predicate_addr);
     @common(I::key; T; I);
 }
 
@@ -114,7 +114,7 @@ macro @common($data, $t, $i) {
     
     state nonce = $t::storage::nonce[$i::key];
     
-    constraint __recover_secp256k1(__sha256({$data, nonce', set, intent_addr}), sig) == public_key;
+    constraint __recover_secp256k1(__sha256({$data, nonce', set, predicate_addr}), sig) == public_key;
     
     constraint __sha256(public_key) == $i::key;
     constraint __mut_keys_len() == 0;

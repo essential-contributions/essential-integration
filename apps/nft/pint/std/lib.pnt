@@ -1,4 +1,4 @@
-type IntentAddress = { set: b256, intent_addr: b256 };
+type PredicateAddress = { contract:b256, predicate_addr: b256 };
 
 type Secp256k1Signature = { b256, b256, int };
 
@@ -25,9 +25,9 @@ macro @recover($data, $sig, $key) {
     __recover_secp256k1(__sha256($data), $sig) == $key
 }
 
-macro @solution_contains($other, $intent, $intent_address) {
-    interface Other = $other($intent_address.set);
-    intent O = Other::$intent($intent_address.intent_addr);
+macro @solution_contains($other, $predicate, $predicate_address) {
+    interface Other = $other($predicate_address.set);
+    predicate O = Other::$predicate($predicate_address.predicate_addr);
 }
 
 // Constrain the mutable keys so nothing else can be modified.
@@ -51,7 +51,7 @@ macro @count($i) {
     1
 }
 
-// Hash the address of the current intent.
+// Hash the address of the current predicate.
 macro @hash_this_addr() {
     __sha256({__this_set_address(), __this_address()})
 }

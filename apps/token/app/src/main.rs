@@ -69,8 +69,8 @@ async fn main() {
 async fn run(cli: Cli) -> anyhow::Result<()> {
     let Cli { wallet, command } = cli;
     if let Command::PrintAddresses { pint_directory } = &command {
-        let deployed_intents = compile_addresses(pint_directory.clone()).await?;
-        print_addresses(&deployed_intents);
+        let deployed_predicates = compile_addresses(pint_directory.clone()).await?;
+        print_addresses(&deployed_predicates);
         return Ok(());
     }
     let pass = rpassword::prompt_password("Enter password to unlock wallet: ")?;
@@ -103,8 +103,8 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
                 },
             amount,
         } => {
-            let deployed_intents = compile_addresses(pint_directory).await?;
-            let mut token = Token::new(server, deployed_intents, wallet)?;
+            let deployed_predicates = compile_addresses(pint_directory).await?;
+            let mut token = Token::new(server, deployed_predicates, wallet)?;
             token.mint(&account, amount.try_into().unwrap()).await?;
             println!("Minted {} of token to {}", amount, account);
         }
@@ -117,8 +117,8 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
                 },
             amount,
         } => {
-            let deployed_intents = compile_addresses(pint_directory).await?;
-            let mut token = Token::new(server, deployed_intents, wallet)?;
+            let deployed_predicates = compile_addresses(pint_directory).await?;
+            let mut token = Token::new(server, deployed_predicates, wallet)?;
             token.burn(&account, amount.try_into().unwrap()).await?;
             println!("Burned {} of token from {}", amount, account);
         }
@@ -132,8 +132,8 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
             amount,
             to,
         } => {
-            let deployed_intents = compile_addresses(pint_directory).await?;
-            let mut token = Token::new(server, deployed_intents, wallet)?;
+            let deployed_predicates = compile_addresses(pint_directory).await?;
+            let mut token = Token::new(server, deployed_predicates, wallet)?;
             token
                 .transfer(&account, &to, amount.try_into().unwrap())
                 .await?;
@@ -147,8 +147,8 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
                     pint_directory,
                 },
         } => {
-            let deployed_intents = compile_addresses(pint_directory).await?;
-            let mut token = Token::new(server, deployed_intents, wallet)?;
+            let deployed_predicates = compile_addresses(pint_directory).await?;
+            let mut token = Token::new(server, deployed_predicates, wallet)?;
             let balance = token.balance(&account).await?.unwrap_or_default();
             println!("Account {} has balance: {}", account, balance);
         }

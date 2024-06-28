@@ -2,40 +2,40 @@ use crate::inputs::{self, token::query_balances, SignedBurn, SignedMint, SignedT
 use anyhow::bail;
 use essential_rest_client::EssentialClient;
 use essential_server_types::SolutionOutcome;
-use essential_types::{convert::word_4_from_u8_32, ContentAddress, IntentAddress, Word};
+use essential_types::{convert::word_4_from_u8_32, ContentAddress, PredicateAddress, Word};
 use essential_wallet::Wallet;
 
 pub struct Token {
     client: EssentialClient,
     wallet: Wallet,
-    deployed_intents: Addresses,
+    deployed_predicates: Addresses,
 }
 
 #[derive(Debug, Clone)]
 pub struct Addresses {
     pub token: ContentAddress,
-    pub burn: IntentAddress,
-    pub mint: IntentAddress,
-    pub transfer: IntentAddress,
-    pub cancel: IntentAddress,
+    pub burn: PredicateAddress,
+    pub mint: PredicateAddress,
+    pub transfer: PredicateAddress,
+    pub cancel: PredicateAddress,
     pub signed: ContentAddress,
-    pub signed_transfer: IntentAddress,
-    pub signed_transfer_with: IntentAddress,
-    pub signed_mint: IntentAddress,
-    pub signed_burn: IntentAddress,
-    pub signed_cancel: IntentAddress,
+    pub signed_transfer: PredicateAddress,
+    pub signed_transfer_with: PredicateAddress,
+    pub signed_mint: PredicateAddress,
+    pub signed_burn: PredicateAddress,
+    pub signed_cancel: PredicateAddress,
 }
 
 impl Token {
     pub fn new(
         addr: String,
-        deployed_intents: Addresses,
+        deployed_predicates: Addresses,
         wallet: essential_wallet::Wallet,
     ) -> anyhow::Result<Self> {
         let client = EssentialClient::new(addr)?;
         Ok(Self {
             client,
-            deployed_intents,
+            deployed_predicates,
             wallet,
         })
     }
@@ -45,8 +45,8 @@ impl Token {
             .new_key_pair(account_name, essential_wallet::Scheme::Secp256k1)
     }
 
-    /// Create and submit solution that solves the token burn intent
-    /// and the signed burn intent
+    /// Create and submit solution that solves the token burn predicate
+    /// and the signed burn predicate
     pub async fn burn(
         &mut self,
         account_name: &str,
@@ -62,8 +62,8 @@ impl Token {
         let new_from_balance = self.calculate_from_balance(key, amount).await?;
 
         let builder = SignedBurn {
-            auth_address: self.deployed_intents.signed_burn.clone(),
-            burn_address: self.deployed_intents.burn.clone(),
+            auth_address: self.deployed_predicates.signed_burn.clone(),
+            burn_address: self.deployed_predicates.burn.clone(),
             from_account_name: account_name.to_string(),
             new_nonce,
             amount,
@@ -91,8 +91,8 @@ impl Token {
         let decimals = 18;
 
         let builder = SignedMint {
-            auth_address: self.deployed_intents.signed_mint.clone(),
-            mint_address: self.deployed_intents.mint.clone(),
+            auth_address: self.deployed_predicates.signed_mint.clone(),
+            mint_address: self.deployed_predicates.mint.clone(),
             account_name: account_name.to_string(),
             new_nonce: nonce,
             amount: balance,
@@ -125,7 +125,7 @@ impl Token {
         let new_from_balance = self.calculate_from_balance(key, amount).await?;
 
         let state = self
-            .query(&self.deployed_intents.token, &query_balances(to.into()))
+            .query(&self.deployed_predicates.token, &query_balances(to.into()))
             .await?;
         let to_balance = state.first().copied().unwrap_or_default();
         let Some(new_to_balance) = to_balance.checked_add(amount) else {
@@ -133,8 +133,8 @@ impl Token {
         };
 
         let builder = SignedTransfer {
-            auth_address: self.deployed_intents.signed_transfer.clone(),
-            token_address: self.deployed_intents.transfer.clone(),
+            auth_address: self.deployed_predicates.signed_transfer.clone(),
+            token_address: self.deployed_predicates.transfer.clone(),
             from_account_name: from_name.to_string(),
             to_account_name: to_name.to_string(),
             new_nonce,
@@ -161,7 +161,7 @@ impl Token {
     pub async fn balance(&mut self, account_name: &str) -> anyhow::Result<Option<i64>> {
         let key = self.get_hashed_key(account_name)?;
         let state = self
-            .query(&self.deployed_intents.token, &query_balances(key.into()))
+            .query(&self.deployed_predicates.token, &query_balances(key.into()))
             .await?;
         Ok(state.first().copied())
     }
@@ -170,7 +170,7 @@ impl Token {
     pub async fn nonce(&self, key: [Word; 4]) -> anyhow::Result<Word> {
         let nonce = self
             .query(
-                &self.deployed_intents.token,
+                &self.deployed_predicates.token,
                 &inputs::token::query_nonce((key).into()),
             )
             .await?;
@@ -185,7 +185,7 @@ impl Token {
 
     async fn calculate_from_balance(&self, key: [Word; 4], amount: Word) -> anyhow::Result<Word> {
         let state = self
-            .query(&self.deployed_intents.token, &query_balances(key.into()))
+            .query(&self.deployed_predicates.token, &query_balances(key.into()))
             .await?;
         let from_balance = if state.is_empty() {
             0

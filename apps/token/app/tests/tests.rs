@@ -46,7 +46,7 @@ async fn mint_and_transfer(server_address: String) {
 
     let pint_directory = PathBuf::from(concat!(env!("CARGO_MANIFEST_DIR"), "/../pint"));
 
-    let intent_addresses = deploy_app(
+    let predicate_addresses = deploy_app(
         server_address.clone(),
         &mut wallet,
         &deployer_name,
@@ -55,7 +55,7 @@ async fn mint_and_transfer(server_address: String) {
     .await
     .unwrap();
 
-    let mut token = Token::new(server_address, intent_addresses, wallet).unwrap();
+    let mut token = Token::new(server_address, predicate_addresses, wallet).unwrap();
 
     // alice mint 800 tokens
     let first_mint_amount = 1000000;
@@ -116,8 +116,8 @@ fn to_hex(k: &essential_signer::PublicKey) -> String {
     hex::encode_upper(essential_hash::hash_words(&encoded))
 }
 
-pub fn find_address(intent: &str, num: usize) -> Option<&str> {
-    intent
+pub fn find_address(predicate: &str, num: usize) -> Option<&str> {
+    predicate
         .split("0x")
         .nth(num)
         .and_then(|s| s.split(&[' ', ')', ',', ']', ';']).next())

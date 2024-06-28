@@ -12,16 +12,16 @@ storage {
 }
 
 interface Auth {
-    intent Intent {
-        // The address that the authorization intent is outputting.
-        // This points the authorization intent to an intent in this set.
-        // By setting this address the authorization can't be used with the wrong intent.
-        pub var set: b256;
-        pub var intent_addr: b256;
+    predicate Predicate {
+        // The address that the authorization predicate is outputting.
+        // This points the authorization predicate to an predicate in this set.
+        // By setting this address the authorization can't be used with the wrong predicate.
+        pub var contract:b256;
+        pub var predicate_addr: b256;
     }
 }
 
-intent Burn {
+predicate Burn {
     // These are public so that the authorization can check them.
 
     // The address of the account that is burning tokens.
@@ -48,12 +48,12 @@ intent Burn {
     // The balance and nonce are mutated.
     constraint __mut_keys_len() == 2;
     
-    // Check the authorization intent.
-    var auth_addr: std::lib::IntentAddress;
+    // Check the authorization predicate.
+    var auth_addr: std::lib::PredicateAddress;
     @auth(auth_addr; key; allowed::burn::@whitelist);
 }
 
-intent Mint {
+predicate Mint {
     // These are public so that the authorization can check them.
 
     // The key that is being minted to.
@@ -94,12 +94,12 @@ intent Mint {
     // All 5 state values are mutated.
     constraint __mut_keys_len() == 5;
     
-    // Check the authorization intent.
-    var auth_addr: std::lib::IntentAddress;
+    // Check the authorization predicate.
+    var auth_addr: std::lib::PredicateAddress;
     @auth(auth_addr; key; allowed::mint::@whitelist);
 }
 
-intent Transfer {
+predicate Transfer {
     // These are public so that the authorization can check them.
 
     // The address that the amount is being sent from.
@@ -133,12 +133,12 @@ intent Transfer {
     // The sender balance, receiver balance, and nonce are mutated.
     constraint __mut_keys_len() == 3;
     
-    // Check the authorization intent.
-    var auth_addr: std::lib::IntentAddress;
+    // Check the authorization predicate.
+    var auth_addr: std::lib::PredicateAddress;
     @auth(auth_addr; key; allowed::transfer::@whitelist);
 }
 
-intent Cancel {
+predicate Cancel {
     // The account that is cancelling a transfer or burn.
     pub var key: b256;
     
@@ -151,16 +151,16 @@ intent Cancel {
     // The nonce is mutated.
     constraint __mut_keys_len() == 1;
     
-    // Check the authorization intent.
-    var auth_addr: std::lib::IntentAddress;
+    // Check the authorization predicate.
+    var auth_addr: std::lib::PredicateAddress;
     @auth(auth_addr; key; allowed::cancel::@whitelist);
 }
 
 macro @auth($auth_addr, $key, $whitelist) {
-    // Enforce that the intent at this address is in this solution.
+    // Enforce that the predicate at this address is in this solution.
     interface AuthI = Auth($auth_addr.set);
-    intent A = AuthI::Intent($auth_addr.intent_addr);
+    predicate A = AuthI::Predicate($auth_addr.predicate_addr);
 
-    // Check the authorization intent is valid.
+    // Check the authorization predicate is valid.
     std::auth::@authenticate($auth_addr; A; $key; $whitelist);
 }

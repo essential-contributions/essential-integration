@@ -1,8 +1,8 @@
-// Hard coded whitelisted authorization intent addresses
+// Hard coded whitelisted authorization predicate addresses
 macro @whitelist($auth_addr, $check) {
     // Burn
     $check($auth_addr; { 
-        set: 0xC5467F3FF55C071218F63D4D38F099C1C4FCC841C0979E888AC312E0990817D4,
-        intent_addr: 0xF0483B95BA3B290CB6B8D33CA14659ED415993F76A8B35413ED5075586AA5C55,
+        contract:0xC5467F3FF55C071218F63D4D38F099C1C4FCC841C0979E888AC312E0990817D4,
+        predicate_addr: 0xF0483B95BA3B290CB6B8D33CA14659ED415993F76A8B35413ED5075586AA5C55,
     })
 }

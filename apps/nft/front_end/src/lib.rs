@@ -3,14 +3,13 @@ use app_utils::{
     addresses::{contract_hash, get_addresses},
     compile::compile_pint_file,
     inputs::Instance,
-    print::{print_intent_address, print_set_address},
-    read::read_pint_file,
+    print::{print_contract_address, print_predicate_address},
 };
 use essential_rest_client::EssentialClient;
 use essential_types::{
     convert::word_4_from_u8_32,
     solution::{Solution, SolutionData},
-    ContentAddress, IntentAddress, Word,
+    ContentAddress, PredicateAddress, Word,
 };
 use inputs::nft::query_owners;
 use std::{path::PathBuf, vec};
@@ -20,34 +19,34 @@ mod inputs;
 pub struct Nft {
     client: EssentialClient,
     wallet: essential_wallet::Wallet,
-    deployed_intents: Addresses,
+    deployed_predicates: Addresses,
 }
 
 #[derive(Debug, Clone)]
 pub struct Addresses {
     pub nft: ContentAddress,
-    pub nft_mint: IntentAddress,
-    pub nft_transfer: IntentAddress,
+    pub nft_mint: PredicateAddress,
+    pub nft_transfer: PredicateAddress,
     pub signed: ContentAddress,
-    pub signed_cancel: IntentAddress,
-    pub signed_transfer: IntentAddress,
-    pub signed_transfer_from_to: IntentAddress,
-    pub signed_transfer_from: IntentAddress,
+    pub signed_cancel: PredicateAddress,
+    pub signed_transfer: PredicateAddress,
+    pub signed_transfer_from_to: PredicateAddress,
+    pub signed_transfer_from: PredicateAddress,
     pub swap_any: ContentAddress,
-    pub swap_any_init: IntentAddress,
-    pub swap_any_swap: IntentAddress,
+    pub swap_any_init: PredicateAddress,
+    pub swap_any_swap: PredicateAddress,
 }
 
 impl Nft {
     pub fn new(
         addr: String,
-        deployed_intents: Addresses,
+        deployed_predicates: Addresses,
         wallet: essential_wallet::Wallet,
     ) -> anyhow::Result<Self> {
         let client = EssentialClient::new(addr)?;
         Ok(Self {
             client,
-            deployed_intents,
+            deployed_predicates,
             wallet,
         })
     }
@@ -67,7 +66,7 @@ impl Nft {
 
         let solution = Solution {
             data: vec![SolutionData {
-                intent_to_solve: self.deployed_intents.nft_mint.clone(),
+                predicate_to_solve: self.deployed_predicates.nft_mint.clone(),
                 decision_variables: decision_variables.encode(),
                 transient_data: Default::default(),
                 state_mutations: vec![mutation],
@@ -84,7 +83,7 @@ impl Nft {
 
     pub async fn mint_for_contract(
         &mut self,
-        contract: &IntentAddress,
+        contract: &PredicateAddress,
         token: Word,
     ) -> anyhow::Result<()> {
         let key = contract_hash(contract);
@@ -93,7 +92,7 @@ impl Nft {
 
     async fn do_i_own_inner(&mut self, key: [Word; 4], token: Word) -> anyhow::Result<bool> {
         let state = self
-            .query(&self.deployed_intents.nft, &query_owners(token.into()))
+            .query(&self.deployed_predicates.nft, &query_owners(token.into()))
             .await?;
         Ok(state[..] == key[..])
     }
@@ -105,7 +104,7 @@ impl Nft {
 
     pub async fn do_i_own_contract(
         &mut self,
-        contract: &IntentAddress,
+        contract: &PredicateAddress,
         token: Word,
     ) -> anyhow::Result<bool> {
         let key = contract_hash(contract);
@@ -115,9 +114,9 @@ impl Nft {
     pub async fn init_swap_any(&mut self, token: Word) -> anyhow::Result<()> {
         let solution = Solution {
             data: vec![SolutionData {
-                intent_to_solve: self.deployed_intents.swap_any_init.clone(),
+                predicate_to_solve: self.deployed_predicates.swap_any_init.clone(),
                 decision_variables: inputs::swap_any::init::DecVars {
-                    set: self.deployed_intents.nft.clone().into(),
+                    contract: self.deployed_predicates.nft.clone().into(),
                 }
                 .encode(),
                 transient_data: Default::default(),
@@ -132,7 +131,7 @@ impl Nft {
     pub async fn swap_any_owns(&mut self) -> anyhow::Result<Option<Word>> {
         let state = self
             .query(
-                &self.deployed_intents.swap_any,
+                &self.deployed_predicates.swap_any,
                 &inputs::swap_any::query_token(),
             )
             .await?;
@@ -176,7 +175,7 @@ impl Nft {
     ) -> anyhow::Result<Solution> {
         let nonce = self
             .query(
-                &self.deployed_intents.signed,
+                &self.deployed_predicates.signed,
                 &inputs::signed::query_nonce(key.into()),
             )
             .await?;
@@ -188,9 +187,9 @@ impl Nft {
         to_hash.extend_from_slice(&to);
         to_hash.push(token);
         to_hash.push(nonce);
-        to_hash.extend(word_4_from_u8_32(self.deployed_intents.nft.0));
+        to_hash.extend(word_4_from_u8_32(self.deployed_predicates.nft.0));
         to_hash.extend(word_4_from_u8_32(
-            self.deployed_intents.nft_transfer.intent.0,
+            self.deployed_predicates.nft_transfer.predicate.0,
         ));
         to_hash.push(1);
 
@@ -209,23 +208,28 @@ impl Nft {
             key: key.into(),
             to: to.into(),
             token: token.into(),
-            set: self.deployed_intents.nft.clone().into(),
-            intent_addr: self.deployed_intents.nft_transfer.intent.clone().into(),
+            contract: self.deployed_predicates.nft.clone().into(),
+            predicate_addr: self
+                .deployed_predicates
+                .nft_transfer
+                .predicate
+                .clone()
+                .into(),
             path: 1.into(),
         };
 
         let signed_transfer = SolutionData {
-            intent_to_solve: self.deployed_intents.signed_transfer.clone(),
+            predicate_to_solve: self.deployed_predicates.signed_transfer.clone(),
             decision_variables: decision_variables.encode(),
             transient_data: transient_data.encode(),
             state_mutations: vec![inputs::signed::nonce(key.into(), nonce.into())],
         };
 
         let transfer_nft = SolutionData {
-            intent_to_solve: self.deployed_intents.nft_transfer.clone(),
+            predicate_to_solve: self.deployed_predicates.nft_transfer.clone(),
             decision_variables: inputs::nft::transfer::DecVars {
                 auth_addr: Instance {
-                    address: self.deployed_intents.signed_transfer.clone(),
+                    address: self.deployed_predicates.signed_transfer.clone(),
                     path: 0,
                 },
             }
@@ -244,7 +248,7 @@ impl Nft {
         token: Word,
     ) -> anyhow::Result<()> {
         let key = self.get_hashed_key(account_name)?;
-        let to = contract_hash(&self.deployed_intents.swap_any_swap);
+        let to = contract_hash(&self.deployed_predicates.swap_any_swap);
 
         let mut solution = self
             .make_transfer_solution(account_name, key, to, token)
@@ -253,7 +257,7 @@ impl Nft {
         // Get existing token
         let current_token = self
             .query(
-                &self.deployed_intents.swap_any,
+                &self.deployed_predicates.swap_any,
                 &inputs::swap_any::query_token(),
             )
             .await?;
@@ -266,13 +270,18 @@ impl Nft {
             key: to.into(),
             token: current_token.into(),
             to: key.into(),
-            set: self.deployed_intents.nft.clone().into(),
-            intent_addr: self.deployed_intents.nft_transfer.intent.clone().into(),
+            contract: self.deployed_predicates.nft.clone().into(),
+            predicate_addr: self
+                .deployed_predicates
+                .nft_transfer
+                .predicate
+                .clone()
+                .into(),
             path: 3.into(),
         };
 
         let swap_any_swap = SolutionData {
-            intent_to_solve: self.deployed_intents.swap_any_swap.clone(),
+            predicate_to_solve: self.deployed_predicates.swap_any_swap.clone(),
             decision_variables: Default::default(),
             transient_data: transient_data.encode(),
             state_mutations: vec![inputs::swap_any::token(token.into())],
@@ -280,11 +289,11 @@ impl Nft {
 
         // Transfer existing token from swap_any to user
         let transfer_nft = SolutionData {
-            intent_to_solve: self.deployed_intents.nft_transfer.clone(),
-            // Pathway to the auth intent
+            predicate_to_solve: self.deployed_predicates.nft_transfer.clone(),
+            // Pathway to the auth predicate
             decision_variables: inputs::nft::transfer::DecVars {
                 auth_addr: Instance {
-                    address: self.deployed_intents.swap_any_swap.clone(),
+                    address: self.deployed_predicates.swap_any_swap.clone(),
                     path: 2,
                 },
             }
@@ -333,14 +342,14 @@ pub async fn deploy_app(
     pint_directory: PathBuf,
 ) -> anyhow::Result<Addresses> {
     let client = EssentialClient::new(addr)?;
-    let signed_intents = compile_pint_file(pint_directory.clone(), "signed.pnt").await?;
-    let signed_addresses = get_addresses(&signed_intents);
+    let signed_contract = compile_pint_file(pint_directory.clone(), "signed").await?;
+    let signed_addresses = get_addresses(&signed_contract);
 
-    let nft_intents = compile_pint_file(pint_directory.clone(), "nft.pnt").await?;
-    let nft_addresses = get_addresses(&nft_intents);
+    let nft_contract = compile_pint_file(pint_directory.clone(), "nft").await?;
+    let nft_addresses = get_addresses(&nft_contract);
 
-    let swap_any_intents = compile_pint_file(pint_directory.clone(), "swap_any.pnt").await?;
-    let swap_any_addresses = get_addresses(&swap_any_intents);
+    let swap_any_predicates = compile_pint_file(pint_directory.clone(), "swap_any").await?;
+    let swap_any_addresses = get_addresses(&swap_any_predicates);
 
     let addresses = Addresses {
         nft: nft_addresses.0.clone(),
@@ -356,25 +365,25 @@ pub async fn deploy_app(
         swap_any_swap: swap_any_addresses.1[1].clone(),
     };
 
-    let intents = wallet.sign_intent_set(nft_intents, account_name)?;
-    client.deploy_intent_set(intents).await?;
-    let intents = wallet.sign_intent_set(signed_intents, account_name)?;
-    client.deploy_intent_set(intents).await?;
-    let intents = wallet.sign_intent_set(swap_any_intents, account_name)?;
-    client.deploy_intent_set(intents).await?;
+    let predicates = wallet.sign_contract(nft_contract, account_name)?;
+    client.deploy_contract(predicates).await?;
+    let predicates = wallet.sign_contract(signed_contract, account_name)?;
+    client.deploy_contract(predicates).await?;
+    let predicates = wallet.sign_contract(swap_any_predicates, account_name)?;
+    client.deploy_contract(predicates).await?;
 
     Ok(addresses)
 }
 
 pub async fn compile_addresses(pint_directory: PathBuf) -> anyhow::Result<Addresses> {
-    let signed_intents = compile_pint_file(pint_directory.clone(), "signed.pnt").await?;
-    let signed_addresses = get_addresses(&signed_intents);
+    let signed_contract = compile_pint_file(pint_directory.clone(), "signed.pnt").await?;
+    let signed_addresses = get_addresses(&signed_contract);
 
-    let nft_intents = compile_pint_file(pint_directory.clone(), "nft.pnt").await?;
-    let nft_addresses = get_addresses(&nft_intents);
+    let nft_contract = compile_pint_file(pint_directory.clone(), "nft.pnt").await?;
+    let nft_addresses = get_addresses(&nft_contract);
 
-    let swap_any_intents = compile_pint_file(pint_directory.clone(), "swap_any.pnt").await?;
-    let swap_any_addresses = get_addresses(&swap_any_intents);
+    let swap_any_predicates = compile_pint_file(pint_directory.clone(), "swap_any.pnt").await?;
+    let swap_any_addresses = get_addresses(&swap_any_predicates);
 
     let addresses = Addresses {
         nft: nft_addresses.0.clone(),
@@ -407,79 +416,21 @@ pub fn print_addresses(addresses: &Addresses) {
         swap_any_init,
         swap_any_swap,
     } = addresses;
-    print_set_address("nft", nft);
-    print_intent_address("nft_mint", nft_mint);
-    print_intent_address("nft_transfer", nft_transfer);
-    print_set_address("signed", signed);
-    print_intent_address("signed_cancel", signed_cancel);
-    print_intent_address("signed_transfer", signed_transfer);
-    print_intent_address("signed_transfer_from", signed_transfer_from);
-    print_intent_address("signed_transfer_from_to", signed_transfer_from_to);
-    print_set_address("swap_any", swap_any);
-    print_intent_address("swap_any_init", swap_any_init);
-    print_intent_address("swap_any_swap", swap_any_swap);
+    print_contract_address("nft", nft);
+    print_predicate_address("nft_mint", nft_mint);
+    print_predicate_address("nft_transfer", nft_transfer);
+    print_contract_address("signed", signed);
+    print_predicate_address("signed_cancel", signed_cancel);
+    print_predicate_address("signed_transfer", signed_transfer);
+    print_predicate_address("signed_transfer_from", signed_transfer_from);
+    print_predicate_address("signed_transfer_from_to", signed_transfer_from_to);
+    print_contract_address("swap_any", swap_any);
+    print_predicate_address("swap_any_init", swap_any_init);
+    print_predicate_address("swap_any_swap", swap_any_swap);
 }
 
-pub async fn update_addresses(pint_directory: PathBuf) -> anyhow::Result<()> {
-    let addresses = compile_addresses(pint_directory.clone()).await?;
-
-    replace_intent_address(
-        pint_directory.join("allowed"),
-        "signed.pnt",
-        1,
-        &addresses.signed_transfer,
-    )
-    .await?;
-    replace_intent_address(
-        pint_directory.join("allowed"),
-        "signed.pnt",
-        2,
-        &addresses.signed_transfer_from,
-    )
-    .await?;
-    replace_intent_address(
-        pint_directory.join("allowed"),
-        "signed.pnt",
-        3,
-        &addresses.signed_transfer_from_to,
-    )
-    .await?;
-
-    Ok(())
-}
-
-pub async fn replace_intent_address(
-    pint_directory: PathBuf,
-    name: &str,
-    num: usize,
-    address: &IntentAddress,
-) -> anyhow::Result<()> {
-    let mut intent = read_pint_file(pint_directory.clone(), name).await?;
-    let set = find_address(&intent, (num - 1) * 2)
-        .ok_or_else(|| anyhow::anyhow!("{} missing set address", name))?;
-    intent = intent.replace(set, &hex::encode_upper(address.set.0));
-    let intent_addr = find_address(&intent, (num - 1) * 2 + 1)
-        .ok_or_else(|| anyhow::anyhow!("{} missing intent address", name))?;
-    intent = intent.replace(intent_addr, &hex::encode_upper(address.intent.0));
-    tokio::fs::write(pint_directory.join(name), intent).await?;
-    Ok(())
-}
-
-pub async fn replace_set_address(
-    pint_directory: PathBuf,
-    name: &str,
-    address: &ContentAddress,
-) -> anyhow::Result<()> {
-    let mut intent = read_pint_file(pint_directory.clone(), name).await?;
-    let set =
-        find_address(&intent, 1).ok_or_else(|| anyhow::anyhow!("{} missing set address", name))?;
-    intent = intent.replace(set, &hex::encode_upper(address.0));
-    tokio::fs::write(pint_directory.join(name), intent).await?;
-    Ok(())
-}
-
-pub fn find_address(intent: &str, num: usize) -> Option<&str> {
-    intent
+pub fn find_address(predicate: &str, num: usize) -> Option<&str> {
+    predicate
         .split("0x")
         .nth(num)
         .and_then(|s| s.split(&[' ', ')', ',']).next())

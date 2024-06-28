@@ -1,22 +1,22 @@
-use essential_types::{intent::Intent, ContentAddress, IntentAddress, Word};
+use essential_types::{contract::Contract, ContentAddress, PredicateAddress, Word};
 
-pub fn get_addresses(intents: &[Intent]) -> (ContentAddress, Vec<IntentAddress>) {
-    let set = essential_hash::intent_set_addr::from_intents(intents);
-    let intents = intents
+pub fn get_addresses(contract: &Contract) -> (ContentAddress, Vec<PredicateAddress>) {
+    let contract_addr = essential_hash::contract_addr::from_contract(contract);
+    let predicates = contract
         .iter()
-        .map(|intent| IntentAddress {
-            set: set.clone(),
-            intent: essential_hash::content_addr(intent),
+        .map(|predicate| PredicateAddress {
+            contract: contract_addr.clone(),
+            predicate: essential_hash::content_addr(predicate),
         })
         .collect();
-    (set, intents)
+    (contract_addr, predicates)
 }
 
-pub fn contract_hash(contract: &IntentAddress) -> [Word; 4] {
-    let set_hash = essential_types::convert::word_4_from_u8_32(contract.set.0);
-    let intent_hash = essential_types::convert::word_4_from_u8_32(contract.intent.0);
+pub fn contract_hash(contract: &PredicateAddress) -> [Word; 4] {
+    let set_hash = essential_types::convert::word_4_from_u8_32(contract.contract.0);
+    let predicate_hash = essential_types::convert::word_4_from_u8_32(contract.predicate.0);
     let mut words = set_hash.to_vec();
-    words.extend_from_slice(&intent_hash);
+    words.extend_from_slice(&predicate_hash);
     let contract_hash = essential_hash::hash_words(&words);
     essential_types::convert::word_4_from_u8_32(contract_hash)
 }

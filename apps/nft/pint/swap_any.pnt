@@ -9,8 +9,8 @@ interface Nft {
     }
 }
 
-intent Init {
-    var set: b256;
+predicate Init {
+    var contract:b256;
     interface NftInstance = Nft(set);
     
     state current_token = storage::token;
@@ -18,15 +18,15 @@ intent Init {
 
     constraint current_token == nil && token_owner' != nil;
     
-    // TODO: Get hash of swap so that `token_owner'` can be constraint to the intent address of swap.
+    // TODO: Get hash of swap so that `token_owner'` can be constraint to the predicate address of swap.
 }
 
-intent Swap {
+predicate Swap {
     pub var key: b256;
     pub var to: b256;
     pub var token: int;
-    pub var set: b256;
-    pub var intent_addr: b256;
+    pub var contract:b256;
+    pub var predicate_addr: b256;
     pub var path: int;
     
     interface NftInstance = Nft(set);
