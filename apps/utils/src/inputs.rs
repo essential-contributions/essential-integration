@@ -73,7 +73,7 @@ impl From<ContentAddress> for B256 {
 }
 
 trait Slots {
-    fn to_slots<I>(&mut self, iter: I)
+    fn to_slot<I>(&mut self, iter: I)
     where
         I: IntoIterator<Item = Word>;
 }
@@ -84,7 +84,7 @@ pub trait WriteDecVars {
 
 impl WriteDecVars for B256 {
     fn write_dec_var(&self, decision_variables: &mut Vec<Value>) {
-        decision_variables.to_slots(self.0);
+        decision_variables.to_slot(self.0);
     }
 }
 
@@ -97,14 +97,17 @@ impl WriteDecVars for Int {
 impl WriteDecVars for essential_signer::secp256k1::ecdsa::RecoverableSignature {
     fn write_dec_var(&self, decision_variables: &mut Vec<Value>) {
         let sig = essential_sign::encode::signature(self);
-        decision_variables.to_slots(sig);
+        decision_variables.to_slot(sig[..4].to_vec());
+        decision_variables.to_slot(sig[4..8].to_vec());
+        decision_variables.to_slot(sig[8..].to_vec());
     }
 }
 
 impl WriteDecVars for essential_signer::secp256k1::PublicKey {
     fn write_dec_var(&self, decision_variables: &mut Vec<Value>) {
         let k = essential_sign::encode::public_key(self);
-        decision_variables.to_slots(k);
+        decision_variables.to_slot(k[..4].to_vec());
+        decision_variables.to_slot(k[4..].to_vec());
     }
 }
 
@@ -117,7 +120,7 @@ impl WriteDecVars for PredicateAddress {
 
 impl WriteDecVars for ContentAddress {
     fn write_dec_var(&self, decision_variables: &mut Vec<Value>) {
-        decision_variables.to_slots(word_4_from_u8_32(self.0));
+        decision_variables.to_slot(word_4_from_u8_32(self.0));
     }
 }
 
@@ -130,20 +133,10 @@ impl WriteDecVars for Instance {
 }
 
 impl Slots for Vec<Value> {
-    fn to_slots<I>(&mut self, iter: I)
+    fn to_slot<I>(&mut self, iter: I)
     where
         I: IntoIterator<Item = Word>,
     {
-        self.extend(to_slots(iter));
+        self.push(iter.into_iter().collect());
     }
-}
-
-pub fn to_slots(iter: impl IntoIterator<Item = Word>) -> impl Iterator<Item = Vec<Word>> {
-    iter.into_iter().map(|w| vec![w])
-}
-
-pub fn to_slots_ref<'a>(
-    iter: impl IntoIterator<Item = &'a Word>,
-) -> impl Iterator<Item = Vec<Word>> {
-    to_slots(iter.into_iter().copied())
 }

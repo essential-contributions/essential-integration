@@ -1,10 +1,8 @@
-const TRANSFER = [
-    { contract: signed::ADDRESS, addr: signed::Transfer::ADDRESS },
-    { contract: signed::ADDRESS, addr: signed::TransferWith::ADDRESS }
-];
+const TRANSFER = { contract: signed::ADDRESS, addr: signed::Transfer::ADDRESS };
+const TRANSFER_WITH = { contract: signed::ADDRESS, addr: signed::TransferWith::ADDRESS };
 
-const BURN = [{ contract: signed::ADDRESS, addr: signed::Burn::ADDRESS }];
+const BURN = { contract: signed::ADDRESS, addr: signed::Burn::ADDRESS };
 
-const MINT = [{ contract: signed::ADDRESS, addr: signed::Mint::ADDRESS }];
+const MINT = { contract: signed::ADDRESS, addr: signed::Mint::ADDRESS };
 
-const CANCEL = [{ contract: signed::ADDRESS, addr: signed::Cancel::ADDRESS }];
+const CANCEL = { contract: signed::ADDRESS, addr: signed::Cancel::ADDRESS };

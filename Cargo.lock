@@ -452,6 +452,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "console"
+version = "0.15.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0e1f83fc076bd6dd27517eacdf25fef6c4dfe5f1d7448bafaaf3a26f13b5e4eb"
+dependencies = [
+ "encode_unicode",
+ "lazy_static",
+ "libc",
+ "unicode-width",
+ "windows-sys 0.52.0",
+]
+
+[[package]]
 name = "const-oid"
 version = "0.9.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -501,6 +514,25 @@ name = "critical-section"
 version = "1.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7059fff8937831a9ae6f0fe4d658ffabf58f2ca96aa9dec1c889f936f705f216"
+
+[[package]]
+name = "crossbeam-deque"
+version = "0.8.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "613f8cc01fe9cf1a3eb3d7f488fd2fa8388403e97039e2f73692932e291a770d"
+dependencies = [
+ "crossbeam-epoch",
+ "crossbeam-utils",
+]
+
+[[package]]
+name = "crossbeam-epoch"
+version = "0.9.18"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5b82ac4a3c2ca9c3460964f020e1402edd5753411d7737aa39c3714ad1b5420e"
+dependencies = [
+ "crossbeam-utils",
+]
 
 [[package]]
 name = "crossbeam-utils"
@@ -609,6 +641,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "dialoguer"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "658bce805d770f407bc62102fca7c2c64ceef2fbcb2b8bd19d2765ce093980de"
+dependencies = [
+ "console",
+ "fuzzy-matcher",
+ "shell-words",
+ "tempfile",
+ "thiserror",
+ "zeroize",
+]
+
+[[package]]
 name = "digest"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -685,10 +731,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "either"
+version = "1.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "60b1af1c220855b6ceac025d3f6ecdd2b7c4894bfe9cd9bda4fbb4bc7c0d4cf0"
+
+[[package]]
 name = "embedded-io"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ef1a6892d9eef45c8fa6b9e0086428a2cca8491aca8f787c534a3d6d0bcb3ced"
+
+[[package]]
+name = "encode_unicode"
+version = "0.3.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a357d28ed41a50f9c765dbfe56cbc04a64e53e5fc58ba79fbc34c10ef3df831f"
 
 [[package]]
 name = "encoding_rs"
@@ -737,6 +795,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "essential-asm-gen"
+version = "0.1.0"
+source = "git+ssh://git@github.com/essential-contributions/essential-base.git#9688d1eda34e0775dc59ecb9e58f27dedc66dde5"
+dependencies = [
+ "essential-asm-spec",
+ "essential-types",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.66",
+]
+
+[[package]]
+name = "essential-asm-spec"
+version = "0.1.0"
+source = "git+ssh://git@github.com/essential-contributions/essential-base.git#9688d1eda34e0775dc59ecb9e58f27dedc66dde5"
+dependencies = [
+ "serde",
+ "serde_yaml",
+]
+
+[[package]]
 name = "essential-cli"
 version = "0.1.0"
 dependencies = [
@@ -746,6 +825,50 @@ dependencies = [
  "essential-types",
  "secp256k1",
  "serde_json",
+]
+
+[[package]]
+name = "essential-constraint-asm"
+version = "0.1.0"
+source = "git+ssh://git@github.com/essential-contributions/essential-base.git#9688d1eda34e0775dc59ecb9e58f27dedc66dde5"
+dependencies = [
+ "essential-asm-gen",
+ "essential-types",
+ "serde",
+]
+
+[[package]]
+name = "essential-constraint-vm"
+version = "0.1.0"
+source = "git+ssh://git@github.com/essential-contributions/essential-base.git#9688d1eda34e0775dc59ecb9e58f27dedc66dde5"
+dependencies = [
+ "ed25519-dalek",
+ "essential-constraint-asm",
+ "essential-types",
+ "rayon",
+ "secp256k1",
+ "sha2 0.10.8",
+ "thiserror",
+]
+
+[[package]]
+name = "essential-debugger"
+version = "0.1.0"
+source = "git+ssh://git@github.com/essential-contributions/essential-debugger.git#326d7c0bb79aad616b83c6f616201dce7367140a"
+dependencies = [
+ "anyhow",
+ "clap 4.5.7",
+ "dialoguer",
+ "essential-constraint-asm",
+ "essential-constraint-vm",
+ "essential-hash",
+ "essential-sign",
+ "essential-state-asm",
+ "essential-state-read-vm",
+ "essential-types",
+ "hex",
+ "serde_json",
+ "tokio",
 ]
 
 [[package]]
@@ -830,6 +953,27 @@ dependencies = [
  "serde_bytes",
  "serde_json",
  "sha2 0.10.8",
+]
+
+[[package]]
+name = "essential-state-asm"
+version = "0.1.0"
+source = "git+ssh://git@github.com/essential-contributions/essential-base.git#9688d1eda34e0775dc59ecb9e58f27dedc66dde5"
+dependencies = [
+ "essential-asm-gen",
+ "essential-constraint-asm",
+ "serde",
+]
+
+[[package]]
+name = "essential-state-read-vm"
+version = "0.1.0"
+source = "git+ssh://git@github.com/essential-contributions/essential-base.git#9688d1eda34e0775dc59ecb9e58f27dedc66dde5"
+dependencies = [
+ "essential-constraint-vm",
+ "essential-state-asm",
+ "essential-types",
+ "thiserror",
 ]
 
 [[package]]
@@ -1032,6 +1176,15 @@ dependencies = [
  "pin-project-lite",
  "pin-utils",
  "slab",
+]
+
+[[package]]
+name = "fuzzy-matcher"
+version = "0.3.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "54614a3312934d066701a80f20f15fa3b56d67ac7722b39eea5b4c9dd1d66c94"
+dependencies = [
+ "thread_local",
 ]
 
 [[package]]
@@ -2032,6 +2185,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "rayon"
+version = "1.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b418a60154510ca1a002a752ca9714984e21e4241e804d32555251faf8b78ffa"
+dependencies = [
+ "either",
+ "rayon-core",
+]
+
+[[package]]
+name = "rayon-core"
+version = "1.12.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1465873a3dfdaa8ae7cb14b4383657caab0b3e8a0aa9ae8e04b044854c8dfce2"
+dependencies = [
+ "crossbeam-deque",
+ "crossbeam-utils",
+]
+
+[[package]]
 name = "redox_syscall"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2394,6 +2567,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "serde_yaml"
+version = "0.9.34+deprecated"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6a8b1a1a2ebf674015cc02edccce75287f1a0130d394307b36743c2f5d504b47"
+dependencies = [
+ "indexmap",
+ "itoa",
+ "ryu",
+ "serde",
+ "unsafe-libyaml",
+]
+
+[[package]]
 name = "sha2"
 version = "0.9.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2416,6 +2602,12 @@ dependencies = [
  "cpufeatures",
  "digest 0.10.7",
 ]
+
+[[package]]
+name = "shell-words"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "24188a676b6ae68c3b2cb3a01be17fbf7240ce009799bb56d5b1409051e78fde"
 
 [[package]]
 name = "signal-hook-registry"
@@ -2621,6 +2813,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "thread_local"
+version = "1.1.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8b9ef9bad013ada3808854ceac7b46812a6465ba368859a37e2100283d2d719c"
+dependencies = [
+ "cfg-if",
+ "once_cell",
+]
+
+[[package]]
 name = "tinystr"
 version = "0.7.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2637,6 +2839,7 @@ dependencies = [
  "anyhow",
  "app-utils",
  "clap 4.5.7",
+ "essential-debugger",
  "essential-hash",
  "essential-rest-client",
  "essential-server-types",
@@ -2819,6 +3022,12 @@ dependencies = [
  "crypto-common",
  "subtle",
 ]
+
+[[package]]
+name = "unsafe-libyaml"
+version = "0.2.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "673aac59facbab8a9007c7f6108d11f63b603f7cabff99fabf650fea5c32b861"
 
 [[package]]
 name = "untrusted"

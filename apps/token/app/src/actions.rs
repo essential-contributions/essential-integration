@@ -5,6 +5,7 @@ use app_utils::{
     print::{print_contract_address, print_predicate_address},
 };
 use essential_rest_client::EssentialClient;
+use essential_types::contract::Contract;
 use std::path::PathBuf;
 
 pub async fn compile_addresses(pint_directory: PathBuf) -> anyhow::Result<Addresses> {
@@ -67,10 +68,10 @@ pub async fn deploy_app(
 ) -> anyhow::Result<Addresses> {
     let client = EssentialClient::new(addr)?;
     let token_contract =
-        compile_pint_project(pint_directory.clone().join("token"), "token.toml").await?;
+        compile_pint_project(pint_directory.clone().join("token"), "token").await?;
     let token_addresses = get_addresses(&token_contract);
     let signed_contract =
-        compile_pint_project(pint_directory.clone().join("signed"), "signed.toml").await?;
+        compile_pint_project(pint_directory.clone().join("signed"), "signed").await?;
     let signed_addresses = get_addresses(&signed_contract);
 
     let addresses = Addresses {
@@ -93,4 +94,12 @@ pub async fn deploy_app(
     client.deploy_contract(predicates).await?;
 
     Ok(addresses)
+}
+
+pub async fn get_contracts(pint_directory: PathBuf) -> anyhow::Result<Vec<Contract>> {
+    let token_contract =
+        compile_pint_project(pint_directory.clone().join("token"), "token").await?;
+    let signed_contract =
+        compile_pint_project(pint_directory.clone().join("signed"), "signed").await?;
+    Ok(vec![token_contract, signed_contract])
 }

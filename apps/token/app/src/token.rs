@@ -2,7 +2,9 @@ use crate::inputs::{self, token::query_balances, SignedBurn, SignedMint, SignedT
 use anyhow::bail;
 use essential_rest_client::EssentialClient;
 use essential_server_types::SolutionOutcome;
-use essential_types::{convert::word_4_from_u8_32, ContentAddress, PredicateAddress, Word};
+use essential_types::{
+    convert::word_4_from_u8_32, solution::Solution, ContentAddress, PredicateAddress, Word,
+};
 use essential_wallet::Wallet;
 
 pub struct Token {
@@ -81,6 +83,17 @@ impl Token {
         account_name: &str,
         balance: Word,
     ) -> anyhow::Result<ContentAddress> {
+        let solution = self.mint_solution(account_name, balance).await?;
+
+        // Submit the solution
+        self.client.submit_solution(solution).await
+    }
+
+    pub async fn mint_solution(
+        &mut self,
+        account_name: &str,
+        balance: Word,
+    ) -> anyhow::Result<Solution> {
         // Get the hashed public key of the account
         let key = self.get_hashed_key(account_name)?;
 
@@ -101,10 +114,7 @@ impl Token {
             symbol: [0; 4],
         };
 
-        let solution = builder.build(&mut self.wallet)?;
-
-        // Submit the solution
-        self.client.submit_solution(solution).await
+        builder.build(&mut self.wallet)
     }
 
     pub async fn transfer(

@@ -24,4 +24,5 @@ serde_json = { workspace = true }
 tokio = { workspace = true }
 
 [dev-dependencies]
+essential-debugger.workspace = true
 essential-wallet = { workspace = true, features = ["test-utils"]}

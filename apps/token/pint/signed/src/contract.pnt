@@ -112,7 +112,7 @@ macro @common($data, $token, $predicate, $token_addr) {
     
     state nonce = $token::storage::nonce[$predicate::key];
     
-    constraint __recover_secp256k1(__sha256({$data, nonce', $token_addr}), sig) == public_key;
+    constraint __recover_secp256k1(__sha256({$data, nonce', $token_addr.contract, $token_addr.addr}), sig) == public_key;
     constraint __sha256(public_key) == $predicate::key;
     constraint __mut_keys_len() == 0;
 }

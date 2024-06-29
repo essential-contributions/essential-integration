@@ -12,6 +12,7 @@ resolver = "2"
 anyhow = "1.0.80"
 base64 = "0.22.0"
 clap = { version = "4.5.4", features = ["derive"] }
+essential-debugger = { git = "ssh://git@github.com/essential-contributions/essential-debugger.git" }
 essential-hash = { git = "ssh://git@github.com/essential-contributions/essential-base.git" }
 essential-server-types = { git = "ssh://git@github.com/essential-contributions/essential-server.git" }
 essential-sign = { git = "ssh://git@github.com/essential-contributions/essential-base.git" }
