@@ -23,8 +23,14 @@ NAME="contract"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PINT_FILE="$SCRIPT_DIR/pint/src/$NAME.pnt"
 echo "Building $PINT_FILE"
-pintc "$PINT_FILE" --output "$temp_dir/$NAME.json"
+cp $PINT_FILE "$temp_dir/$NAME.pnt"
+cd $temp_dir
+# Due to https://github.com/essential-contributions/pint/issues/714 we must copy
+# the source to tmp dir and compile it there.
+# pintc "$PINT_FILE" --output "$temp_dir/$NAME.json"
+pintc "$temp_dir/$NAME.pnt" --output "$temp_dir/$NAME.json"
 echo "Built $PINT_FILE"
+cd $SCRIPT_DIR
 
 # ---------------------------------------------------------
 # SIGN
