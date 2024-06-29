@@ -459,6 +459,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "06ea2b9bc92be3c2baa9334a323ebca2d6f074ff852cd1d7b11064035cd3868f"
 
 [[package]]
+name = "counter-app"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "essential-deploy-contract",
+ "essential-hash",
+ "essential-rest-client",
+ "essential-types",
+ "essential-wallet",
+ "serde_json",
+ "tokio",
+]
+
+[[package]]
 name = "cpufeatures"
 version = "0.2.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -720,7 +734,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "essential-deploy-intent"
+name = "essential-deploy-contract"
 version = "0.1.0"
 dependencies = [
  "anyhow",
@@ -736,7 +750,7 @@ dependencies = [
 [[package]]
 name = "essential-hash"
 version = "0.1.0"
-source = "git+ssh://git@github.com/essential-contributions/essential-base.git#6df0326d2f101327a7567434fed28972eb091cb0"
+source = "git+ssh://git@github.com/essential-contributions/essential-base.git#9688d1eda34e0775dc59ecb9e58f27dedc66dde5"
 dependencies = [
  "essential-types",
  "postcard",
@@ -751,8 +765,11 @@ dependencies = [
  "anyhow",
  "base64",
  "clap 4.5.7",
+ "essential-hash",
  "essential-server-types",
  "essential-types",
+ "essential-wallet",
+ "hex",
  "reqwest",
  "serde",
  "serde_json",
@@ -762,7 +779,7 @@ dependencies = [
 [[package]]
 name = "essential-server-types"
 version = "0.1.0"
-source = "git+ssh://git@github.com/essential-contributions/essential-server.git#55cc8ea332d7c63b2bc5b6204e855a2773134d33"
+source = "git+ssh://git@github.com/essential-contributions/essential-server.git#09f289226c462c7d646a4165b2a67f482f31ac6c"
 dependencies = [
  "essential-types",
  "serde",
@@ -771,18 +788,17 @@ dependencies = [
 [[package]]
 name = "essential-sign"
 version = "0.1.0"
-source = "git+ssh://git@github.com/essential-contributions/essential-base.git#6df0326d2f101327a7567434fed28972eb091cb0"
+source = "git+ssh://git@github.com/essential-contributions/essential-base.git#9688d1eda34e0775dc59ecb9e58f27dedc66dde5"
 dependencies = [
  "essential-hash",
  "essential-types",
  "secp256k1",
- "serde",
 ]
 
 [[package]]
 name = "essential-signer"
 version = "0.1.0"
-source = "git+ssh://git@github.com/essential-contributions/essential-wallet.git#283b697d8c333dcb0487631bad5b5f399e1e8888"
+source = "git+ssh://git@github.com/essential-contributions/essential-wallet.git#9dbfbbc35e61499a20599c1d70baea1c85a535d7"
 dependencies = [
  "anyhow",
  "base64",
@@ -804,9 +820,8 @@ dependencies = [
 [[package]]
 name = "essential-types"
 version = "0.1.0"
-source = "git+ssh://git@github.com/essential-contributions/essential-base.git#6df0326d2f101327a7567434fed28972eb091cb0"
+source = "git+ssh://git@github.com/essential-contributions/essential-base.git#9688d1eda34e0775dc59ecb9e58f27dedc66dde5"
 dependencies = [
- "base64",
  "hex",
  "serde",
 ]
@@ -814,7 +829,7 @@ dependencies = [
 [[package]]
 name = "essential-wallet"
 version = "0.1.0"
-source = "git+ssh://git@github.com/essential-contributions/essential-wallet.git#283b697d8c333dcb0487631bad5b5f399e1e8888"
+source = "git+ssh://git@github.com/essential-contributions/essential-wallet.git#9dbfbbc35e61499a20599c1d70baea1c85a535d7"
 dependencies = [
  "anyhow",
  "clap 4.5.7",

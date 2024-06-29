@@ -1,7 +1,7 @@
 [package]
+edition = "2021"
 name = "essential-rest-client"
 version = "0.1.0"
-edition = "2021"
 
 [dependencies]
 anyhow = { workspace = true }
@@ -9,7 +9,12 @@ base64 = { workspace = true }
 clap = { workspace = true }
 essential-server-types = { workspace = true }
 essential-types = { workspace = true }
+hex.workspace = true
+reqwest = { workspace = true, features = ["json"] }
 serde = { workspace = true }
 serde_json = { workspace = true }
-reqwest = { workspace = true, features = ["json"] }
 tokio = { workspace = true }
+
+[dev-dependencies]
+essential-hash.workspace = true
+essential-wallet = { workspace = true, features = ["test-utils"] }

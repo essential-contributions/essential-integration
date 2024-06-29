@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use clap::{Parser, Subcommand};
-use essential_deploy_intent::{deploy_bytes, deploy_signed_bytes};
+use essential_deploy_contract::{deploy_bytes, deploy_signed_bytes};
 use tokio::io::{AsyncReadExt, BufReader};
 
 #[derive(Parser)]
@@ -25,9 +25,9 @@ enum Command {
     DeploySigned {
         /// The address of the server to connect to.
         server: String,
-        /// The path to the signed intents to deploy.
+        /// The path to the signed contract to deploy.
         /// Serialized as json.
-        signed_intents: PathBuf,
+        signed_contract: PathBuf,
     },
     Deploy {
         /// Set the path to the wallet directory.
@@ -38,9 +38,9 @@ enum Command {
         server: String,
         /// The name of the account to deploy the app with.
         account: String,
-        /// The path to the unsigned intents to deploy.
+        /// The path to the unsigned contract to deploy.
         /// Serialized as json.
-        intents: PathBuf,
+        contract: PathBuf,
     },
 }
 
@@ -61,22 +61,22 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
         }
         Command::DeploySigned {
             server,
-            signed_intents,
+            signed_contract,
         } => {
-            let signed_intents = read_bytes(signed_intents).await?;
-            let addr = deploy_signed_bytes(server, signed_intents).await?;
-            println!("Deployed signed intents to: {}", addr);
+            let signed_contract = read_bytes(signed_contract).await?;
+            let addr = deploy_signed_bytes(server, signed_contract).await?;
+            println!("Deployed signed contract to: {}", addr);
         }
         Command::Deploy {
             path,
             server,
             account,
-            intents,
+            contract,
         } => {
             let mut wallet = get_wallet(path)?;
-            let intents = read_bytes(intents).await?;
-            let addr = deploy_bytes(server, &account, &mut wallet, intents).await?;
-            println!("Deployed intents to: {}", addr);
+            let contract = read_bytes(contract).await?;
+            let addr = deploy_bytes(server, &account, &mut wallet, contract).await?;
+            println!("Deployed contract to: {}", addr);
         }
     }
 
