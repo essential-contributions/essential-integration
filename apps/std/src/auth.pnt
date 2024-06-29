@@ -1,13 +1,18 @@
 macro @auth($key, $i, $auth_addr, $allowed_addr) {
     @is_this_predicate($i);
-    constraint __sha256($auth_addr) == $key || @auth($auth_addr; $allowed_addr);
+    constraint __sha256($auth_addr) == $key || @auth_inner($auth_addr; $allowed_addr);
 }
 
-// macro @auth($auth_addr, $allowed_addr, &rest) {
-//     // $allowed_addr == $auth_addr || @auth($auth_addr; &rest)
-// }
+macro @auth($key, $i, $auth_addr, $allowed_addr, &rest) {
+    @is_this_predicate($i);
+    constraint __sha256($auth_addr) == $key || @auth_inner($auth_addr; $allowed_addr; &rest);
+}
 
-macro @auth($auth_addr, $allowed_addr) {
+macro @auth_inner($auth_addr, $allowed_addr, &rest) {
+    $allowed_addr == $auth_addr || @auth_inner($auth_addr; &rest)
+}
+
+macro @auth_inner($auth_addr, $allowed_addr) {
     $allowed_addr == $auth_addr
 }
 

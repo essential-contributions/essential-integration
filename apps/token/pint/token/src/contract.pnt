@@ -140,7 +140,7 @@ predicate Transfer {
     
     // Check the authorization predicate.
     var auth_addr: PredicateAddress;
-    @auth(auth_addr; key; auth::TRANSFER);
+    @auth(auth_addr; key; auth::TRANSFER; auth::TRANSFER_WITH);
 }
 
 predicate Cancel {
@@ -159,6 +159,15 @@ predicate Cancel {
     // Check the authorization predicate.
     var auth_addr: PredicateAddress;
     @auth(auth_addr; key; auth::CANCEL);
+}
+
+macro @auth($auth_addr, $key, $allowed_addr, &rest) {
+    // Enforce that the predicate at this address is in this solution.
+    interface AuthI = Auth($auth_addr.contract);
+    predicate A = AuthI::Predicate($auth_addr.addr);
+
+    // Check the authorization predicate is valid.
+    std::auth::@auth($key; A; $auth_addr; $allowed_addr; &rest);
 }
 
 macro @auth($auth_addr, $key, $allowed_addr) {
