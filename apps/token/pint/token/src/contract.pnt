@@ -1,3 +1,9 @@
+use std::lib::PredicateAddress;
+use std::lib::@delta;
+use std::lib::@safe_increment;
+use std::lib::@init_once;
+use std::lib::@init_delta;
+
 storage {
     // The balances of accounts
     balances: (b256 => int),
@@ -16,8 +22,7 @@ interface Auth {
         // The address that the authorization predicate is outputting.
         // This points the authorization predicate to an predicate in this set.
         // By setting this address the authorization can't be used with the wrong predicate.
-        pub var contract:b256;
-        pub var predicate_addr: b256;
+        pub var addr: { contract: b256, addr: b256 };
     }
 }
 
@@ -37,20 +42,20 @@ predicate Burn {
     constraint amount > 0;
 
     // The change in balance should be the negative of the amount.
-    constraint std::lib::@delta(balance) == 0 - amount;
+    constraint @delta(balance) == 0 - amount;
 
     // Make sure the balance after the burn is not negative.
     constraint balance' >= 0;
 
     // Increment the nonce.
-    constraint ::std::lib::@safe_increment(nonce);
+    constraint @safe_increment(nonce);
     
     // The balance and nonce are mutated.
     constraint __mut_keys_len() == 2;
     
     // Check the authorization predicate.
-    var auth_addr: std::lib::PredicateAddress;
-    @auth(auth_addr; key; allowed::burn::@whitelist);
+    var auth_addr: PredicateAddress;
+    @auth(auth_addr; key; auth::BURN);
 }
 
 predicate Mint {
@@ -68,8 +73,8 @@ predicate Mint {
 
     // The name and the symbol are hard coded so 
     // that if they change we get a new token.
-    var name: b256 = 0x0000000000000000000000000000000000000000000000000000000000000000;
-    var symbol: b256 = 0x0000000000000000000000000000000000000000000000000000000000000000;
+    var name: b256 = config::NAME;
+    var symbol: b256 = config::SYMBOL;
     
     // Read all the state that is being initialized.
     state balance = storage::balances[key];
@@ -80,23 +85,23 @@ predicate Mint {
 
     // The only authorized minting address.
     // Note that changing this also creates a new token.
-    constraint key == 0x1ECBB0067FC057261A6B199A0F121B5CD653B93DE9195CA5F836CE0D4D2A6E21;
+    constraint key == config::MINT_KEY;
     
     // Initialize all state.
     // This enforces the pre state must be null 
     // and the post state must be set to the provided value.
-    constraint std::lib::@init_once(balance; amount);
-    constraint std::lib::@init_once(token_name; name);
-    constraint std::lib::@init_once(token_symbol; symbol);
-    constraint std::lib::@init_once(token_decimals; decimals);
-    constraint std::lib::@init_once(nonce; 1);
+    constraint @init_once(balance; amount);
+    constraint @init_once(token_name; name);
+    constraint @init_once(token_symbol; symbol);
+    constraint @init_once(token_decimals; decimals);
+    constraint @init_once(nonce; 1);
 
     // All 5 state values are mutated.
     constraint __mut_keys_len() == 5;
     
     // Check the authorization predicate.
-    var auth_addr: std::lib::PredicateAddress;
-    @auth(auth_addr; key; allowed::mint::@whitelist);
+    var auth_addr: PredicateAddress;
+    @auth(auth_addr; key; auth::MINT);
 }
 
 predicate Transfer {
@@ -121,21 +126,21 @@ predicate Transfer {
     constraint sender_balance' >= 0;
 
     // The change in the sender balance should be the negative of the amount.
-    constraint std::lib::@delta(sender_balance) == 0 - amount;
+    constraint @delta(sender_balance) == 0 - amount;
 
     // The change in the receiver balance should be the positive of the amount.
     // This also handles the case where the receiver's balance is nil.
-    constraint std::lib::@init_delta(receiver_balance; amount);
+    constraint @init_delta(receiver_balance; amount);
 
     // Increment the nonce.
-    constraint ::std::lib::@safe_increment(nonce);
+    constraint @safe_increment(nonce);
     
     // The sender balance, receiver balance, and nonce are mutated.
     constraint __mut_keys_len() == 3;
     
     // Check the authorization predicate.
-    var auth_addr: std::lib::PredicateAddress;
-    @auth(auth_addr; key; allowed::transfer::@whitelist);
+    var auth_addr: PredicateAddress;
+    @auth(auth_addr; key; auth::TRANSFER);
 }
 
 predicate Cancel {
@@ -146,21 +151,21 @@ predicate Cancel {
 
     // Increment the nonce so that any pending transfers or 
     // burns are invalidated.
-    constraint ::std::lib::@safe_increment(nonce);
+    constraint @safe_increment(nonce);
 
     // The nonce is mutated.
     constraint __mut_keys_len() == 1;
     
     // Check the authorization predicate.
-    var auth_addr: std::lib::PredicateAddress;
-    @auth(auth_addr; key; allowed::cancel::@whitelist);
+    var auth_addr: PredicateAddress;
+    @auth(auth_addr; key; auth::CANCEL);
 }
 
-macro @auth($auth_addr, $key, $whitelist) {
+macro @auth($auth_addr, $key, $allowed_addr) {
     // Enforce that the predicate at this address is in this solution.
-    interface AuthI = Auth($auth_addr.set);
-    predicate A = AuthI::Predicate($auth_addr.predicate_addr);
+    interface AuthI = Auth($auth_addr.contract);
+    predicate A = AuthI::Predicate($auth_addr.addr);
 
     // Check the authorization predicate is valid.
-    std::auth::@authenticate($auth_addr; A; $key; $whitelist);
+    std::auth::@auth($key; A; $auth_addr; $allowed_addr);
 }

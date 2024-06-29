@@ -1,8 +1,0 @@
-// Hard coded whitelisted authorization predicate addresses
-macro @whitelist($auth_addr, $check) {
-    // Cancel
-    $check($auth_addr; { 
-        contract:0xC5467F3FF55C071218F63D4D38F099C1C4FCC841C0979E888AC312E0990817D4,
-        predicate_addr: 0x4CA613FB75FCD6CCFB1D760E44F4674746D6B6C5F0848ACA96B8F582E3FE486C,
-    })
-}

@@ -1,16 +1,17 @@
-
-macro @authenticate($auth_addr, $i, $signed_auth) {
-    constraint $signed_auth($auth_addr; @signed_auth_check) || $i::key == __sha256($auth_addr);
+macro @auth($key, $i, $auth_addr, $allowed_addr) {
     @is_this_predicate($i);
+    constraint __sha256($auth_addr) == $key || @auth($key; $allowed_addr);
 }
 
-// Check if the authorized predicate is the key predicate.
-macro @signed_auth_check($auth_addr, $signed_addr) {
-    ($auth_addr.set == $signed_addr.set && $auth_addr.predicate_addr == $signed_addr.predicate_addr)
+macro @auth($key, $allowed_addr, &rest) {
+    __sha256($allowed_addr) == $key || @auth($key; &rest);
 }
 
+macro @auth($key, $allowed_addr) {
+    __sha256($allowed_addr) == $key
+}
+
+// Check if the authorization predicate is pointing to the current predicate.
 macro @is_this_predicate($I) {
-    constraint $I::set == __this_set_address();
-    constraint $I::predicate_addr == __this_address();
-    constraint $I::path == __this_pathway();
+    constraint $I::addr == { contract: __this_set_address(), addr: __this_address() };
 }

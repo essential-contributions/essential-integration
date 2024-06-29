@@ -2,12 +2,6 @@ storage {
     nonce: (b256 => int),
 }
 
-// The interface of dependent constraints
-interface OtherConstraints {
-    predicate Constraints {
-    }
-}
-
 predicate Transfer {
     // The address that the token is being sent key
     pub var key: b256;
@@ -26,54 +20,6 @@ predicate Transfer {
     state nonce = storage::nonce[key];
     
     constraint ::std::lib::@recover({key, to, token, nonce', contract, predicate_addr, path}; sig; public_key);
-    
-    @common();
-}
-
-predicate TransferFromTo {
-    // The address that the token is being sent key
-    pub var key: b256;
-    // The address that the token is being sent to
-    pub var to: b256;
-    // The token being transfered 
-    pub var token: int;
-    // The instance of the transfer predicate
-    pub var contract: b256;
-    pub var predicate_addr: b256;
-    pub var path: int;
-
-    var sig: ::std::lib::Secp256k1Signature;
-    var public_key: ::std::lib::Secp256k1PublicKey;
-    var constraints: ::std::lib::PredicateAddress;
-    
-    state nonce = storage::nonce[key];
-    
-    constraint ::std::lib::@recover({key, to, constraints.contract, constraints.predicate_addr, nonce', contract, predicate_addr, path}; sig; public_key);
-    // ::std::lib::@solution_contains(OtherConstraints; Constraints; constraints);
-
-    @common();
-}
-
-predicate TransferFrom {
-    // The address that the token is being sent key
-    pub var key: b256;
-    // The address that the token is being sent to
-    pub var to: b256;
-    // The token being transfered 
-    pub var token: int;
-    // The instance of the transfer predicate
-    pub var contract: b256;
-    pub var predicate_addr: b256;
-    pub var path: int;
-
-    var sig: ::std::lib::Secp256k1Signature;
-    var public_key: ::std::lib::Secp256k1PublicKey;
-    var constraints: ::std::lib::PredicateAddress;
-    
-    state nonce = storage::nonce[key];
-    
-    constraint ::std::lib::@recover({key, constraints.contract, constraints.predicate_addr, nonce', contract, predicate_addr, path}; sig; public_key);
-    // ::std::lib::@solution_contains(OtherConstraints; Constraints; constraints);
     
     @common();
 }

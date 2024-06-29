@@ -1,15 +1,23 @@
-type PredicateAddress = { contract:b256, predicate_addr: b256 };
+type PredicateAddress = { contract: b256, addr: b256 };
 
 type Secp256k1Signature = { b256, b256, int };
 
 type Secp256k1PublicKey = { b256, int };
 
+// Will panic unless the pre state is nil
+// and the post state is the given value.
+macro @init_once($s, $v) {
+    $s == nil && $s' == $v
+}
 
+// If the pre state is nil then the post state must 
+// match the $eq value. 
+// Otherwise the change in state must be equal to $eq.
 macro @init_delta($s, $eq) {
     ($s == nil && $s' == $eq) || @delta($s) == $eq
 }
 
-// The state should increment by 1.
+// The change in state.
 macro @delta($s) {
     $s' - $s
 }
@@ -24,11 +32,6 @@ macro @safe_increment($s) {
 macro @recover($data, $sig, $key) {
     __recover_secp256k1(__sha256($data), $sig) == $key
 }
-
-// macro @solution_contains($other, $predicate, $predicate_address) {
-//     interface Other = $other($predicate_address.contract);
-//     predicate O = Other::$predicate($predicate_address.predicate_addr);
-// }
 
 // Constrain the mutable keys so nothing else can be modified.
 macro @constrain_keys($key, &rest) {

@@ -1,4 +1,5 @@
 use std::lib::PredicateAddress;
+use std::auth::@auth;
 
 storage {
     owners: (int => b256),
@@ -39,5 +40,7 @@ predicate Transfer {
     constraint owner' == A::to;
 
     std::lib::@constrain_keys(A::token);
-    // std::auth::@authenticate(auth_addr; A; allowed::signed::@predicates);
+    @auth(A::key; A; auth_addr; [TRANSFER_AUTH]);
 }
+
+const TRANSFER_AUTH: PredicateAddress = { contract: signed::ADDRESS, predicate_addr: signed::Transfer::ADDRESS };
