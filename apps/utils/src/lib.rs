@@ -1,6 +1,8 @@
 pub mod addresses;
 pub mod cli;
 pub mod compile;
+#[cfg(feature = "test-utils")]
+pub mod debug;
 pub mod inputs;
 pub mod local_server;
 pub mod print;

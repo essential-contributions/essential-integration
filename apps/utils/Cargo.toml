@@ -1,15 +1,22 @@
 [package]
+edition = "2021"
 name = "app-utils"
 version = "0.1.0"
-edition = "2021"
 
 [dependencies]
 anyhow = { workspace = true }
 clap = { workspace = true }
 essential-hash = { workspace = true }
+essential-rest-client = { workspace = true, optional = true }
+essential-server-types = { workspace = true }
 essential-sign = { workspace = true }
 essential-signer = { workspace = true }
 essential-types = { workspace = true }
 hex = { workspace = true }
 serde_json = { workspace = true }
 tokio = { workspace = true }
+
+essential-debugger = { workspace = true, optional = true }
+
+[features]
+test-utils = ["dep:essential-debugger", "dep:essential-rest-client"]

@@ -1,11 +1,6 @@
 use app_utils::local_server::setup_server;
-use essential_server_types::{QueryStateReads, StateReadRequestType};
-use essential_types::solution::Solution;
-use std::path::{Path, PathBuf};
-use token::{
-    actions::{deploy_app, get_contracts},
-    token::Token,
-};
+use std::path::PathBuf;
+use token::{actions::deploy_app, token::Token};
 
 const PRIV_KEY: &str = "128A3D2146A69581FD8FC4C0A9B7A96A5755D85255D4E47F814AFA69D7726C8D";
 
@@ -128,46 +123,4 @@ pub fn find_address(predicate: &str, num: usize) -> Option<&str> {
         .nth(num)
         .and_then(|s| s.split(&[' ', ')', ',', ']', ';']).next())
         .map(|s| s.trim())
-}
-
-#[allow(dead_code)]
-#[derive(Clone, Copy, Debug)]
-struct Target {
-    index: usize,
-    contract: usize,
-    predicate: usize,
-    constraint: usize,
-}
-
-#[allow(dead_code)]
-async fn debug(pint_directory: &Path, server_address: &str, solution: &Solution, target: Target) {
-    let contracts = get_contracts(pint_directory.to_owned()).await.unwrap();
-    let predicate = contracts[target.contract].predicates[target.predicate].clone();
-    let query = QueryStateReads::from_solution(
-        solution.clone(),
-        target.index as u16,
-        &predicate,
-        StateReadRequestType::Reads,
-    );
-
-    let r = essential_rest_client::EssentialClient::new(server_address.to_string())
-        .unwrap()
-        .query_state_reads(query)
-        .await
-        .unwrap();
-    let state = match r {
-        essential_server_types::QueryStateReadsOutput::Reads(r) => r,
-        _ => unreachable!(),
-    };
-    let state = state.into_iter().collect();
-
-    essential_debugger::run(
-        solution.clone(),
-        target.index as u16,
-        predicate,
-        target.constraint,
-        state,
-    )
-    .await
-    .unwrap();
 }

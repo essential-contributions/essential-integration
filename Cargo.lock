@@ -127,7 +127,10 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "clap 4.5.7",
+ "essential-debugger",
  "essential-hash",
+ "essential-rest-client",
+ "essential-server-types",
  "essential-sign",
  "essential-signer",
  "essential-types",
@@ -854,7 +857,7 @@ dependencies = [
 [[package]]
 name = "essential-debugger"
 version = "0.1.0"
-source = "git+ssh://git@github.com/essential-contributions/essential-debugger.git#326d7c0bb79aad616b83c6f616201dce7367140a"
+source = "git+ssh://git@github.com/essential-contributions/essential-debugger.git#16a80c6217ead0f2c6d968728b5473a58625e22c"
 dependencies = [
  "anyhow",
  "clap 4.5.7",
@@ -2839,7 +2842,6 @@ dependencies = [
  "anyhow",
  "app-utils",
  "clap 4.5.7",
- "essential-debugger",
  "essential-hash",
  "essential-rest-client",
  "essential-server-types",
