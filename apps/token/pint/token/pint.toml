@@ -1,0 +1,9 @@
+[package]
+name = "token"
+kind = "contract"
+
+[dependencies]
+std = { path = "../../../std" }
+
+[contract-dependencies]
+signed = { path = "../signed" }

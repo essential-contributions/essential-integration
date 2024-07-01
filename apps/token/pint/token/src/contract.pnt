@@ -1,0 +1,180 @@
+use std::lib::PredicateAddress;
+use std::lib::@delta;
+use std::lib::@safe_increment;
+use std::lib::@init_once;
+use std::lib::@init_delta;
+
+storage {
+    // The balances of accounts
+    balances: (b256 => int),
+    // The nonce for each account
+    nonce: (b256 => int),
+    // The name of the token hashed
+    token_name: b256,
+    // The symbol of the token hashed
+    token_symbol: b256,
+    // The decimals of the token
+    decimals: int,
+}
+
+interface Auth {
+    predicate Predicate {
+        // The address that the authorization predicate is outputting.
+        // This points the authorization predicate to an predicate in this set.
+        // By setting this address the authorization can't be used with the wrong predicate.
+        pub var addr: { contract: b256, addr: b256 };
+    }
+}
+
+predicate Burn {
+    // These are public so that the authorization can check them.
+
+    // The address of the account that is burning tokens.
+    pub var key: b256;
+    // The amount being burnt.
+    pub var amount: int;
+    
+    // Read the balance and nonce from storage.
+    state balance = storage::balances[key];
+    state nonce = storage::nonce[key];
+
+    // Don't allow empty burns.
+    constraint amount > 0;
+
+    // The change in balance should be the negative of the amount.
+    constraint @delta(balance) == 0 - amount;
+
+    // Make sure the balance after the burn is not negative.
+    constraint balance' >= 0;
+
+    // Increment the nonce.
+    constraint @safe_increment(nonce);
+    
+    // The balance and nonce are mutated.
+    constraint __mut_keys_len() == 2;
+    
+    // Check the authorization predicate.
+    var auth_addr: PredicateAddress;
+    @auth(auth_addr; key; auth::BURN);
+}
+
+predicate Mint {
+    // These are public so that the authorization can check them.
+
+    // The key that is being minted to.
+    // Note this is hard coded so that only one entity can mint.
+    pub var key: b256;
+
+    // The amount being minted.
+    // This is also the total supply.
+    pub var amount: int;
+    // The number of decimals for the token.
+    pub var decimals: int;
+
+    // The name and the symbol are hard coded so 
+    // that if they change we get a new token.
+    var name: b256 = config::NAME;
+    var symbol: b256 = config::SYMBOL;
+    
+    // Read all the state that is being initialized.
+    state balance = storage::balances[key];
+    state nonce = storage::nonce[key];
+    state token_name = storage::token_name;
+    state token_symbol = storage::token_symbol;
+    state token_decimals = storage::decimals;
+
+    // The only authorized minting address.
+    // Note that changing this also creates a new token.
+    constraint key == config::MINT_KEY;
+    
+    // Initialize all state.
+    // This enforces the pre state must be null 
+    // and the post state must be set to the provided value.
+    constraint @init_once(balance; amount);
+    constraint @init_once(token_name; name);
+    constraint @init_once(token_symbol; symbol);
+    constraint @init_once(token_decimals; decimals);
+    constraint @init_once(nonce; 1);
+
+    // All 5 state values are mutated.
+    constraint __mut_keys_len() == 5;
+    
+    // Check the authorization predicate.
+    var auth_addr: PredicateAddress;
+    @auth(auth_addr; key; auth::MINT);
+}
+
+predicate Transfer {
+    // These are public so that the authorization can check them.
+
+    // The address that the amount is being sent from.
+    pub var key: b256;
+    // The address that the amount is being sent to.
+    pub var to: b256;
+    // The amount being transfered.
+    pub var amount: int;
+
+    // Read the balances and nonce from storage.
+    state sender_balance = storage::balances[key];
+    state receiver_balance = storage::balances[to];
+    state nonce = storage::nonce[key];
+
+    // Don't allow empty transfers.
+    constraint amount > 0;
+
+    // Make sure the sender has enough balance.
+    constraint sender_balance' >= 0;
+
+    // The change in the sender balance should be the negative of the amount.
+    constraint @delta(sender_balance) == 0 - amount;
+
+    // The change in the receiver balance should be the positive of the amount.
+    // This also handles the case where the receiver's balance is nil.
+    constraint @init_delta(receiver_balance; amount);
+
+    // Increment the nonce.
+    constraint @safe_increment(nonce);
+    
+    // The sender balance, receiver balance, and nonce are mutated.
+    constraint __mut_keys_len() == 3;
+    
+    // Check the authorization predicate.
+    var auth_addr: PredicateAddress;
+    @auth(auth_addr; key; auth::TRANSFER; auth::TRANSFER_WITH);
+}
+
+predicate Cancel {
+    // The account that is cancelling a transfer or burn.
+    pub var key: b256;
+    
+    state nonce = storage::nonce[key];
+
+    // Increment the nonce so that any pending transfers or 
+    // burns are invalidated.
+    constraint @safe_increment(nonce);
+
+    // The nonce is mutated.
+    constraint __mut_keys_len() == 1;
+    
+    // Check the authorization predicate.
+    var auth_addr: PredicateAddress;
+    @auth(auth_addr; key; auth::CANCEL);
+}
+
+macro @auth($auth_addr, $key, $allowed_addr, &rest) {
+    // Enforce that the predicate at this address is in this solution.
+    interface AuthI = Auth($auth_addr.contract);
+    predicate A = AuthI::Predicate($auth_addr.addr);
+
+    // Check the authorization predicate is valid.
+    std::auth::@auth($key; A; $auth_addr; $allowed_addr; &rest);
+}
+
+macro @auth($auth_addr, $key, $allowed_addr) {
+    // Enforce that the predicate at this address is in this solution.
+    interface AuthI = Auth($auth_addr.contract);
+    predicate A = AuthI::Predicate($auth_addr.addr);
+
+    // Check the authorization predicate is valid.
+    std::auth::@auth($key; A; $auth_addr; $allowed_addr);
+}

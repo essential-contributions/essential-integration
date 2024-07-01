@@ -1,0 +1,28 @@
+[package]
+edition = "2021"
+name = "token"
+version = "0.1.0"
+
+[[bin]]
+name = "app"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = { workspace = true }
+app-utils = { workspace = true }
+clap = { workspace = true }
+essential-hash = { workspace = true }
+essential-rest-client = { workspace = true }
+essential-server-types = { workspace = true }
+essential-sign = { workspace = true }
+essential-signer = { workspace = true }
+essential-types = { workspace = true }
+essential-wallet = { workspace = true }
+hex = { workspace = true }
+rpassword = { workspace = true }
+serde_json = { workspace = true }
+tokio = { workspace = true }
+
+[dev-dependencies]
+app-utils = { workspace = true, features = ["test-utils"] }
+essential-wallet = { workspace = true, features = ["test-utils"] }

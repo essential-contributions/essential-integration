@@ -1,0 +1,11 @@
+[package]
+name = "nft"
+kind = "contract"
+
+[dependencies]
+# Library dependencies go here.
+std = { path = "../../../std" }
+
+[contract-dependencies]
+# Contract dependencies go here.
+signed = { path = "../signed" }
