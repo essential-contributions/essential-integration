@@ -10,10 +10,10 @@ use std::path::PathBuf;
 
 pub async fn compile_addresses(pint_directory: PathBuf) -> anyhow::Result<Addresses> {
     let token_contract =
-        compile_pint_project(pint_directory.clone().join("token"), "token.toml").await?;
+        compile_pint_project(pint_directory.clone().join("token"), "token").await?;
     let token_addresses = get_addresses(&token_contract);
     let signed_contract =
-        compile_pint_project(pint_directory.clone().join("signed"), "signed.toml").await?;
+        compile_pint_project(pint_directory.clone().join("signed"), "signed").await?;
     let signed_addresses = get_addresses(&signed_contract);
 
     let addresses = Addresses {
