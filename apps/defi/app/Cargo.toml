@@ -1,0 +1,22 @@
+[package]
+name = "defi-app"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = { workspace = true }
+app-utils = { workspace = true }
+essential-deploy-contract.workspace = true
+essential-hash = { workspace = true }
+essential-rest-client = { workspace = true }
+essential-sign.workspace = true
+essential-signer = { workspace = true }
+essential-types.workspace = true
+essential-wallet = { workspace = true }
+hex = { workspace = true }
+serde_json = { workspace = true }
+token.workspace = true
+tokio = { workspace = true }
+
+[dev-dependencies]
+essential-wallet = { workspace = true, features = ["test-utils"]}

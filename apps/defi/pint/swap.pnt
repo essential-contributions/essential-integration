@@ -1,0 +1,64 @@
+
+interface Token {
+    storage {
+        balances: (b256 => int),
+        nonce: (b256 => int),
+        token_name: b256,
+        token_symbol: b256,
+        decimals: int,
+    }
+}
+
+interface SwapI {
+    intent Intent {
+        pub var key: b256;
+        pub var account_b: b256;
+        
+        pub var token_a: b256;
+        pub var token_b: b256;
+
+        pub var amount_a_max: int;
+        pub var amount_b_min: int;
+    }
+}
+
+intent Swap {
+    pub var key: b256;
+    pub var account_b: b256;
+    
+    pub var token_a: b256;
+    pub var token_b: b256;
+
+    pub var amount_a_max: int;
+    pub var amount_b_min: int;
+    
+    interface TokenA = Token(token_a);
+    interface TokenB = Token(token_b);
+
+    state balance_a = TokenA::storage::balances[key];
+    state balance_b = TokenB::storage::balances[account_b];
+
+    constraint std::lib::@delta(balance_a) >= 0 - amount_a_max;
+    constraint (balance_b == nil && balance_b' >= amount_b_min) || std::lib::@delta(balance_b) >= amount_b_min;
+
+    
+}
+
+intent SignedSwap {
+    pub var key: b256;
+
+    var sig: std::lib::Secp256k1Signature;
+    var public_key: std::lib::Secp256k1PublicKey;
+    var swap: std::lib::IntentAddress;
+    
+    interface I = SwapI(swap.set);
+    intent S = I::Intent(swap.intent_addr);
+
+    interface TokenA = Token(S::token_a);
+    state nonce = TokenA::storage::nonce[S::key];
+    
+    std::lib::@recover({S::key, S::account_b, S::token_a, S::token_b, S::amount_a_max, S::amount_b_min, nonce'}; sig; public_key);
+    
+    constraint __sha256(public_key) == key;
+    constraint key == S::key;
+}

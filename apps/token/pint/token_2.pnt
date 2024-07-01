@@ -1,0 +1,166 @@
+storage {
+    // The balances of accounts
+    balances: (b256 => int),
+    // The nonce for each account
+    nonce: (b256 => int),
+    // The name of the token hashed
+    token_name: b256,
+    // The symbol of the token hashed
+    token_symbol: b256,
+    // The decimals of the token
+    decimals: int,
+}
+
+interface Auth {
+    intent Intent {
+        // The address that the authorization intent is outputting.
+        // This points the authorization intent to an intent in this set.
+        // By setting this address the authorization can't be used with the wrong intent.
+        pub var set: b256;
+        pub var intent_addr: b256;
+    }
+}
+
+intent Burn {
+    // These are public so that the authorization can check them.
+
+    // The address of the account that is burning tokens.
+    pub var key: b256;
+    // The amount being burnt.
+    pub var amount: int;
+    
+    // Read the balance and nonce from storage.
+    state balance = storage::balances[key];
+    state nonce = storage::nonce[key];
+
+    // Don't allow empty burns.
+    constraint amount > 0;
+
+    // The change in balance should be the negative of the amount.
+    constraint std::lib::@delta(balance) == 0 - amount;
+
+    // Make sure the balance after the burn is not negative.
+    constraint balance' >= 0;
+
+    // Increment the nonce.
+    constraint ::std::lib::@safe_increment(nonce);
+    
+    // The balance and nonce are mutated.
+    constraint __mut_keys_len() == 2;
+    
+    // Check the authorization intent.
+    var auth_addr: std::lib::IntentAddress;
+    @auth(auth_addr; key; allowed::burn::@whitelist);
+}
+
+intent Mint {
+    // These are public so that the authorization can check them.
+
+    // The key that is being minted to.
+    // Note this is hard coded so that only one entity can mint.
+    pub var key: b256;
+
+    // The amount being minted.
+    // This is also the total supply.
+    pub var amount: int;
+    // The number of decimals for the token.
+    pub var decimals: int;
+
+    // The name and the symbol are hard coded so 
+    // that if they change we get a new token.
+    var name: b256 = 0x0000000000000001000000000000000000000000000000000000000000000000;
+    var symbol: b256 = 0x0000000000000000000000000000000000000000000000000000000000000000;
+    
+    // Read all the state that is being initialized.
+    state balance = storage::balances[key];
+    state nonce = storage::nonce[key];
+    state token_name = storage::token_name;
+    state token_symbol = storage::token_symbol;
+    state token_decimals = storage::decimals;
+
+    // The only authorized minting address.
+    // Note that changing this also creates a new token.
+    constraint key == 0x1ECBB0067FC057261A6B199A0F121B5CD653B93DE9195CA5F836CE0D4D2A6E21;
+    
+    // Initialize all state.
+    // This enforces the pre state must be null 
+    // and the post state must be set to the provided value.
+    constraint std::lib::@init_once(balance; amount);
+    constraint std::lib::@init_once(token_name; name);
+    constraint std::lib::@init_once(token_symbol; symbol);
+    constraint std::lib::@init_once(token_decimals; decimals);
+    constraint std::lib::@init_once(nonce; 1);
+
+    // All 5 state values are mutated.
+    constraint __mut_keys_len() == 5;
+    
+    // Check the authorization intent.
+    var auth_addr: std::lib::IntentAddress;
+    @auth(auth_addr; key; allowed::mint::@whitelist);
+}
+
+intent Transfer {
+    // These are public so that the authorization can check them.
+
+    // The address that the amount is being sent from.
+    pub var key: b256;
+    // The address that the amount is being sent to.
+    pub var to: b256;
+    // The amount being transfered.
+    pub var amount: int;
+
+    // Read the balances and nonce from storage.
+    state sender_balance = storage::balances[key];
+    state receiver_balance = storage::balances[to];
+    state nonce = storage::nonce[key];
+
+    // Don't allow empty transfers.
+    constraint amount > 0;
+
+    // Make sure the sender has enough balance.
+    constraint sender_balance' >= 0;
+
+    // The change in the sender balance should be the negative of the amount.
+    constraint std::lib::@delta(sender_balance) == 0 - amount;
+
+    // The change in the receiver balance should be the positive of the amount.
+    // This also handles the case where the receiver's balance is nil.
+    constraint std::lib::@init_delta(receiver_balance; amount);
+
+    // Increment the nonce.
+    constraint ::std::lib::@safe_increment(nonce);
+    
+    // The sender balance, receiver balance, and nonce are mutated.
+    constraint __mut_keys_len() == 3;
+    
+    // Check the authorization intent.
+    var auth_addr: std::lib::IntentAddress;
+    @auth(auth_addr; key; allowed::transfer::@whitelist);
+}
+
+intent Cancel {
+    // The account that is cancelling a transfer or burn.
+    pub var key: b256;
+    
+    state nonce = storage::nonce[key];
+
+    // Increment the nonce so that any pending transfers or 
+    // burns are invalidated.
+    constraint ::std::lib::@safe_increment(nonce);
+
+    // The nonce is mutated.
+    constraint __mut_keys_len() == 1;
+    
+    // Check the authorization intent.
+    var auth_addr: std::lib::IntentAddress;
+    @auth(auth_addr; key; allowed::cancel::@whitelist);
+}
+
+macro @auth($auth_addr, $key, $whitelist) {
+    // Enforce that the intent at this address is in this solution.
+    interface AuthI = Auth($auth_addr.set);
+    intent A = AuthI::Intent($auth_addr.intent_addr);
+
+    // Check the authorization intent is valid.
+    std::auth::@authenticate($auth_addr; A; $key; $whitelist);
+}
