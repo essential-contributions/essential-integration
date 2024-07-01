@@ -1,5 +1,5 @@
 use app_utils::local_server::setup_server;
-use nft_front_end::{deploy_app, print_addresses, Nft};
+use nft::{deploy_app, print_addresses, Nft};
 use std::path::PathBuf;
 
 #[tokio::test]
@@ -29,7 +29,7 @@ async fn mint_and_transfer(server_address: String) {
         server_address.clone(),
         &mut wallet,
         "deployer",
-        pint_directory,
+        pint_directory.clone(),
     )
     .await
     .unwrap();
@@ -39,7 +39,7 @@ async fn mint_and_transfer(server_address: String) {
 
     let token = 0;
 
-    let mut nft = Nft::new(server_address, addresses.clone(), wallet).unwrap();
+    let mut nft = Nft::new(server_address.clone(), addresses.clone(), wallet).unwrap();
 
     nft.create_account(account_name).ok();
 
@@ -53,6 +53,7 @@ async fn mint_and_transfer(server_address: String) {
 
     let to = "bob";
     nft.create_account(to).ok();
+
     nft.transfer(account_name, to, token).await.unwrap();
 
     while nft.do_i_own(account_name, token).await.unwrap() {

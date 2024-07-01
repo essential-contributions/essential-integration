@@ -1,7 +1,7 @@
 use app_utils::cli::ServerName;
 use clap::{Parser, Subcommand};
 use essential_types::Word;
-use nft_front_end::{compile_addresses, deploy_app, print_addresses, Nft};
+use nft::{compile_addresses, deploy_app, print_addresses, Nft};
 use std::path::PathBuf;
 
 #[derive(Parser)]

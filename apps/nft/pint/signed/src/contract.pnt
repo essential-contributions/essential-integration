@@ -1,43 +1,57 @@
-storage {
-    nonce: (b256 => int),
+use std::lib::PredicateAddress;
+
+interface Nft {
+    storage {
+        owners: (int => b256),
+        nonce: (b256 => int),
+    }
+
+    predicate TransferI {
+        // The address that the token is being sent key
+        pub var key: b256;
+        // The token being transfered 
+        pub var to: b256;
+        // The instance of the transfer predicate
+        pub var token: int;
+    }
+    
+    predicate CancelI {
+        // The address that the token is being sent key
+        pub var key: b256;
+    }
 }
 
 predicate Transfer {
-    // The address that the token is being sent key
-    pub var key: b256;
-    // The address that the token is being sent to
-    pub var to: b256;
-    // The token being transfered 
-    pub var token: int;
-    // The instance of the transfer predicate
-    pub var contract: b256;
-    pub var predicate_addr: b256;
-    pub var path: int;
+    // The nft address
+    pub var nft: PredicateAddress;
+
+    interface N = Nft(nft.contract);
+    predicate I = N::TransferI(nft.addr);
 
     var sig: ::std::lib::Secp256k1Signature;
     var public_key: ::std::lib::Secp256k1PublicKey;
     
-    state nonce = storage::nonce[key];
+    state nonce = N::storage::nonce[I::key];
     
-    constraint ::std::lib::@recover({key, to, token, nonce', contract, predicate_addr, path}; sig; public_key);
+    constraint ::std::lib::@recover({I::key, I::to, I::token, nonce', nft}; sig; public_key);
     
-    @common();
+    constraint __sha256(public_key) == I::key;
+    constraint __mut_keys_len() == 0;
 }
 
 predicate Cancel {
-    var key: b256;
+    pub var nft: PredicateAddress;
+    
+    interface N = Nft(nft.contract);
+    predicate I = N::TransferI(nft.addr);
+
     var sig: ::std::lib::Secp256k1Signature;
     var public_key: ::std::lib::Secp256k1PublicKey;
     
-    state nonce = storage::nonce[key];
+    state nonce = N::storage::nonce[I::key];
     
-    constraint ::std::lib::@recover({key, nonce'}; sig; public_key);
+    constraint ::std::lib::@recover({I::key, nonce', nft}; sig; public_key);
 
-    @common();
-}
-
-macro @common() {
-    constraint ::std::lib::@safe_increment(nonce);
-    constraint __sha256(public_key) == key;
-    ::std::lib::@constrain_keys(key);
+    constraint __sha256(public_key) == I::key;
+    constraint __mut_keys_len() == 0;
 }

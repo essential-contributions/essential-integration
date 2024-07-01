@@ -1,5 +1,5 @@
 [package]
-name = "nft-front-end"
+name = "nft"
 version = "0.1.0"
 edition = "2021"
 
@@ -19,4 +19,5 @@ serde_json = { workspace = true }
 tokio = { workspace = true }
 
 [dev-dependencies]
+app-utils = { workspace = true, features = ["test-utils"] }
 essential-wallet = { workspace = true, features = ["test-utils"]}

@@ -1,3 +1,5 @@
+use std::lib::PredicateAddress;
+
 storage {
     token: int,
 }
@@ -5,12 +7,22 @@ storage {
 interface Nft {
     storage {
         owners: (int => b256),
+        nonce: (b256 => int),
+    }
+
+    predicate TransferI {
+        // The address that the token is being sent key
+        pub var key: b256;
+        // The token being transfered 
+        pub var to: b256;
+        // The instance of the transfer predicate
+        pub var token: int;
     }
 }
 
 predicate Init {
-    var contract:b256;
-    interface NftInstance = Nft(set);
+    var contract: b256;
+    interface NftInstance = Nft(contract);
     
     state current_token = storage::token;
     state token_owner = NftInstance::storage::owners[current_token'];
@@ -21,14 +33,10 @@ predicate Init {
 }
 
 predicate Swap {
-    pub var key: b256;
-    pub var to: b256;
-    pub var token: int;
-    pub var contract:b256;
-    pub var predicate_addr: b256;
-    pub var path: int;
-    
-    interface NftInstance = Nft(set);
+    pub var nft: PredicateAddress;
+
+    interface NftInstance = Nft(nft.contract);
+    predicate I = NftInstance::TransferI(nft.addr);
     
     state current_token = storage::token;
     state current_token_owner = NftInstance::storage::owners[current_token];
@@ -38,15 +46,7 @@ predicate Swap {
     constraint new_token_owner' == current_token_owner;
     constraint current_token_owner' == new_token_owner;
 
-    @check_auth(
-        { key: key, token: token, to: to};
-        {key: current_token_owner, token: current_token, to: new_token_owner}
-    );
-
-}
-
-macro @check_auth($auth, $change) {
-    constraint $auth.key == $change.key;
-    constraint $auth.token == $change.token;
-    constraint $auth.to == $change.to;
+    constraint current_token_owner == I::key;
+    constraint new_token_owner == I::to;
+    constraint current_token == I::token;
 }

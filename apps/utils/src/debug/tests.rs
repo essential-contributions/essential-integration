@@ -5,30 +5,6 @@ use super::*;
 #[test]
 fn test_get_source() {
     let code = r#"
-signed (path+root=df0ad451fc3c4baa)
-interface ::Token {
-    storage {
-        balances: ( b256 => int ),
-        nonce: ( b256 => int ),
-        token_name: b256,
-        token_symbol: b256,
-        decimals: int,
-    }
-enum ::TransferMode = All | Key | KeyTo | KeyAmount;
-type ::std::lib::Secp256k1Signature = {b256, b256, int};
-type ::std::lib::Secp256k1PublicKey = {b256, int};
-
-predicate ::Burn {
-    constraint (__mut_keys_len() == 0);
-}
-
-
-predicate ::Transfer {
-    constraint (__mut_keys_len() == 0);
-}
-
-
-token (essential-integration/apps/token/pint/token)
 const ::auth::signed::TransferWith::ADDRESS: b256 = 0x3750D1EE658C1A69072EC71B7C586C29779B4570DB1B19C054A58A9AD5803653;
 storage {
     balances: ( b256 => int ),
@@ -68,7 +44,8 @@ predicate ::Mint {
 }
     "#;
 
-    let other = r#"const ::auth::signed::TransferWith::ADDRESS: b256 = 0x3750D1EE658C1A69072EC71B7C586C29779B4570DB1B19C054A58A9AD5803653;
+    let other = r#"
+const ::auth::signed::TransferWith::ADDRESS: b256 = 0x3750D1EE658C1A69072EC71B7C586C29779B4570DB1B19C054A58A9AD5803653;
 storage {
     balances: ( b256 => int ),
 }

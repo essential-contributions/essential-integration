@@ -3,7 +3,6 @@ name = "swap_any"
 kind = "contract"
 
 [dependencies]
-# Library dependencies go here.
+std = { path = "../../../std" }
 
 [contract-dependencies]
-# Contract dependencies go here.

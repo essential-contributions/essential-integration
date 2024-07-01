@@ -1780,7 +1780,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "nft-front-end"
+name = "nft"
 version = "0.1.0"
 dependencies = [
  "anyhow",
