@@ -7,13 +7,13 @@
 }:
 let
   src = ../.;
-  crateDir = "${src}/crates/essential-rest-client";
+  crateDir = "${src}/crates/essential-deploy-contract";
   crateTOML = "${crateDir}/Cargo.toml";
   lockFile = "${src}/Cargo.lock";
 in
 rustPlatform.buildRustPackage {
   inherit src;
-  pname = "essential-rest-client";
+  pname = "essential-deploy-contract";
   version = (builtins.fromTOML (builtins.readFile crateTOML)).package.version;
 
   OPENSSL_NO_VENDOR = 1;

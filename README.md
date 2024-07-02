@@ -9,8 +9,8 @@ end-to-end Essential applications via the command line.
 
 The developer experience can be broken into the following stages:
 
-1. **build**: Write and compile the intent set with Pint.
-2. **sign**: Sign the compiled intent set (using `essential-cli`, included in
+1. **build**: Write and compile the contract with Pint.
+2. **sign**: Sign the compiled contract (using `essential-cli`, included in
    this crate for now).
 3. **deploy**: Deploy the application to an `essential-rest-server` instance.
 4. **solve**: Create a solution and submit it to the `essential-rest-server`,

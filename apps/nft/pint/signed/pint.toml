@@ -1,0 +1,8 @@
+[package]
+name = "signed"
+kind = "contract"
+
+[dependencies]
+std = { path = "../../../std" }
+
+[contract-dependencies]

@@ -1,36 +1,36 @@
-//! Library to read intents and solutions.
+//! Library to read predicates and solutions.
 //!
-//! Provides functions to read and optionally deserialize intents and solutions in JSON format.
+//! Provides functions to read and optionally deserialize predicates and solutions in JSON format.
 
 #![deny(missing_docs)]
 #![deny(unsafe_code)]
 
 use anyhow::{anyhow, Result};
-use essential_types::{intent::Intent, solution::Solution};
+use essential_types::{predicate::Predicate, solution::Solution};
 use std::{
     fs::DirEntry,
     path::{Path, PathBuf},
 };
 use tokio::io::{AsyncReadExt, BufReader};
 
-/// Read and deserialize intent sets in a directory.
-pub async fn read_intent_sets(path: PathBuf) -> Result<Vec<Vec<Intent>>> {
-    let mut intent_sets: Vec<Vec<Intent>> = vec![];
+/// Read and deserialize contracts in a directory.
+pub async fn read_contracts(path: PathBuf) -> Result<Vec<Vec<Predicate>>> {
+    let mut contracts: Vec<Vec<Predicate>> = vec![];
     for entry in path.read_dir()? {
         let file_path = dir_entry_to_path(&path, entry?)
             .inspect_err(|err| println!("skipping file: {}", err))?;
         let bytes = read_bytes(file_path).await?;
-        let intents = deserialize_intents(bytes).await?;
-        intent_sets.push(intents);
+        let predicate = deserialize_contract(bytes).await?;
+        contracts.push(predicate);
     }
-    Ok(intent_sets)
+    Ok(contracts)
 }
 
-/// Read and deserialize intents from a file.
-pub async fn read_intents(path: PathBuf) -> Result<Vec<Intent>> {
+/// Read and deserialize predicates from a file.
+pub async fn read_contract(path: PathBuf) -> Result<Vec<Predicate>> {
     let bytes = read_bytes(path).await?;
-    let intents = deserialize_intents(bytes).await?;
-    Ok(intents)
+    let contract = deserialize_contract(bytes).await?;
+    Ok(contract)
 }
 
 /// Read and deserialize solutions in a directory.
@@ -75,10 +75,10 @@ pub async fn read_bytes_dir(path: PathBuf) -> Result<Vec<Vec<u8>>> {
     Ok(all_bytes)
 }
 
-/// Deserialize intents from bytes.
-pub async fn deserialize_intents(bytes: Vec<u8>) -> Result<Vec<Intent>> {
-    let intents = serde_json::from_slice::<Vec<Intent>>(&bytes)?;
-    Ok(intents)
+/// Deserialize contract from bytes.
+pub async fn deserialize_contract(bytes: Vec<u8>) -> Result<Vec<Predicate>> {
+    let contract = serde_json::from_slice::<Vec<Predicate>>(&bytes)?;
+    Ok(contract)
 }
 
 /// Deserialize a solution from bytes.
