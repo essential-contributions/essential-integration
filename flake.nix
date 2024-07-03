@@ -47,7 +47,7 @@
           essential-cli = prev.callPackage ./pkgs/essential-cli.nix { };
           # Essential REST client.
           essential-rest-client = prev.callPackage ./pkgs/essential-rest-client.nix { };
-          # Essential read (intents and solutions).
+          # Essential read (predicates and solutions).
           essential-read = prev.callPackage ./pkgs/essential-read.nix { };
           # Essential deploy contract.
           essential-deploy-contract = prev.callPackage ./pkgs/essential-deploy-contract.nix { };
