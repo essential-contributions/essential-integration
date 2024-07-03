@@ -1,0 +1,34 @@
+// ANCHOR: counter_storage
+storage {
+    counter: int,
+}
+// ANCHOR_END: counter_storage
+
+// ANCHOR: predicate
+// ANCHOR: pred_start
+predicate Increment {
+// ANCHOR_END: pred_start
+// ANCHOR: read_storage
+    state counter: int = storage::counter;
+// ANCHOR_END: read_storage
+// ANCHOR: constraint
+    constraint (counter == nil && counter' == 1) || counter' == counter + 1;
+// ANCHOR_END: constraint
+// ANCHOR: pred_end
+}
+// ANCHOR: pred_end
+// ANCHOR_END: predicate
+
+predicate Z {
+    state counter: int = storage::counter;
+// ANCHOR: constraint_simple
+    constraint counter' == counter + 1;
+// ANCHOR_END: constraint_simple
+}
+
+predicate ZZ{
+    state counter: int = storage::counter;
+// ANCHOR: constraint_init
+    constraint counter == nil && counter' == 1;
+// ANCHOR_END: constraint_init
+}

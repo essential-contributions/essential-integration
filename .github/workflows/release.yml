@@ -1,0 +1,77 @@
+name: release 
+
+on:
+    push:
+      tags:
+        - "v*.*.*"
+        - "v*.*.*-*"
+
+jobs:
+  build:
+    permissions:
+      id-token: "write" # added for magic-nix-cache-action
+      contents: "read"  # added for magic-nix-cache-action
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: SSH 
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: |
+            ${{ secrets.SSH_KEY_BASE }}
+            ${{ secrets.SSH_KEY_PINT }}
+            ${{ secrets.SSH_KEY_PINTNIX }}
+            ${{ secrets.SSH_KEY_SERVER }}
+            ${{ secrets.SSH_KEY_WALLET }}
+            ${{ secrets.SSH_KEY_DEBUGGER }}
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v10
+      - name: Cache Nix
+        uses: DeterminateSystems/magic-nix-cache-action@v4
+      - run: nix build --print-build-logs --no-update-lock-file .#essential
+      - uses: actions/upload-artifact@v4
+        with:
+          name: essential-${{ matrix.os }}
+          path: |
+            ./result/bin/essential-rest-server
+            ./result/bin/pint
+    
+  release:
+    permissions:
+      contents: write
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Artifact Ubuntu
+        uses: actions/download-artifact@v4
+        with:
+            name: essential-ubuntu-latest
+            path: ${{ github.workspace }}/bin/ubuntu-latest
+      - name: Download Artifact Macos
+        uses: actions/download-artifact@v4
+        with:
+            name: essential-macos-latest
+            path: ${{ github.workspace }}/bin/macos-latest
+      - run: |
+          mv ${{ github.workspace }}/bin/macos-latest/essential-rest-server ${{ github.workspace }}/bin/macos-latest/essential-rest-server-macos-latest
+          mv ${{ github.workspace }}/bin/ubuntu-latest/essential-rest-server ${{ github.workspace }}/bin/ubuntu-latest/essential-rest-server-ubuntu-latest
+          mv ${{ github.workspace }}/bin/macos-latest/pint ${{ github.workspace }}/bin/macos-latest/pint-macos-latest
+          mv ${{ github.workspace }}/bin/ubuntu-latest/pint ${{ github.workspace }}/bin/ubuntu-latest/pint-ubuntu-latest
+          chmod 755 ${{ github.workspace }}/bin/macos-latest/essential-rest-server-macos-latest
+          chmod 755 ${{ github.workspace }}/bin/ubuntu-latest/essential-rest-server-ubuntu-latest
+          chmod 755 ${{ github.workspace }}/bin/macos-latest/pint-macos-latest
+          chmod 755 ${{ github.workspace }}/bin/ubuntu-latest/pint-ubuntu-latest
+          find ${{ github.workspace }}/bin
+      - name: Release 
+        uses: softprops/action-gh-release@v2
+        with:
+            files: |
+                ${{ github.workspace }}/bin/ubuntu-latest/essential-rest-server-ubuntu-latest
+                ${{ github.workspace }}/bin/macos-latest/essential-rest-server-macos-latest
+                ${{ github.workspace }}/bin/ubuntu-latest/pint-ubuntu-latest
+                ${{ github.workspace }}/bin/macos-latest/pint-macos-latest

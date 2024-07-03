@@ -57,6 +57,8 @@
           cargo-readme = final.callPackage ./pkgs/cargo-readme.nix { inherit (inputs) cargo-readme-src; };
           # All app tests.
           test-app-counter = final.callPackage ./pkgs/test-app-counter.nix { };
+          # All app tests.
+          book = final.callPackage ./pkgs/book.nix { };
         };
         default = inputs.self.overlays.essential-integration;
       };
@@ -68,6 +70,7 @@
         essential-deploy-contract = pkgs.essential-deploy-contract;
         essential = pkgs.essential;
         test-app-counter = pkgs.test-app-counter;
+        book = pkgs.book;
         cargo-readme = pkgs.cargo-readme;
         default = inputs.self.packages.${pkgs.system}.essential;
       });
