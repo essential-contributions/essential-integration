@@ -3,7 +3,7 @@ authors = ["Essential"]
 language = "en"
 multilingual = false
 src = "src"
-title = "Essential App Building"
+title = "Getting Started with Essential Applications"
 
 [output.html]
 additional-js = ["theme/pint.js"]

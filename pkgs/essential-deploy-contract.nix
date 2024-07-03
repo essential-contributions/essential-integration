@@ -36,7 +36,7 @@ rustPlatform.buildRustPackage {
   inherit src;
   pname = "essential-deploy-contract";
   version = (builtins.fromTOML (builtins.readFile crateTOML)).package.version;
-  
+
   buildAndTestSubdir = "crates/essential-deploy-contract";
 
   OPENSSL_NO_VENDOR = 1;
