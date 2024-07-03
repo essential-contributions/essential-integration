@@ -1,0 +1,22 @@
+macro @auth($key, $i, $auth_addr, $allowed_addr) {
+    @is_this_predicate($i);
+    constraint __sha256($auth_addr) == $key || @auth_inner($auth_addr; $allowed_addr);
+}
+
+macro @auth($key, $i, $auth_addr, $allowed_addr, &rest) {
+    @is_this_predicate($i);
+    constraint __sha256($auth_addr) == $key || @auth_inner($auth_addr; $allowed_addr; &rest);
+}
+
+macro @auth_inner($auth_addr, $allowed_addr, &rest) {
+    $allowed_addr == $auth_addr || @auth_inner($auth_addr; &rest)
+}
+
+macro @auth_inner($auth_addr, $allowed_addr) {
+    $allowed_addr == $auth_addr
+}
+
+// Check if the authorization predicate is pointing to the current predicate.
+macro @is_this_predicate($I) {
+    constraint $I::addr == { contract: __this_set_address(), addr: __this_address() };
+}

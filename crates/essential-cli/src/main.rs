@@ -1,4 +1,5 @@
 use clap::Parser;
+use essential_types::{contract::Contract, PredicateAddress};
 
 /// A small suite of tools for simplifying the Essential application devex.
 #[derive(Debug, Parser)]
@@ -12,23 +13,23 @@ enum EssentialCli {
     /// {"private":<private-key>,"public":<public-key>}
     /// ```
     GenerateKeys,
-    IntentAddresses(IntentAddresses),
-    SignIntentSet(SignIntentSet),
+    PredicateAddresses(PredicateAddresses),
+    SignContract(SignContract),
 }
 
-/// Given a path to an intent set JSON file, output a JSON list with an
-/// `IntentAddress` per intent in the set.
+/// Given a path to an contract JSON file, output a JSON list with an
+/// `PredicateAddress` per predicate in the set.
 #[derive(Debug, clap::Args)]
 #[command(version, about, long_about = None)]
-struct IntentAddresses {
-    /// The path to the intent set (`Vec<Intent>`) serialized to JSON.
+struct PredicateAddresses {
+    /// The path to the contract (`Vec<Predicate>`) serialized to JSON.
     path: std::path::PathBuf,
 }
 
-/// Given a path to an intent set JSON file, deserialize and sign the intent set
-/// and output the signed intent set as JSON.
+/// Given a path to an contract JSON file, deserialize and sign the contract
+/// and output the signed contract as JSON.
 #[derive(Debug, clap::Args)]
-struct SignIntentSet {
+struct SignContract {
     /// The [`secp256k1::PrivateKey`] in its JSON-serialized form (e.g. `[12, 211, 1, 4, /* ..etc */]`).
     #[arg(long)]
     private_key_json: String,
@@ -48,43 +49,46 @@ fn generate_keys() {
     println!("{}", serde_json::to_string(&map).unwrap())
 }
 
-fn intent_addresses(cmd: IntentAddresses) {
-    let intent_set = read_intent_set(&cmd.path);
-    let set_addr = essential_hash::intent_set_addr::from_intents(&intent_set);
-    let intent_addrs: Vec<_> = intent_set
+fn predicate_addresses(cmd: PredicateAddresses) {
+    let contract = read_contract(&cmd.path);
+    let contract_addr = essential_hash::contract_addr::from_contract(&contract);
+    let predicate_addrs: Vec<_> = contract
         .iter()
-        .map(|intent| {
-            let intent = essential_hash::content_addr(intent);
-            let set = set_addr.clone();
-            essential_types::IntentAddress { set, intent }
+        .map(|predicate| {
+            let predicate = essential_hash::content_addr(predicate);
+            let contract = contract_addr.clone();
+            PredicateAddress {
+                contract,
+                predicate,
+            }
         })
         .collect();
-    println!("{}", serde_json::to_string(&intent_addrs).unwrap());
+    println!("{}", serde_json::to_string(&predicate_addrs).unwrap());
 }
 
-fn sign_intent_set(cmd: SignIntentSet) {
+fn sign_contract(cmd: SignContract) {
     let sk_bytes: [u8; 32] = serde_json::from_str(&cmd.private_key_json)
         .expect("failed to deserialize JSON private key to `[u8; 32]`");
     let sk = secp256k1::SecretKey::from_slice(&sk_bytes)
         .expect("failed to parse secp256k1 private key from bytes");
-    let intent_set = read_intent_set(&cmd.path);
-    let signed = essential_sign::intent_set::sign(intent_set, &sk);
+    let contract = read_contract(&cmd.path);
+    let signed = essential_sign::contract::sign(contract, &sk);
     println!("{}", serde_json::to_string(&signed).unwrap());
 }
 
-fn read_intent_set(path: &std::path::Path) -> Vec<essential_types::intent::Intent> {
+fn read_contract(path: &std::path::Path) -> Contract {
     use std::{fs::File, io::BufReader};
     let file = File::open(path)
         .map_err(|e| format!("failed to open file {}: {e}", path.display()))
         .unwrap();
     let reader = BufReader::new(file);
-    serde_json::from_reader(reader).expect("failed to deserialize intent set")
+    serde_json::from_reader(reader).expect("failed to deserialize contract")
 }
 
 fn main() {
     match EssentialCli::parse() {
         EssentialCli::GenerateKeys => generate_keys(),
-        EssentialCli::IntentAddresses(cmd) => intent_addresses(cmd),
-        EssentialCli::SignIntentSet(cmd) => sign_intent_set(cmd),
+        EssentialCli::PredicateAddresses(cmd) => predicate_addresses(cmd),
+        EssentialCli::SignContract(cmd) => sign_contract(cmd),
     }
 }

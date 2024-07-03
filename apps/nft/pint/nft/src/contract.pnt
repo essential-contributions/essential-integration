@@ -1,0 +1,80 @@
+use std::lib::PredicateAddress;
+use std::auth::@auth;
+use std::lib::@safe_increment;
+
+storage {
+    owners: (int => b256),
+    nonce: (b256 => int),
+}
+
+interface Auth {
+    predicate Predicate {
+        // The address that the authorization predicate is outputting.
+        // This points the authorization predicate to an predicate in this set.
+        // By setting this address the authorization can't be used with the wrong predicate.
+        pub var addr: { contract: b256, addr: b256 };
+    }
+}
+
+predicate Mint {
+    var token: int;
+    var new_owner: b256;
+
+    state owner = storage::owners[token];
+
+    constraint owner == nil;
+
+    constraint owner' == new_owner;
+    
+    constraint __mut_keys_len() == 1;
+}
+
+predicate Transfer {
+    // The address that the amount is being sent from.
+    pub var key: b256;
+    // The address that the amount is being sent to.
+    pub var to: b256;
+    // The token being transfered.
+    pub var token: int;
+    
+    var auth_addr: PredicateAddress;
+    
+    interface AuthI = Auth(auth_addr.contract);
+    predicate A = AuthI::Predicate(auth_addr.addr);
+
+    state owner = storage::owners[token];
+    state nonce = storage::nonce[key];
+
+    constraint owner == key;
+    constraint owner' == to;
+    constraint @safe_increment(nonce);
+
+    constraint __mut_keys_len() == 2;
+    @auth(key; A; auth_addr; TRANSFER);
+}
+
+predicate Cancel {
+    // The account that is cancelling a transfer or burn.
+    pub var key: b256;
+    
+    var auth_addr: PredicateAddress;
+    
+    interface AuthI = Auth(auth_addr.contract);
+    predicate A = AuthI::Predicate(auth_addr.addr);
+
+    state nonce = storage::nonce[key];
+
+    // Increment the nonce so that any pending transfers or 
+    // burns are invalidated.
+    constraint @safe_increment(nonce);
+
+    // The nonce is mutated.
+    constraint __mut_keys_len() == 1;
+    
+    // Check the authorization predicate.
+    @auth(key; A; auth_addr; CANCEL);
+}
+
+
+const TRANSFER = { contract: signed::ADDRESS, addr: signed::Transfer::ADDRESS };
+const CANCEL = { contract: signed::ADDRESS, addr: signed::Cancel::ADDRESS };

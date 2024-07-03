@@ -5,6 +5,7 @@
 , xxd
 , darwin
 , cargo-toml-lint
+, cargo-readme
 , clippy
 , rqlite
 , rust-analyzer
@@ -13,9 +14,11 @@
 , stdenv
 , libiconv
 , openssl
+, mdbook
 }:
 mkShell {
   buildInputs = [
+    cargo-readme
     essential
     jq
     xxd
@@ -27,6 +30,7 @@ mkShell {
     rustfmt
     openssl
     openssl.dev
+    mdbook
   ] ++ lib.optionals stdenv.isDarwin [
     darwin.apple_sdk.frameworks.SystemConfiguration
   ];

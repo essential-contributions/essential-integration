@@ -1,10 +1,10 @@
 # This test script does the following:
 #
 # 1. Builds the pint contract.
-# 2. Signs the intent set.
-# 3. Deploys the intent set.
-# 4. Solves the `init` intent and waits for inclusion in a block.
-# 5. Solves the `increment` intent and waits for inclusion in a block.
+# 2. Signs the contract.
+# 3. Deploys the contract.
+# 4. Solves the `increment` predicate for the first time and waits for inclusion in a block.
+# 5. Solves the `increment` predicate again and waits for inclusion in a block.
 
 set -eo pipefail
 temp_dir=$(mktemp -d)
@@ -19,76 +19,90 @@ fi
 # BUILD
 # ---------------------------------------------------------
 
-NAME="counter"
+NAME="contract"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PINT_FILE="$SCRIPT_DIR/$NAME.pnt"
+PINT_FILE="$SCRIPT_DIR/pint/src/$NAME.pnt"
 echo "Building $PINT_FILE"
-pintc "$PINT_FILE" --output "$temp_dir/$NAME.json"
+cp $PINT_FILE "$temp_dir/$NAME.pnt"
+cd $temp_dir
+# Due to https://github.com/essential-contributions/pint/issues/714 we must copy
+# the source to tmp dir and compile it there.
+# pintc "$PINT_FILE" --output "$temp_dir/$NAME.json"
+pintc "$temp_dir/$NAME.pnt" --output "$temp_dir/$NAME.json"
 echo "Built $PINT_FILE"
+cd $SCRIPT_DIR
 
 # ---------------------------------------------------------
 # SIGN
 # ---------------------------------------------------------
 
-# Create a keypair and sign the intent set.
-INTENT_SET_JSON_FILE="$temp_dir/$NAME.json"
-echo "Signing $INTENT_SET_JSON_FILE"
+# Create a keypair and sign the contract.
+CONTRACT_JSON_FILE="$temp_dir/$NAME.json"
+echo "Signing $CONTRACT_JSON_FILE"
 KEYPAIR_JSON=$(essential generate-keys)
 PRIVATE_KEY_JSON=$(echo $KEYPAIR_JSON | jq -c ."private")
-SIGNED_INTENT_SET_JSON=$(essential sign-intent-set \
-  --private-key-json "$PRIVATE_KEY_JSON" $INTENT_SET_JSON_FILE)
+SIGNED_CONTRACT_JSON=$(essential sign-contract \
+  --private-key-json "$PRIVATE_KEY_JSON" $CONTRACT_JSON_FILE)
 
 # ---------------------------------------------------------
 # DEPLOY
 # ---------------------------------------------------------
 
-# Deploy the intent set. Assumes the following server port.
-echo "Deploying signed intent set"
-echo $SIGNED_INTENT_SET_JSON | jq '.'
+# Deploy the contract. Assumes the following server port.
+echo "Deploying signed contract"
+echo $SIGNED_CONTRACT_JSON | jq '.'
 RESPONSE=$(curl -X POST --http2-prior-knowledge -H "Content-Type: application/json" \
-  -d "$SIGNED_INTENT_SET_JSON" \
-  "http://localhost:$SERVER_PORT/deploy-intent-set")
+  -d "$SIGNED_CONTRACT_JSON" \
+  "http://localhost:$SERVER_PORT/deploy-contract")
 echo "$RESPONSE" | jq '.'
 
-# Retrieve the intent addresses (ordered by name).
-INTENT_ADDRESSES=$(essential intent-addresses $INTENT_SET_JSON_FILE)
-INTENT_ADDRESS_INCREMENT=$(echo $INTENT_ADDRESSES | jq -c '.[0]')
-INTENT_ADDRESS_INIT=$(echo $INTENT_ADDRESSES | jq -c '.[1]')
-INTENT_SET_CA=$(echo $INTENT_ADDRESSES | jq -c '.[0]."set"')
+# Retrieve the predicate addresses.
+PREDICATE_ADDRESSES=$(essential predicate-addresses $CONTRACT_JSON_FILE)
+PREDICATE_ADDRESS_INCREMENT=$(echo $PREDICATE_ADDRESSES | jq -c '.[0]')
+CONTRACT_CA=$(echo $PREDICATE_ADDRESSES | jq -c '.[0]."contract"')
 
-# Make sure the deploy response matches our intent set CA.
-if [ "$RESPONSE" != "$INTENT_SET_CA" ]; then
-  echo "Error: RESPONSE does not match INTENT_SET_CA"
+# Make sure the deploy response matches our contract content address.
+if [ "$RESPONSE" != "$CONTRACT_CA" ]; then
+  echo "Error: RESPONSE does not match CONTRACT_CA"
   echo "RESPONSE: $RESPONSE"
-  echo "INTENT_SET_CA: $INTENT_SET_CA"
+  echo "CONTRACT_CA: $CONTRACT_CA"
   exit 1
 fi
 
 # ---------------------------------------------------------
-# SOLVE `init`
+# SOLVE `increment`
 # ---------------------------------------------------------
 
-# Construct a solution to initialise the `counter` to `0`.
-SOLUTION=$(jq -n \
-  --argjson intent_addr "$INTENT_ADDRESS_INIT" \
-'
-{
-  data: [
-    {
-      intent_to_solve: $intent_addr,
-      decision_variables: [],
-      state_mutations: [
-        {
-          key: [0],
-          value: [0]
-        }
-      ],
-      transient_data: []
-    }
-  ]
-}')
+increment_solution() {
+  local PREV_COUNT=$1
+  local NEXT_COUNT=$2
+  SOLUTION=$(jq -n \
+    --argjson predicate_addr "$PREDICATE_ADDRESS_INCREMENT" \
+    --argjson prev_count "$PREV_COUNT" \
+    --argjson next_count "$NEXT_COUNT" \
+  '
+  {
+    data: [
+      {
+        predicate_to_solve: $predicate_addr,
+        decision_variables: [],
+        state_mutations: [
+          {
+            key: [$prev_count],
+            value: [$next_count]
+          }
+        ],
+        transient_data: []
+      }
+    ]
+  }')
+  echo $SOLUTION
+}
 
-echo "Submitting 'init' solution"
+# Construct a solution to increment the counter for the first time.
+SOLUTION=$(increment_solution 0 1)
+
+echo "Submitting 'increment' solution"
 echo $SOLUTION | jq '.'
 RESPONSE=$(curl -X POST --http2-prior-knowledge -H "Content-Type: application/json" \
   -d "$SOLUTION" \
@@ -141,8 +155,8 @@ await_solution_outcome $SOLUTION_CA
 # CHECK STATE
 # ---------------------------------------------------------
 
-ADDRESS=$(echo $INTENT_SET_CA | jq -r '.')
-KEY="AAAAAAAAAAAAAAAA" # Key `[0u8; 8]` as base64url
+ADDRESS=$(echo $CONTRACT_CA | jq -r '.')
+KEY="0000000000000000" # Key `[0u8; 8]` as hex
 echo "Querying state $ADDRESS/$KEY"
 RESPONSE=$(curl -X GET --http2-prior-knowledge -H "Content-Type: application/json" \
   "http://localhost:$SERVER_PORT/query-state/$ADDRESS/$KEY")
@@ -152,29 +166,10 @@ echo "$RESPONSE" | jq .
 # SOLVE `increment`
 # ---------------------------------------------------------
 
-# Construct a solution to increment the counter.
+# Construct a solution to increment the counter to 2.
 PREV_COUNT=$(echo $RESPONSE | jq '.[0]')
 NEXT_COUNT=$(expr $PREV_COUNT + 1)
-SOLUTION=$(jq -n \
-  --argjson answer "42" \
-  --argjson intent_addr "$INTENT_ADDRESS_INCREMENT" \
-  --argjson next_count "$NEXT_COUNT" \
-'
-{
-  data: [
-    {
-      intent_to_solve: $intent_addr,
-      decision_variables: [[$answer]],
-      state_mutations: [
-        {
-          key: [0],
-          value: [$next_count]
-        }
-      ],
-      transient_data: []
-    }
-  ]
-}')
+SOLUTION=$(increment_solution $PREV_COUNT $NEXT_COUNT)
 
 # Submit the solution.
 echo "Submitting 'increment' solution"

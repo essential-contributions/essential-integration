@@ -1,3 +1,5 @@
 apps/*/*.json
 result
 target
+out
+.vscode

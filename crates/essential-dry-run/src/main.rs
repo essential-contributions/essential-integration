@@ -1,5 +1,5 @@
 use clap::{Parser, Subcommand};
-use essential_dry_run::{dry_run_from_path, dry_run_with_intents_from_path};
+use essential_dry_run::{dry_run_from_path, dry_run_with_contracts_from_path};
 use std::path::PathBuf;
 
 #[derive(Parser)]
@@ -15,13 +15,13 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
-    CheckWithIntents {
+    CheckWithContracts {
         /// The address of the server to connect to.
         #[arg(long)]
         server: String,
-        /// Path to compiled intents.
+        /// Path to compiled contracts.
         #[arg(long)]
-        intents: PathBuf,
+        contracts: PathBuf,
         /// Path to solution.
         #[arg(long)]
         solution: PathBuf,
@@ -46,12 +46,12 @@ async fn main() {
 
 async fn run(cli: Cli) -> anyhow::Result<()> {
     match cli.command {
-        Command::CheckWithIntents {
+        Command::CheckWithContracts {
             server,
-            intents,
+            contracts,
             solution,
         } => {
-            let output = dry_run_with_intents_from_path(server, intents, solution).await?;
+            let output = dry_run_with_contracts_from_path(server, contracts, solution).await?;
             println!("{}", serde_json::to_string(&output)?);
         }
         Command::Check { solution, server } => {
