@@ -73,25 +73,34 @@ fi
 # SOLVE `increment`
 # ---------------------------------------------------------
 
+increment_solution() {
+  local PREV_COUNT=$1
+  local NEXT_COUNT=$2
+  SOLUTION=$(jq -n \
+    --argjson predicate_addr "$PREDICATE_ADDRESS_INCREMENT" \
+    --argjson prev_count "$PREV_COUNT" \
+    --argjson next_count "$NEXT_COUNT" \
+  '
+  {
+    data: [
+      {
+        predicate_to_solve: $predicate_addr,
+        decision_variables: [],
+        state_mutations: [
+          {
+            key: [$prev_count],
+            value: [$next_count]
+          }
+        ],
+        transient_data: []
+      }
+    ]
+  }')
+  echo $SOLUTION
+}
+
 # Construct a solution to increment the counter for the first time.
-SOLUTION=$(jq -n \
-  --argjson predicate_addr "$PREDICATE_ADDRESS_INCREMENT" \
-'
-{
-  data: [
-    {
-      predicate_to_solve: $predicate_addr,
-      decision_variables: [],
-      state_mutations: [
-        {
-          key: [0],
-          value: [1]
-        }
-      ],
-      transient_data: []
-    }
-  ]
-}')
+SOLUTION=$(increment_solution 0 1)
 
 echo "Submitting 'increment' solution"
 echo $SOLUTION | jq '.'
@@ -160,26 +169,7 @@ echo "$RESPONSE" | jq .
 # Construct a solution to increment the counter to 2.
 PREV_COUNT=$(echo $RESPONSE | jq '.[0]')
 NEXT_COUNT=$(expr $PREV_COUNT + 1)
-SOLUTION=$(jq -n \
-  --argjson answer "42" \
-  --argjson predicate_addr "$PREDICATE_ADDRESS_INCREMENT" \
-  --argjson next_count "$NEXT_COUNT" \
-'
-{
-  data: [
-    {
-      predicate_to_solve: $predicate_addr,
-      decision_variables: [[$answer]],
-      state_mutations: [
-        {
-          key: [0],
-          value: [$next_count]
-        }
-      ],
-      transient_data: []
-    }
-  ]
-}')
+SOLUTION=$(increment_solution $PREV_COUNT $NEXT_COUNT)
 
 # Submit the solution.
 echo "Submitting 'increment' solution"
