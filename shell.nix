@@ -14,6 +14,7 @@
 , stdenv
 , libiconv
 , openssl
+, mdbook
 }:
 mkShell {
   buildInputs = [
@@ -29,6 +30,7 @@ mkShell {
     rustfmt
     openssl
     openssl.dev
+    mdbook
   ] ++ lib.optionals stdenv.isDarwin [
     darwin.apple_sdk.frameworks.SystemConfiguration
   ];

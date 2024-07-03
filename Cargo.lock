@@ -494,6 +494,7 @@ name = "counter-app"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "app-utils",
  "essential-deploy-contract",
  "essential-hash",
  "essential-rest-client",
