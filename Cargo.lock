@@ -921,7 +921,7 @@ dependencies = [
 [[package]]
 name = "essential-server-types"
 version = "0.1.0"
-source = "git+ssh://git@github.com/essential-contributions/essential-server.git#09f289226c462c7d646a4165b2a67f482f31ac6c"
+source = "git+ssh://git@github.com/essential-contributions/essential-server.git#73f7da0aebd88857b423f8c7569b1bebcc64dd98"
 dependencies = [
  "essential-types",
  "serde",

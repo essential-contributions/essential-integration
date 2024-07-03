@@ -26,11 +26,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1719537902,
-        "narHash": "sha256-8ytymP40dXyLEqxFp+B/rnUqGbnjkE0cwAXXEbeQpwA=",
+        "lastModified": 1719961023,
+        "narHash": "sha256-IR9dIvgptB+r1sN79cHTTlzFNG5ZusT4xtJFUtMbS0Y=",
         "ref": "refs/heads/main",
-        "rev": "09f289226c462c7d646a4165b2a67f482f31ac6c",
-        "revCount": 78,
+        "rev": "73f7da0aebd88857b423f8c7569b1bebcc64dd98",
+        "revCount": 89,
         "type": "git",
         "url": "ssh://git@github.com/essential-contributions/essential-server"
       },
