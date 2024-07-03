@@ -54,7 +54,7 @@ pub async fn dry_run_with_contracts_from_path(
     let contracts = read_contracts(contracts)
         .await?
         .into_iter()
-        .map(|predicates| Contract::without_salt(predicates))
+        .map(Contract::without_salt)
         .collect();
     let solution = read_solution(solution).await?;
     let output = dry_run_with_contracts(server, contracts, solution).await?;
