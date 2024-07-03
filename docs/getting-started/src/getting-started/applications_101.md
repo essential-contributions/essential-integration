@@ -1,6 +1,6 @@
 # Essential Applications 101
 
-Essential applications at the highest level composed of `contract`s. Although this terminology will be familiar to developers coming from imperative blockchain languages (e.g. Solidity), a _declarative_ contract is a fundamentally different thing.
+Essential applications at the highest level are composed of `contract`s. Although this terminology will be familiar to developers coming from imperative blockchain languages (e.g. Solidity), a _declarative_ contract is a fundamentally different thing.
 
 Imperative "contracts" take a set of inputs, and update state as a side-effect of the execution of a sequence of opcodes over these inputs. In particular, a set of storage opcodes exist which directly act upon state. 
 
