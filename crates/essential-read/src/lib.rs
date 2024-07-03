@@ -89,10 +89,21 @@ pub async fn deserialize_solution(bytes: Vec<u8>) -> Result<Solution> {
 
 /// Convert a `DirEntry` in directory with given path to a `PathBuf`.
 fn dir_entry_to_path(path: &Path, entry: DirEntry) -> Result<PathBuf> {
+    if entry
+        .file_type()
+        .inspect_err(|err| println!("skipping file: {}", err))?
+        .is_dir()
+    {
+        return Err(anyhow!("skipping directory: {:?}", entry.path()));
+    }
+
     let name = entry.file_name();
     let name = name
         .to_str()
         .ok_or_else(|| anyhow!("file name is invalid UTF-8"))?;
+    if !name.ends_with(".json") {
+        return Err(anyhow!("skipping non-JSON file: {:?}", name));
+    }
     let path = path.join(name);
     Ok(path)
 }

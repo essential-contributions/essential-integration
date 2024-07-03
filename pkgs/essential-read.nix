@@ -1,9 +1,4 @@
-{ lib
-, stdenv
-, darwin
-, openssl
-, pkg-config
-, rustPlatform
+{ rustPlatform
 }:
 let
   src = ../.;
@@ -16,16 +11,8 @@ rustPlatform.buildRustPackage {
   pname = "essential-read";
   version = (builtins.fromTOML (builtins.readFile crateTOML)).package.version;
 
-  OPENSSL_NO_VENDOR = 1;
-
   nativeBuildInputs = [
     pkg-config
-  ];
-
-  buildInputs = [
-    openssl
-  ] ++ lib.optionals stdenv.isDarwin [
-    darwin.apple_sdk.frameworks.SystemConfiguration
   ];
 
   cargoLock = {
