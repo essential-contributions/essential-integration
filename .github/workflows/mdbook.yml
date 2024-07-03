@@ -26,6 +26,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: |
+            ${{ secrets.SSH_KEY_BASE }}
+            ${{ secrets.SSH_KEY_PINT }}
+            ${{ secrets.SSH_KEY_PINTNIX }}
+            ${{ secrets.SSH_KEY_SERVER }}
+            ${{ secrets.SSH_KEY_WALLET }}
+            ${{ secrets.SSH_KEY_DEBUGGER }}
       - uses: DeterminateSystems/nix-installer-action@main
       - name: Setup Pages
         id: pages
