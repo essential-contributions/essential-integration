@@ -16,7 +16,7 @@ predicate Increment {
 // ANCHOR_END: constraint
 // ANCHOR: pred_end
 }
-// ANCHOR: pred_end
+// ANCHOR_END: pred_end
 // ANCHOR_END: predicate
 
 predicate Z {
