@@ -51,6 +51,8 @@
           essential-read = prev.callPackage ./pkgs/essential-read.nix { };
           # Essential deploy contract.
           essential-deploy-contract = prev.callPackage ./pkgs/essential-deploy-contract.nix { };
+          # Essential dry run.
+          essential-dry-run = prev.callPackage ./pkgs/essential-dry-run.nix { };
           # All essential applications under one package.
           essential = final.callPackage ./pkgs/essential-all.nix { };
           # Build cargo readme.
@@ -68,6 +70,7 @@
         essential-rest-client = pkgs.essential-rest-client;
         essential-read = pkgs.essential-read;
         essential-deploy-contract = pkgs.essential-deploy-contract;
+        essential-dry-run = pkgs.essential-dry-run;
         essential = pkgs.essential;
         test-app-counter = pkgs.test-app-counter;
         book = pkgs.book;
