@@ -6,7 +6,7 @@
 #![deny(unsafe_code)]
 
 use anyhow::{anyhow, Result};
-use essential_types::{predicate::Predicate, solution::Solution};
+use essential_types::{contract::Contract, solution::Solution};
 use std::{
     fs::DirEntry,
     path::{Path, PathBuf},
@@ -16,7 +16,7 @@ use tokio::io::{AsyncReadExt, BufReader};
 /// Read and deserialize predicates from a file.
 ///
 /// Calls `check_path_json` via call to `read_bytes`.
-pub async fn read_contract(path: PathBuf) -> Result<Vec<Predicate>> {
+pub async fn read_contract(path: PathBuf) -> Result<Contract> {
     let bytes = read_bytes(path).await?;
     let contract = deserialize_contract(bytes).await?;
     Ok(contract)
@@ -25,15 +25,15 @@ pub async fn read_contract(path: PathBuf) -> Result<Vec<Predicate>> {
 /// Read and deserialize contracts in a directory.
 ///
 /// Calls `check_path_json` for every entry in directory with a valid UTF-8 file name.
-pub async fn read_contracts(path: PathBuf) -> Result<Vec<Vec<Predicate>>> {
-    let mut contracts: Vec<Vec<Predicate>> = vec![];
+pub async fn read_contracts(path: PathBuf) -> Result<Vec<Contract>> {
+    let mut contracts: Vec<Contract> = vec![];
     for entry in path.read_dir()? {
         let file_path = dir_entry_to_path(&path, entry?)
             .inspect_err(|err| println!("skipping file: {}", err))?;
         check_path_json(&path)?;
         let bytes = read_bytes(file_path).await?;
-        let predicate = deserialize_contract(bytes).await?;
-        contracts.push(predicate);
+        let contract = deserialize_contract(bytes).await?;
+        contracts.push(contract);
     }
     Ok(contracts)
 }
@@ -133,8 +133,8 @@ pub async fn read_bytes_dir(path: PathBuf) -> Result<Vec<Vec<u8>>> {
 }
 
 /// Deserialize a contract from bytes.
-pub async fn deserialize_contract(bytes: Vec<u8>) -> Result<Vec<Predicate>> {
-    let contract = serde_json::from_slice::<Vec<Predicate>>(&bytes)?;
+pub async fn deserialize_contract(bytes: Vec<u8>) -> Result<Contract> {
+    let contract = serde_json::from_slice::<Contract>(&bytes)?;
     Ok(contract)
 }
 
