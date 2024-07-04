@@ -68,7 +68,9 @@
           # Essential dry run.
           essential-dry-run = prev.callPackage ./pkgs/essential-dry-run.nix { };
           # All essential applications under one package.
-          essential = final.callPackage ./pkgs/essential-all.nix { };
+          essential-all = final.callPackage ./pkgs/essential-all.nix { };
+          # The minimal essential applications under one package.
+          essential-minimal = final.callPackage ./pkgs/essential-minimal.nix { };
           # Build cargo readme.
           cargo-readme = final.callPackage ./pkgs/cargo-readme.nix { inherit (inputs) cargo-readme-src; };
           # All app tests.
@@ -84,11 +86,12 @@
         essential-rest-client = pkgs.essential-rest-client;
         essential-deploy-contract = pkgs.essential-deploy-contract;
         essential-dry-run = pkgs.essential-dry-run;
-        essential = pkgs.essential;
+        essential-all = pkgs.essential-all;
+        essential-minimal = pkgs.essential-minimal;
         test-app-counter = pkgs.test-app-counter;
         book = pkgs.book;
         cargo-readme = pkgs.cargo-readme;
-        default = inputs.self.packages.${pkgs.system}.essential;
+        default = inputs.self.packages.${pkgs.system}.essential-minimal;
       });
 
       devShells = perSystemPkgs (pkgs: {

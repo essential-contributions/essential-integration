@@ -2,18 +2,18 @@
 #
 # This package automatically starts an instance of the `essential-rest-server`,
 # runs the test script, then closes the server.
-{ essential
+{ essential-minimal
+, essential-cli
 , jq
 , xxd
 , writeShellApplication
-,
 }:
 let
   src = ./../apps/counter;
 in
 writeShellApplication {
   name = "test-app-counter";
-  runtimeInputs = [ essential jq xxd ];
+  runtimeInputs = [ essential-minimal essential-cli jq xxd ];
   text = ''
     # Function to clean up and kill the server.
     server_pid=""
