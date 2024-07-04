@@ -70,7 +70,8 @@ impl DecVars {
         let Self { auth_addr } = self;
         let mut decision_variables = vec![];
 
-        auth_addr.write_dec_var(&mut decision_variables);
+        auth_addr.address.write_dec_var(&mut decision_variables);
+        Int::from(auth_addr.path).write_dec_var(&mut decision_variables);
 
         decision_variables
     }

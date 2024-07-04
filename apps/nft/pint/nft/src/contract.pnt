@@ -50,7 +50,7 @@ predicate Transfer {
     constraint @safe_increment(nonce);
 
     constraint __mut_keys_len() == 2;
-    @auth(key; A; auth_addr; TRANSFER);
+    @auth(key; A; auth_addr; @transfer());
 }
 
 predicate Cancel {
@@ -72,9 +72,9 @@ predicate Cancel {
     constraint __mut_keys_len() == 1;
     
     // Check the authorization predicate.
-    @auth(key; A; auth_addr; CANCEL);
+    @auth(key; A; auth_addr; @cancel());
 }
 
 
-const TRANSFER = { contract: signed::ADDRESS, addr: signed::Transfer::ADDRESS };
-const CANCEL = { contract: signed::ADDRESS, addr: signed::Cancel::ADDRESS };
+macro @transfer() { { contract: signed::ADDRESS, addr: signed::Transfer::ADDRESS } }
+macro @cancel() { { contract: signed::ADDRESS, addr: signed::Cancel::ADDRESS } }

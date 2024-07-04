@@ -87,11 +87,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1719506693,
-        "narHash": "sha256-C8e9S7RzshSdHB7L+v9I51af1gDM5unhJ2xO1ywxNH8=",
+        "lastModified": 1719848872,
+        "narHash": "sha256-H3+EC5cYuq+gQW8y0lSrrDZfH71LB4DAf+TDFyvwCNA=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "b2852eb9365c6de48ffb0dc2c9562591f652242a",
+        "rev": "00d80d13810dbfea8ab4ed1009b09100cca86ba8",
         "type": "github"
       },
       "original": {
@@ -112,11 +112,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1719807934,
-        "narHash": "sha256-PPZxNzw33mVnBn8XE1I5cy8zE9cDYw8HzKmwsSYMG+E=",
+        "lastModified": 1720047941,
+        "narHash": "sha256-RSYlhwHvEB5WuuP49H9/Ar4DRDsKEoevz68037WZd2A=",
         "ref": "refs/heads/main",
-        "rev": "729c13b7b61c785a97140d23133ad60504c94754",
-        "revCount": 79,
+        "rev": "0aeff8d3dc6a2d82a5ad575cfb30c1c8441ec87e",
+        "revCount": 83,
         "type": "git",
         "url": "ssh://git@github.com/essential-contributions/pint.nix"
       },
@@ -128,11 +128,11 @@
     "pint-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1719796932,
-        "narHash": "sha256-CkbK2x1IqyTRGHvw1zW5ivfp9J3vcKTor1ZZSGMD24A=",
+        "lastModified": 1720014121,
+        "narHash": "sha256-qeosExJw70x4oz/ZocvCQThGivnY+Z5f7e6l9cnqGSo=",
         "ref": "refs/heads/master",
-        "rev": "a973eaa3a7b6f7217f8dac2359edcedc0098b5f2",
-        "revCount": 1414,
+        "rev": "93b29af222e90f957eb2048e70eeee42c66c04e0",
+        "revCount": 1472,
         "type": "git",
         "url": "ssh://git@github.com/essential-contributions/pint"
       },

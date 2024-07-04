@@ -97,24 +97,23 @@ impl WriteDecVars for Int {
 impl WriteDecVars for essential_signer::secp256k1::ecdsa::RecoverableSignature {
     fn write_dec_var(&self, decision_variables: &mut Vec<Value>) {
         let sig = essential_sign::encode::signature(self);
-        decision_variables.to_slot(sig[..4].to_vec());
-        decision_variables.to_slot(sig[4..8].to_vec());
-        decision_variables.to_slot(sig[8..].to_vec());
+        decision_variables.to_slot(sig);
     }
 }
 
 impl WriteDecVars for essential_signer::secp256k1::PublicKey {
     fn write_dec_var(&self, decision_variables: &mut Vec<Value>) {
         let k = essential_sign::encode::public_key(self);
-        decision_variables.to_slot(k[..4].to_vec());
-        decision_variables.to_slot(k[4..].to_vec());
+        decision_variables.to_slot(k);
     }
 }
 
 impl WriteDecVars for PredicateAddress {
     fn write_dec_var(&self, decision_variables: &mut Vec<Value>) {
-        self.contract.write_dec_var(decision_variables);
-        self.predicate.write_dec_var(decision_variables);
+        let mut slot = Vec::new();
+        self.contract.write_dec_var(&mut slot);
+        self.predicate.write_dec_var(&mut slot);
+        decision_variables.to_slot(slot.into_iter().flatten());
     }
 }
 
@@ -126,9 +125,11 @@ impl WriteDecVars for ContentAddress {
 
 impl WriteDecVars for Instance {
     fn write_dec_var(&self, decision_variables: &mut Vec<Value>) {
-        self.address.contract.write_dec_var(decision_variables);
-        self.address.predicate.write_dec_var(decision_variables);
-        Int::from(self.path).write_dec_var(decision_variables);
+        let mut slot = Vec::new();
+        self.address.contract.write_dec_var(&mut slot);
+        self.address.predicate.write_dec_var(&mut slot);
+        Int::from(self.path).write_dec_var(&mut slot);
+        decision_variables.to_slot(slot.into_iter().flatten());
     }
 }
 

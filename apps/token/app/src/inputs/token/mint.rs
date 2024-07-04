@@ -41,7 +41,8 @@ impl DecVars {
 
         name.write_dec_var(&mut decision_variables);
         symbol.write_dec_var(&mut decision_variables);
-        auth_addr.write_dec_var(&mut decision_variables);
+        auth_addr.address.write_dec_var(&mut decision_variables);
+        Int::from(auth_addr.path).write_dec_var(&mut decision_variables);
 
         decision_variables
     }

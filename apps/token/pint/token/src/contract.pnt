@@ -55,7 +55,7 @@ predicate Burn {
     
     // Check the authorization predicate.
     var auth_addr: PredicateAddress;
-    @auth(auth_addr; key; auth::BURN);
+    @auth(auth_addr; key; auth::@burn());
 }
 
 predicate Mint {
@@ -101,7 +101,7 @@ predicate Mint {
     
     // Check the authorization predicate.
     var auth_addr: PredicateAddress;
-    @auth(auth_addr; key; auth::MINT);
+    @auth(auth_addr; key; auth::@mint());
 }
 
 predicate Transfer {
@@ -140,7 +140,7 @@ predicate Transfer {
     
     // Check the authorization predicate.
     var auth_addr: PredicateAddress;
-    @auth(auth_addr; key; auth::TRANSFER; auth::TRANSFER_WITH);
+    @auth(auth_addr; key; auth::@transfer(); auth::@transfer_with());
 }
 
 predicate Cancel {
@@ -158,7 +158,7 @@ predicate Cancel {
     
     // Check the authorization predicate.
     var auth_addr: PredicateAddress;
-    @auth(auth_addr; key; auth::CANCEL);
+    @auth(auth_addr; key; auth::@cancel());
 }
 
 macro @auth($auth_addr, $key, $allowed_addr, &rest) {
