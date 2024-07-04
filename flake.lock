@@ -16,6 +16,29 @@
         "type": "github"
       }
     },
+    "essential-debugger": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "systems": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1720064518,
+        "narHash": "sha256-PZ8/MCVWm2qHR1RtkAqT3A5sFsNNwRa/4jdUCw86ZJ4=",
+        "ref": "refs/heads/main",
+        "rev": "72b45d15b8edbdc7492841e177276af62fefa3f2",
+        "revCount": 9,
+        "type": "git",
+        "url": "ssh://git@github.com/essential-contributions/essential-debugger"
+      },
+      "original": {
+        "type": "git",
+        "url": "ssh://git@github.com/essential-contributions/essential-debugger"
+      }
+    },
     "essential-server": {
       "inputs": {
         "nixpkgs": [
@@ -37,6 +60,29 @@
       "original": {
         "type": "git",
         "url": "ssh://git@github.com/essential-contributions/essential-server"
+      }
+    },
+    "essential-wallet": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "systems": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1720064661,
+        "narHash": "sha256-+XFozdUhHjE6cuqpBY7xOTrUBga6g3bcWI8RtABrxsg=",
+        "ref": "refs/heads/main",
+        "rev": "32020a12844ad04272e054acf4624a675f6a5693",
+        "revCount": 16,
+        "type": "git",
+        "url": "ssh://git@github.com/essential-contributions/essential-wallet"
+      },
+      "original": {
+        "type": "git",
+        "url": "ssh://git@github.com/essential-contributions/essential-wallet"
       }
     },
     "nixpkgs": {
@@ -98,7 +144,9 @@
     "root": {
       "inputs": {
         "cargo-readme-src": "cargo-readme-src",
+        "essential-debugger": "essential-debugger",
         "essential-server": "essential-server",
+        "essential-wallet": "essential-wallet",
         "nixpkgs": "nixpkgs",
         "pint": "pint",
         "systems": "systems"

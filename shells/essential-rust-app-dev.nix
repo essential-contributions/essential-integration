@@ -1,3 +1,4 @@
+# Shell for building pint apps with rust front ends
 { essential-rest-server
 , mkShell
 , darwin
@@ -10,7 +11,6 @@
 , stdenv
 , libiconv
 , openssl
-, mdbook
 }:
 mkShell {
   buildInputs = [
@@ -23,7 +23,6 @@ mkShell {
     rustfmt
     openssl
     openssl.dev
-    mdbook
   ] ++ lib.optionals stdenv.isDarwin [
     darwin.apple_sdk.frameworks.SystemConfiguration
   ];
