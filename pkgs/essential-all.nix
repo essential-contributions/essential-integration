@@ -11,12 +11,13 @@
 , symlinkJoin
 }:
 symlinkJoin {
-  name = "essential";
+  name = "essential-all";
   paths = [
     essential-cli
     essential-rest-client
     essential-rest-server
     essential-deploy-contract
+    essential-dry-run
     essential-wallet
     essential-debugger
     pint

@@ -1,5 +1,5 @@
 # Shell for building pint apps with rust front ends
-{ essential-rest-server
+{ essential-minimal
 , mkShell
 , darwin
 , cargo-toml-lint
@@ -14,7 +14,7 @@
 }:
 mkShell {
   buildInputs = [
-    essential-rest-server
+    essential-minimal
     libiconv
     cargo-toml-lint
     clippy
