@@ -73,6 +73,7 @@
       });
 
       devShells = perSystemPkgs (pkgs: {
+        essential-basic-dev = pkgs.callPackage ./shell-basic.nix { };
         essential-integration-dev = pkgs.callPackage ./shell.nix { };
         default = inputs.self.devShells.${pkgs.system}.essential-integration-dev;
       });
