@@ -47,8 +47,6 @@
           essential-cli = prev.callPackage ./pkgs/essential-cli.nix { };
           # Essential REST client.
           essential-rest-client = prev.callPackage ./pkgs/essential-rest-client.nix { };
-          # Essential read (predicates and solutions).
-          essential-read = prev.callPackage ./pkgs/essential-read.nix { };
           # Essential deploy contract.
           essential-deploy-contract = prev.callPackage ./pkgs/essential-deploy-contract.nix { };
           # All essential applications under one package.
@@ -66,7 +64,6 @@
       packages = perSystemPkgs (pkgs: {
         essential-cli = pkgs.essential-cli;
         essential-rest-client = pkgs.essential-rest-client;
-        essential-read = pkgs.essential-read;
         essential-deploy-contract = pkgs.essential-deploy-contract;
         essential = pkgs.essential;
         test-app-counter = pkgs.test-app-counter;

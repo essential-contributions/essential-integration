@@ -122,8 +122,7 @@ pub async fn get_contracts(
 
     for name in contracts {
         let (contract, abi, source) =
-            compile_pint_project_and_abi_with_source(pint_directory.clone(), name)
-                .await?;
+            compile_pint_project_and_abi_with_source(pint_directory.clone(), name).await?;
         let predicate_names = abi["predicates"]
             .as_array()
             .unwrap()

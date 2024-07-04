@@ -53,11 +53,29 @@ pub async fn read_solution(path: PathBuf) -> Result<Solution> {
 pub async fn read_solutions(path: PathBuf) -> Result<Vec<Solution>> {
     let mut solutions: Vec<Solution> = vec![];
     for entry in path.read_dir()? {
+        #[cfg(feature = "tracing")]
         let file_path = dir_entry_to_path(&path, entry?)
-            .inspect_err(|err| println!("skipping file: {}", err))?;
-        check_path_json(&path)?;
+            .inspect_err(|err| tracing::warn!("skipping file: {}", err));
 
-        let bytes = read_bytes(file_path).await?;
+        #[cfg(not(feature = "tracing"))]
+        let file_path = dir_entry_to_path(&path, entry?);
+
+        let Ok(file_path) = file_path else {
+            continue;
+        };
+
+        #[cfg(not(feature = "tracing"))]
+        if check_path_json(&path).is_err() {
+            continue;
+        }
+
+        #[cfg(feature = "tracing")]
+        if let Err(e) = check_path_json(&path) {
+            tracing::warn!("skipping file because it's not json: {}", e);
+            continue;
+        }
+
+        let bytes = read_bytes_inner(file_path).await?;
         let solution = deserialize_solution(bytes).await?;
         solutions.push(solution);
     }
@@ -69,6 +87,10 @@ pub async fn read_solutions(path: PathBuf) -> Result<Vec<Solution>> {
 /// Calls `check_path_json`.
 pub async fn read_bytes(path: PathBuf) -> Result<Vec<u8>> {
     check_path_json(&path)?;
+    read_bytes_inner(path).await
+}
+
+async fn read_bytes_inner(path: PathBuf) -> Result<Vec<u8>> {
     let file = tokio::fs::File::open(path).await?;
     let mut bytes = Vec::new();
     let mut reader = BufReader::new(file);
@@ -82,10 +104,29 @@ pub async fn read_bytes(path: PathBuf) -> Result<Vec<u8>> {
 pub async fn read_bytes_dir(path: PathBuf) -> Result<Vec<Vec<u8>>> {
     let mut all_bytes: Vec<Vec<u8>> = vec![];
     for entry in path.read_dir()? {
+        #[cfg(feature = "tracing")]
         let file_path = dir_entry_to_path(&path, entry?)
-            .inspect_err(|err| println!("skipping file: {}", err))?;
-        check_path_json(&path)?;
-        let bytes = read_bytes(file_path).await?;
+            .inspect_err(|err| tracing::warn!("skipping file: {}", err));
+
+        #[cfg(not(feature = "tracing"))]
+        let file_path = dir_entry_to_path(&path, entry?);
+
+        let Ok(file_path) = file_path else {
+            continue;
+        };
+
+        #[cfg(not(feature = "tracing"))]
+        if check_path_json(&path).is_err() {
+            continue;
+        }
+
+        #[cfg(feature = "tracing")]
+        if let Err(e) = check_path_json(&path) {
+            tracing::warn!("skipping file because it's not json: {}", e);
+            continue;
+        }
+
+        let bytes = read_bytes_inner(file_path).await?;
         all_bytes.push(bytes);
     }
     Ok(all_bytes)
