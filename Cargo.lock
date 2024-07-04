@@ -891,6 +891,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "essential-dry-run"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "clap 4.5.7",
+ "essential-read",
+ "essential-rest-client",
+ "essential-server-types",
+ "essential-types",
+ "reqwest",
+ "serde_json",
+ "tokio",
+]
+
+[[package]]
 name = "essential-hash"
 version = "0.1.0"
 source = "git+ssh://git@github.com/essential-contributions/essential-base.git#9688d1eda34e0775dc59ecb9e58f27dedc66dde5"

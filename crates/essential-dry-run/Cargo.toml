@@ -1,0 +1,15 @@
+[package]
+name = "essential-dry-run"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = { workspace = true }
+clap = { workspace = true }
+essential-read = { workspace = true }
+essential-rest-client = { workspace = true }
+essential-server-types = { workspace = true }
+essential-types = { workspace = true }
+serde_json = { workspace = true }
+reqwest = { workspace = true, features = ["json"] }
+tokio = { workspace = true }

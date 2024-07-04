@@ -15,8 +15,8 @@ use std::{path::PathBuf, str::FromStr, time::Duration};
 #[command(version, about, long_about = None)]
 /// Essential REST Client
 struct Cli {
+    /// Server address to bind to. Default: "http://0.0.0.0:0"
     #[arg(default_value_t = String::from("http://0.0.0.0:0"))]
-    /// Server address to bind to
     address: String,
     #[command(subcommand)]
     commands: Commands,

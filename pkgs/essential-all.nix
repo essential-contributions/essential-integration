@@ -3,6 +3,7 @@
 , essential-rest-client
 , essential-rest-server
 , essential-deploy-contract
+, essential-dry-run
 , essential-wallet
 , essential-debugger
 , pint
