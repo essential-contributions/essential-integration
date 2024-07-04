@@ -1,8 +1,19 @@
-const TRANSFER = { contract: signed::ADDRESS, addr: signed::Transfer::ADDRESS };
-const TRANSFER_WITH = { contract: signed::ADDRESS, addr: signed::TransferWith::ADDRESS };
+macro @transfer() {
+    { contract: signed::ADDRESS, addr: signed::Transfer::ADDRESS }
+}
 
-const BURN = { contract: signed::ADDRESS, addr: signed::Burn::ADDRESS };
+macro @transfer_with() {
+    { contract: signed::ADDRESS, addr: signed::TransferWith::ADDRESS }
+}
 
-const MINT = { contract: signed::ADDRESS, addr: signed::Mint::ADDRESS };
+macro @burn() {
+    { contract: signed::ADDRESS, addr: signed::Burn::ADDRESS }
+}
 
-const CANCEL = { contract: signed::ADDRESS, addr: signed::Cancel::ADDRESS };
+macro @mint() {
+    { contract: signed::ADDRESS, addr: signed::Mint::ADDRESS }
+}
+
+macro @cancel() {
+    { contract: signed::ADDRESS, addr: signed::Cancel::ADDRESS }
+}
