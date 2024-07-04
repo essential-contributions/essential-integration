@@ -2,6 +2,9 @@
 { essential-cli
 , essential-rest-client
 , essential-rest-server
+, essential-deploy-contract
+, essential-wallet
+, essential-debugger
 , pint
 , server-with-rqlite
 , symlinkJoin
@@ -12,6 +15,9 @@ symlinkJoin {
     essential-cli
     essential-rest-client
     essential-rest-server
+    essential-deploy-contract
+    essential-wallet
+    essential-debugger
     pint
     server-with-rqlite
   ];

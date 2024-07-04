@@ -14,6 +14,20 @@
       inputs.systems.follows = "nixpkgs";
     };
 
+    # The essential wallet.
+    essential-wallet = {
+      url = "git+ssh://git@github.com/essential-contributions/essential-wallet";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.systems.follows = "nixpkgs";
+    };
+
+    # The essential debugger.
+    essential-debugger = {
+      url = "git+ssh://git@github.com/essential-contributions/essential-debugger";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.systems.follows = "nixpkgs";
+    };
+
     # The pint programming language.
     pint = {
       url = "git+ssh://git@github.com/essential-contributions/pint.nix";
@@ -31,6 +45,8 @@
     let
       overlays = [
         inputs.essential-server.overlays.default
+        inputs.essential-wallet.overlays.default
+        inputs.essential-debugger.overlays.default
         inputs.pint.overlays.default
         inputs.self.overlays.default
       ];
@@ -47,8 +63,6 @@
           essential-cli = prev.callPackage ./pkgs/essential-cli.nix { };
           # Essential REST client.
           essential-rest-client = prev.callPackage ./pkgs/essential-rest-client.nix { };
-          # Essential read (predicates and solutions).
-          essential-read = prev.callPackage ./pkgs/essential-read.nix { };
           # Essential deploy contract.
           essential-deploy-contract = prev.callPackage ./pkgs/essential-deploy-contract.nix { };
           # Essential dry run.
@@ -68,7 +82,6 @@
       packages = perSystemPkgs (pkgs: {
         essential-cli = pkgs.essential-cli;
         essential-rest-client = pkgs.essential-rest-client;
-        essential-read = pkgs.essential-read;
         essential-deploy-contract = pkgs.essential-deploy-contract;
         essential-dry-run = pkgs.essential-dry-run;
         essential = pkgs.essential;
@@ -79,7 +92,8 @@
       });
 
       devShells = perSystemPkgs (pkgs: {
-        essential-integration-dev = pkgs.callPackage ./shell.nix { };
+        essential-rust-app-dev = pkgs.callPackage ./shells/essential-rust-app-dev.nix { };
+        essential-integration-dev = pkgs.callPackage ./shells/shell.nix { };
         default = inputs.self.devShells.${pkgs.system}.essential-integration-dev;
       });
 
