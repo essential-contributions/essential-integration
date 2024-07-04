@@ -51,11 +51,7 @@ pub async fn dry_run_with_contracts_from_path(
     contracts: PathBuf,
     solution: PathBuf,
 ) -> anyhow::Result<CheckSolutionOutput> {
-    let contracts = read_contracts(contracts)
-        .await?
-        .into_iter()
-        .map(Contract::without_salt)
-        .collect();
+    let contracts = read_contracts(contracts).await?.into_iter().collect();
     let solution = read_solution(solution).await?;
     let output = dry_run_with_contracts(server, contracts, solution).await?;
     Ok(output)

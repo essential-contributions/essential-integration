@@ -37,7 +37,7 @@ rustPlatform.buildRustPackage {
   pname = "essential-dry-run";
   version = (builtins.fromTOML (builtins.readFile crateTOML)).package.version;
 
-  buildAndTestSubdir = "crates/essential-rest-client";
+  buildAndTestSubdir = "crates/essential-dry-run";
 
   OPENSSL_NO_VENDOR = 1;
 
