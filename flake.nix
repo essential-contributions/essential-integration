@@ -16,21 +16,21 @@
 
     # The essential wallet.
     essential-wallet = {
-      url = "git+ssh://git@github.com/essential-contributions/essential-wallet";
+      url = "github:essential-contributions/essential-wallet";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.systems.follows = "nixpkgs";
     };
 
     # The essential debugger.
     essential-debugger = {
-      url = "git+ssh://git@github.com/essential-contributions/essential-debugger";
+      url = "github:essential-contributions/essential-debugger";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.systems.follows = "nixpkgs";
     };
 
     # The pint programming language.
     pint = {
-      url = "git+ssh://git@github.com/essential-contributions/pint.nix";
+      url = "github:essential-contributions/pint.nix";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.systems.follows = "nixpkgs";
     };
