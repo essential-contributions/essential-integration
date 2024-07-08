@@ -17,4 +17,3 @@ This will enter you into a shell with `cargo`, `pint`, `essential-server` and so
 ```bash
 nix develop git+ssh://git@github.com/essential-contributions/essential-integration
 ```
-**TODO**: Change this command once the repos are public.
