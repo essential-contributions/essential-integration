@@ -2,6 +2,7 @@
 edition = "2021"
 name = "token"
 version = "0.1.0"
+publish = false
 
 [[bin]]
 name = "app"

@@ -1,7 +1,12 @@
 [package]
 name = "essential-cli"
+description = "Command line tool for interacting with the Essential protocol"
 version = "0.1.0"
-edition = "2021"
+edition.workspace = true
+authors.workspace = true
+homepage.workspace = true
+license.workspace = true
+repository.workspace = true
 
 [[bin]]
 name = "essential"
