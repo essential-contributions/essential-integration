@@ -61,7 +61,7 @@ A Nix flake is included providing the `essential-all` package, providing `pint`,
    To include these along with the `jq` and `xxd` tools required to run included
    test scripts, use:
    ```console
-   nix develop git+ssh://git@github.com/essential-contributions/essential-integration
+   nix develop github:essential-contributions/essential-integration
    ```
    or if you have the repo cloned locally, simply `cd` in and use:
    ```console

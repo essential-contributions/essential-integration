@@ -95,6 +95,7 @@
       });
 
       devShells = perSystemPkgs (pkgs: {
+        dev = pkgs.callPackage ./shells/dev.nix { };
         essential-rust-app-dev = pkgs.callPackage ./shells/essential-rust-app-dev.nix { };
         essential-integration-dev = pkgs.callPackage ./shells/shell.nix { };
         default = inputs.self.devShells.${pkgs.system}.essential-integration-dev;

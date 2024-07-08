@@ -13,7 +13,7 @@ If you don't have Rust and Cargo installed you can follow the instructions [here
 
 If you are using `nix` you can simply run the following command to launch a dev shell with all the necessary tools installed:
 ```bash
-nix develop github:essential-contributions/essential-integration
+nix develop github:essential-contributions/essential-integration#dev
 ```
 
 Or you can create your own `flake` using:
