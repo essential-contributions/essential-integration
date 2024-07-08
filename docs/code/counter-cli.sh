@@ -1,0 +1,29 @@
+temp_dir=$(mktemp -d)
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Setup the counter contract project.
+cd $temp_dir
+mkdir counter
+pint new --name counter counter/contract
+cp "$SCRIPT_DIR/counter.pnt" "$temp_dir/counter/contract/src/contract.pnt"
+cd counter/contract
+pint build
+
+front_end_temp_dir=$("$SCRIPT_DIR/front-end.sh" | tail -n 1)
+cd $front_end_temp_dir/counter
+# ANCHOR: main
+cd counter-app
+touch src/main.rs
+# ANCHOR_END: main
+cp "$SCRIPT_DIR/counter-main.rs" "$front_end_temp_dir/counter/counter-app/src/main.rs"
+
+# ANCHOR: read
+cargo run -- read-count "https://server.essential.builders" "../contract"
+# ANCHOR_END: read
+# ANCHOR: inc
+cargo run -- increment-count "https://server.essential.builders" "../contract"
+# ANCHOR_END: inc
+# ANCHOR: read-again
+cargo run -- read-count "https://server.essential.builders" "../contract"
+# ANCHOR_END: read-again

@@ -18,7 +18,6 @@ async fn test_counter() {
     // ANCHOR: compile
     let counter = compile_pint_project(
         concat!(env!("CARGO_MANIFEST_DIR"), "/../contract").into(),
-        "counter",
     )
     .await
     .unwrap();
