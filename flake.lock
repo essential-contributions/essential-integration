@@ -26,17 +26,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1720064518,
-        "narHash": "sha256-PZ8/MCVWm2qHR1RtkAqT3A5sFsNNwRa/4jdUCw86ZJ4=",
-        "ref": "refs/heads/main",
-        "rev": "72b45d15b8edbdc7492841e177276af62fefa3f2",
-        "revCount": 9,
-        "type": "git",
-        "url": "ssh://git@github.com/essential-contributions/essential-debugger"
+        "lastModified": 1720442227,
+        "narHash": "sha256-itdlaJvweQT+FUhOHJwrfFkgaQ+aS8cTdTSCF6PFFw4=",
+        "owner": "essential-contributions",
+        "repo": "essential-debugger",
+        "rev": "aa515e46f1a99151246c5f744a7d91c4c6bec8f0",
+        "type": "github"
       },
       "original": {
-        "type": "git",
-        "url": "ssh://git@github.com/essential-contributions/essential-debugger"
+        "owner": "essential-contributions",
+        "repo": "essential-debugger",
+        "type": "github"
       }
     },
     "essential-server": {
@@ -49,17 +49,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1719961023,
-        "narHash": "sha256-IR9dIvgptB+r1sN79cHTTlzFNG5ZusT4xtJFUtMbS0Y=",
-        "ref": "refs/heads/main",
-        "rev": "73f7da0aebd88857b423f8c7569b1bebcc64dd98",
-        "revCount": 89,
-        "type": "git",
-        "url": "ssh://git@github.com/essential-contributions/essential-server"
+        "lastModified": 1720444532,
+        "narHash": "sha256-OhRzdotVmtaKQa5vFxX4eB/XVs+f71DrkPzCiLlBiIc=",
+        "owner": "essential-contributions",
+        "repo": "essential-server",
+        "rev": "b6ad0a22254b16b5b9bb0ef524f8c96a0d3b5c53",
+        "type": "github"
       },
       "original": {
-        "type": "git",
-        "url": "ssh://git@github.com/essential-contributions/essential-server"
+        "owner": "essential-contributions",
+        "repo": "essential-server",
+        "type": "github"
       }
     },
     "essential-wallet": {
@@ -72,17 +72,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1720064661,
-        "narHash": "sha256-+XFozdUhHjE6cuqpBY7xOTrUBga6g3bcWI8RtABrxsg=",
-        "ref": "refs/heads/main",
-        "rev": "32020a12844ad04272e054acf4624a675f6a5693",
-        "revCount": 16,
-        "type": "git",
-        "url": "ssh://git@github.com/essential-contributions/essential-wallet"
+        "lastModified": 1720442264,
+        "narHash": "sha256-skIMHr7aIWXJnpEuT2TIfxmKX0vGRkxCff7TZmLSMts=",
+        "owner": "essential-contributions",
+        "repo": "essential-wallet",
+        "rev": "5044f03695df431cf6d3cf95431a0b323203130a",
+        "type": "github"
       },
       "original": {
-        "type": "git",
-        "url": "ssh://git@github.com/essential-contributions/essential-wallet"
+        "owner": "essential-contributions",
+        "repo": "essential-wallet",
+        "type": "github"
       }
     },
     "nixpkgs": {
@@ -112,33 +112,33 @@
         ]
       },
       "locked": {
-        "lastModified": 1720047941,
-        "narHash": "sha256-RSYlhwHvEB5WuuP49H9/Ar4DRDsKEoevz68037WZd2A=",
-        "ref": "refs/heads/main",
-        "rev": "0aeff8d3dc6a2d82a5ad575cfb30c1c8441ec87e",
-        "revCount": 83,
-        "type": "git",
-        "url": "ssh://git@github.com/essential-contributions/pint.nix"
+        "lastModified": 1720447263,
+        "narHash": "sha256-3h1MWjPxh2SgMTv04cwM8wxy+RGCYtuSWiCu8oooGV8=",
+        "owner": "essential-contributions",
+        "repo": "pint.nix",
+        "rev": "14af55df6da0b6329aeb9aef902c2e79b826648f",
+        "type": "github"
       },
       "original": {
-        "type": "git",
-        "url": "ssh://git@github.com/essential-contributions/pint.nix"
+        "owner": "essential-contributions",
+        "repo": "pint.nix",
+        "type": "github"
       }
     },
     "pint-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1720014121,
-        "narHash": "sha256-qeosExJw70x4oz/ZocvCQThGivnY+Z5f7e6l9cnqGSo=",
-        "ref": "refs/heads/master",
-        "rev": "93b29af222e90f957eb2048e70eeee42c66c04e0",
-        "revCount": 1472,
-        "type": "git",
-        "url": "ssh://git@github.com/essential-contributions/pint"
+        "lastModified": 1720445742,
+        "narHash": "sha256-Hf6pEEHcxZgiF/wTGrf8J/3QFnW64Vr+L3g31/YfjCo=",
+        "owner": "essential-contributions",
+        "repo": "pint",
+        "rev": "3f254f01cc1c0ba71bd218e5154e617e00ca1a30",
+        "type": "github"
       },
       "original": {
-        "type": "git",
-        "url": "ssh://git@github.com/essential-contributions/pint"
+        "owner": "essential-contributions",
+        "repo": "pint",
+        "type": "github"
       }
     },
     "root": {
