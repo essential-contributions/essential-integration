@@ -15,5 +15,5 @@ You can lean more about Nix [here.](https://nixos.org/)
 ## Enter development shell
 This will enter you into a shell with `cargo`, `pint`, `essential-server` and some other things that will be useful for developing your application.
 ```bash
-nix develop git+ssh://git@github.com/essential-contributions/essential-integration
+nix develop github:essential-contributions/essential-integration
 ```
