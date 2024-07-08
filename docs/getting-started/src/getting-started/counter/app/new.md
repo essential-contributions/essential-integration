@@ -20,7 +20,6 @@ Now add the following dependencies to your rust project:
 ```
 Your cargo toml should look something like this:
 
-**TODO: Update once crates are published**
 ```toml
 [package]
 name = "counter-app"
@@ -29,17 +28,17 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.86"
-clap = { version = "4.5.4", features = ["derive"] }
-essential-app-utils = { git = "ssh://git@github.com/essential-contributions/essential-integration.git", version = "0.1.0" }
-essential-deploy-contract = { git = "ssh://git@github.com/essential-contributions/essential-integration.git", version = "0.1.0" }
-essential-hash = { git = "ssh://git@github.com/essential-contributions/essential-base.git", version = "0.1.0" }
-essential-rest-client = { git = "ssh://git@github.com/essential-contributions/essential-integration.git", version = "0.1.0" }
-essential-types = { git = "ssh://git@github.com/essential-contributions/essential-base.git", version = "0.1.0" }
+clap = "4.5.8"
+essential-app-utils = "0.1.0"
+essential-deploy-contract = "0.1.0"
+essential-hash = "0.1.0"
+essential-rest-client = "0.1.0"
+essential-types = "0.1.0"
 tokio = { version = "1.38.0", features = ["full"] }
 
 [dev-dependencies]
-essential-app-utils = { git = "ssh://git@github.com/essential-contributions/essential-integration.git", features = ["test-utils"] }
-essential-wallet = { git = "ssh://git@github.com/essential-contributions/essential-wallet.git", features = ["test-utils"] }
+essential-app-utils = { version = "0.1.0", features = ["test-utils"] }
+essential-wallet = { version = "0.1.0", features = ["test-utils"] }
 ```
 
 ## Add a test

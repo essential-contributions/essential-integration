@@ -13,16 +13,12 @@ If you don't have Rust and Cargo installed you can follow the instructions [here
 
 If you are using `nix` you can simply run the following command to launch a dev shell with all the necessary tools installed:
 ```bash
-nix develop todo-put-essential-integration-url
+nix develop github:essential-contributions/essential-integration
 ```
 
 Or you can create your own `flake` using:
 ```bash
 cd counter
 nix flake init
-```
-Something like this should get you going:
-```nix
-# TODO add nix flake example
 ```
 </details>

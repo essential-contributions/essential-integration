@@ -9,8 +9,8 @@ pint new --name counter counter/contract
 cp "$SCRIPT_DIR/counter.pnt" "$temp_dir/counter/contract/src/contract.pnt"
 
 cd counter
-# ANCHOR: cargo-new 
-cargo new --lib counter-app 
+# ANCHOR: cargo-new
+cargo new --lib counter-app
 # ANCHOR_END: cargo-new
 cd ..
 find counter -type f -not -path "*/.git/*" -not -path "*/.gitignore"
@@ -22,7 +22,7 @@ if false; then
 cd counter-app
 cargo add essential-app-utils
 cargo add essential-app-utils --features test-utils --dev
-cargo add essential-delpoy-contract
+cargo add essential-deploy-contract
 cargo add essential-hash
 cargo add essential-rest-client
 cargo add essential-types
