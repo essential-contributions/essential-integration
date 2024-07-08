@@ -29,6 +29,7 @@ cargo add essential-types
 cargo add essential-wallet --features test-utils --dev
 cargo add anyhow
 cargo add tokio --features full
+cargo add clap
 # ANCHOR_END: cargo-add
 fi
 
@@ -43,6 +44,8 @@ cd counter-app
 # cargo add essential-wallet --git "ssh://git@github.com/essential-contributions/essential-wallet.git" --features test-utils --dev
 # cargo add anyhow
 # cargo add tokio --features full
+# cargo add clap
+
 cat << EOF > Cargo.toml
 [package]
 name = "counter-app"
@@ -51,6 +54,7 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.86"
+clap = { version = "4.5.4", features = ["derive"] }
 essential-app-utils = { git = "ssh://git@github.com/essential-contributions/essential-integration.git", version = "0.1.0" }
 essential-deploy-contract = { git = "ssh://git@github.com/essential-contributions/essential-integration.git", version = "0.1.0" }
 essential-hash = { git = "ssh://git@github.com/essential-contributions/essential-base.git", version = "0.1.0" }
@@ -78,4 +82,8 @@ cargo check
 
 cp "$SCRIPT_DIR/counter-test.rs" "$temp_dir/counter/counter-app/tests/counter.rs"
 
+# ANCHOR: cargo-test
 cargo test
+# ANCHOR_END: cargo-test
+
+echo "$temp_dir"

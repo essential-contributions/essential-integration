@@ -84,6 +84,9 @@ The state has changed again to `2`!
 
 ## Run the test
 Run the test and check it all works.
+```bash
+{{#include ../../../../../code/front-end.sh:cargo-test}}
+```
 
 Congratulations on building your first `essential` application. \
 It may be a very simple example but this declarative way of creating applications is very powerful. \
