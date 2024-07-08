@@ -39,5 +39,5 @@ tracing = "0.1.40"
 
 essential-app-utils = { path = "apps/utils", version = "0.1.0" }
 essential-deploy-contract = { path = "crates/essential-deploy-contract", version = "0.1.0" }
-essential-read = { path = "crates/essential-read" }
+essential-read = { path = "crates/essential-read", version = "0.1.0" }
 essential-rest-client = { path = "crates/essential-rest-client", version = "0.1.0" }
