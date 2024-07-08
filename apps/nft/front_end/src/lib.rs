@@ -379,15 +379,13 @@ pub async fn deploy_app(
     pint_directory: PathBuf,
 ) -> anyhow::Result<Addresses> {
     let client = EssentialClient::new(addr)?;
-    let signed_contract =
-        compile_pint_project(pint_directory.clone().join("signed"), "signed").await?;
+    let signed_contract = compile_pint_project(pint_directory.clone().join("signed")).await?;
     let signed_addresses = get_addresses(&signed_contract);
 
-    let nft_contract = compile_pint_project(pint_directory.clone().join("nft"), "nft").await?;
+    let nft_contract = compile_pint_project(pint_directory.clone().join("nft")).await?;
     let nft_addresses = get_addresses(&nft_contract);
 
-    let swap_any_predicates =
-        compile_pint_project(pint_directory.clone().join("swap_any"), "swap_any").await?;
+    let swap_any_predicates = compile_pint_project(pint_directory.clone().join("swap_any")).await?;
     let swap_any_addresses = get_addresses(&swap_any_predicates);
 
     let addresses = Addresses {
@@ -414,15 +412,13 @@ pub async fn deploy_app(
 }
 
 pub async fn compile_addresses(pint_directory: PathBuf) -> anyhow::Result<Addresses> {
-    let signed_contract =
-        compile_pint_project(pint_directory.clone().join("signed"), "signed").await?;
+    let signed_contract = compile_pint_project(pint_directory.clone().join("signed")).await?;
     let signed_addresses = get_addresses(&signed_contract);
 
-    let nft_contract = compile_pint_project(pint_directory.clone().join("nft"), "nft").await?;
+    let nft_contract = compile_pint_project(pint_directory.clone().join("nft")).await?;
     let nft_addresses = get_addresses(&nft_contract);
 
-    let swap_any_predicates =
-        compile_pint_project(pint_directory.clone().join("swap_any"), "swap_any").await?;
+    let swap_any_predicates = compile_pint_project(pint_directory.clone().join("swap_any")).await?;
     let swap_any_addresses = get_addresses(&swap_any_predicates);
 
     let addresses = Addresses {

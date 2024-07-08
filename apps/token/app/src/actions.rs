@@ -9,11 +9,9 @@ use essential_types::contract::Contract;
 use std::path::PathBuf;
 
 pub async fn compile_addresses(pint_directory: PathBuf) -> anyhow::Result<Addresses> {
-    let token_contract =
-        compile_pint_project(pint_directory.clone().join("token"), "token").await?;
+    let token_contract = compile_pint_project(pint_directory.clone().join("token")).await?;
     let token_addresses = get_addresses(&token_contract);
-    let signed_contract =
-        compile_pint_project(pint_directory.clone().join("signed"), "signed").await?;
+    let signed_contract = compile_pint_project(pint_directory.clone().join("signed")).await?;
     let signed_addresses = get_addresses(&signed_contract);
 
     let addresses = Addresses {
@@ -67,11 +65,9 @@ pub async fn deploy_app(
     pint_directory: PathBuf,
 ) -> anyhow::Result<Addresses> {
     let client = EssentialClient::new(addr)?;
-    let token_contract =
-        compile_pint_project(pint_directory.clone().join("token"), "token").await?;
+    let token_contract = compile_pint_project(pint_directory.clone().join("token")).await?;
     let token_addresses = get_addresses(&token_contract);
-    let signed_contract =
-        compile_pint_project(pint_directory.clone().join("signed"), "signed").await?;
+    let signed_contract = compile_pint_project(pint_directory.clone().join("signed")).await?;
     let signed_addresses = get_addresses(&signed_contract);
 
     let addresses = Addresses {
@@ -97,9 +93,7 @@ pub async fn deploy_app(
 }
 
 pub async fn get_contracts(pint_directory: PathBuf) -> anyhow::Result<Vec<Contract>> {
-    let token_contract =
-        compile_pint_project(pint_directory.clone().join("token"), "token").await?;
-    let signed_contract =
-        compile_pint_project(pint_directory.clone().join("signed"), "signed").await?;
+    let token_contract = compile_pint_project(pint_directory.clone().join("token")).await?;
+    let signed_contract = compile_pint_project(pint_directory.clone().join("signed")).await?;
     Ok(vec![token_contract, signed_contract])
 }

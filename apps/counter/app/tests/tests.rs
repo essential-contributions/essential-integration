@@ -1,17 +1,14 @@
-use essential_app_utils::{compile::compile_pint_project, local_server::setup_server};
 use counter_app::App;
+use essential_app_utils::{compile::compile_pint_project, local_server::setup_server};
 use essential_types::{PredicateAddress, Word};
 
 #[tokio::test]
 async fn number_go_up() {
     let (addr, _server) = setup_server().await.unwrap();
 
-    let counter = compile_pint_project(
-        concat!(env!("CARGO_MANIFEST_DIR"), "/../pint").into(),
-        "pint",
-    )
-    .await
-    .unwrap();
+    let counter = compile_pint_project(concat!(env!("CARGO_MANIFEST_DIR"), "/../pint").into())
+        .await
+        .unwrap();
 
     let contract_address = essential_hash::contract_addr::from_contract(&counter);
     let predicate_address = essential_hash::content_addr(&counter.predicates[0]);
