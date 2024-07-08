@@ -42,7 +42,7 @@ Note that yours may look slightly different depending on the version of the comp
 
 Now that you have compiled your counter contract you could go ahead and deploy it to the test server at `https://server.essential.builders`.
 
-To do this you can use the `essential-deploy-contract` tool available in the [essential-integration](todo-put-link) repo.
+To do this you can use the `essential-deploy-contract` tool available in the [essential-integration](https://github.com/essential-contributions/essential-integration) repo.
 
 It's very possible that someone else has already deployed this contract as contracts are stored via their content hash but don't worry, deploying the same contract twice will not cause any issues.
 

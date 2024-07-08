@@ -9,17 +9,17 @@ cd pint
 ```
 To build the `pint` binary run:
 ```bash
-cargo build --release -p pint
+cargo build --release -p pint-cli
 ```
 The binary will be located at `target/release/pint`.
 
 To run the `pint` binary you can use:
 ```bash
-cargo run --release -p pint
+cargo run --release -p pint-cli
 ```
 To install `pint` on your path you can run:
 ```bash
-cargo install --path pint/
+cargo install --path pint-cli/
 ```
 ### Essential Server
 Clone the server repo
