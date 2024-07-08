@@ -20,13 +20,13 @@ repository = "https://github.com/essential-contributions/essential-integration"
 anyhow = "1.0.80"
 base64 = "0.22.0"
 clap = { version = "4.5.4", features = ["derive"] }
-essential-debugger = { git = "ssh://git@github.com/essential-contributions/essential-debugger.git" }
-essential-hash = { git = "ssh://git@github.com/essential-contributions/essential-base.git" }
-essential-server-types = { git = "ssh://git@github.com/essential-contributions/essential-server.git" }
-essential-sign = { git = "ssh://git@github.com/essential-contributions/essential-base.git" }
-essential-signer = { git = "ssh://git@github.com/essential-contributions/essential-wallet.git" }
-essential-types = { git = "ssh://git@github.com/essential-contributions/essential-base.git" }
-essential-wallet = { git = "ssh://git@github.com/essential-contributions/essential-wallet.git" }
+essential-debugger = "0.1.0"
+essential-hash = "0.1.0"
+essential-server-types = "0.1.0"
+essential-sign = "0.1.0"
+essential-signer = "0.1.0"
+essential-types = "0.1.0"
+essential-wallet = "0.1.0"
 hex = "0.4.3"
 reqwest = "0.12.4"
 rpassword = "7.3.1"
@@ -37,7 +37,7 @@ tokio = { version = "1.36.0", features = ["full"] }
 toml = "0.8.14"
 tracing = "0.1.40"
 
-essential-app-utils = { path = "apps/utils" }
-essential-deploy-contract = { path = "crates/essential-deploy-contract" }
+essential-app-utils = { path = "apps/utils", version = "0.1.0" }
+essential-deploy-contract = { path = "crates/essential-deploy-contract", version = "0.1.0" }
 essential-read = { path = "crates/essential-read" }
-essential-rest-client = { path = "crates/essential-rest-client" }
+essential-rest-client = { path = "crates/essential-rest-client", version = "0.1.0" }

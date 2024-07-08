@@ -803,7 +803,8 @@ dependencies = [
 [[package]]
 name = "essential-asm-gen"
 version = "0.1.0"
-source = "git+ssh://git@github.com/essential-contributions/essential-base.git#9688d1eda34e0775dc59ecb9e58f27dedc66dde5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3a1f009be1cc9db8a7228027b11de40bed391f1d11573ab9e9d5aa0def5c2387"
 dependencies = [
  "essential-asm-spec",
  "essential-types",
@@ -815,7 +816,8 @@ dependencies = [
 [[package]]
 name = "essential-asm-spec"
 version = "0.1.0"
-source = "git+ssh://git@github.com/essential-contributions/essential-base.git#9688d1eda34e0775dc59ecb9e58f27dedc66dde5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e80b8df98cd47c97a40b710b137c8541e1037916fde9fa6894663410d30e5635"
 dependencies = [
  "serde",
  "serde_yaml",
@@ -836,7 +838,8 @@ dependencies = [
 [[package]]
 name = "essential-constraint-asm"
 version = "0.1.0"
-source = "git+ssh://git@github.com/essential-contributions/essential-base.git#9688d1eda34e0775dc59ecb9e58f27dedc66dde5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5cf302633770d32d87f4a9a707cc4cc0251bcf6fbe3925dc902d7ee156587fa2"
 dependencies = [
  "essential-asm-gen",
  "essential-types",
@@ -846,7 +849,8 @@ dependencies = [
 [[package]]
 name = "essential-constraint-vm"
 version = "0.1.0"
-source = "git+ssh://git@github.com/essential-contributions/essential-base.git#9688d1eda34e0775dc59ecb9e58f27dedc66dde5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3a94e459ad81159ad542817dc96c430df4533779a5237b5b25ae41978cb82438"
 dependencies = [
  "ed25519-dalek",
  "essential-constraint-asm",
@@ -860,7 +864,8 @@ dependencies = [
 [[package]]
 name = "essential-debugger"
 version = "0.1.0"
-source = "git+ssh://git@github.com/essential-contributions/essential-debugger.git#16a80c6217ead0f2c6d968728b5473a58625e22c"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d68a3635c89954a6cfe4d3fce7a90959729c267dbd7931528d2991d782636982"
 dependencies = [
  "anyhow",
  "clap 4.5.7",
@@ -910,7 +915,8 @@ dependencies = [
 [[package]]
 name = "essential-hash"
 version = "0.1.0"
-source = "git+ssh://git@github.com/essential-contributions/essential-base.git#9688d1eda34e0775dc59ecb9e58f27dedc66dde5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e2d428d9f0aea6809ea732926dfd317901e9e2333920a4255ff93cd8120cf63f"
 dependencies = [
  "essential-types",
  "postcard",
@@ -950,7 +956,8 @@ dependencies = [
 [[package]]
 name = "essential-server-types"
 version = "0.1.0"
-source = "git+ssh://git@github.com/essential-contributions/essential-server.git#73f7da0aebd88857b423f8c7569b1bebcc64dd98"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "520bb2c307573bdaf4ee7860e6517f08e8baf71b0e56377bf913ab784f0fa384"
 dependencies = [
  "essential-types",
  "serde",
@@ -959,7 +966,8 @@ dependencies = [
 [[package]]
 name = "essential-sign"
 version = "0.1.0"
-source = "git+ssh://git@github.com/essential-contributions/essential-base.git#9688d1eda34e0775dc59ecb9e58f27dedc66dde5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "19215fdd4b9020576d6d76f43dbc1e103c144663925a8d660e18de96444360b7"
 dependencies = [
  "essential-hash",
  "essential-types",
@@ -969,7 +977,8 @@ dependencies = [
 [[package]]
 name = "essential-signer"
 version = "0.1.0"
-source = "git+ssh://git@github.com/essential-contributions/essential-wallet.git#9dbfbbc35e61499a20599c1d70baea1c85a535d7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6aa4929247f0c0c3c983efdeeff6f4639d3c862b5da87683b521cc03788852ff"
 dependencies = [
  "anyhow",
  "base64",
@@ -991,7 +1000,8 @@ dependencies = [
 [[package]]
 name = "essential-state-asm"
 version = "0.1.0"
-source = "git+ssh://git@github.com/essential-contributions/essential-base.git#9688d1eda34e0775dc59ecb9e58f27dedc66dde5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "760cc861d802f4d8e98796354a797468088c39026c5ebbf8ce4a0ff756ae2f58"
 dependencies = [
  "essential-asm-gen",
  "essential-constraint-asm",
@@ -1001,7 +1011,8 @@ dependencies = [
 [[package]]
 name = "essential-state-read-vm"
 version = "0.1.0"
-source = "git+ssh://git@github.com/essential-contributions/essential-base.git#9688d1eda34e0775dc59ecb9e58f27dedc66dde5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e81a30a81e380c1c44c8c607dfd0f67306eeeb3f27144abc1cbd5f6359b5d5c6"
 dependencies = [
  "essential-constraint-vm",
  "essential-state-asm",
@@ -1012,7 +1023,8 @@ dependencies = [
 [[package]]
 name = "essential-types"
 version = "0.1.0"
-source = "git+ssh://git@github.com/essential-contributions/essential-base.git#9688d1eda34e0775dc59ecb9e58f27dedc66dde5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6de4b5efb92d781ea0b6c8fc5ce94aa1f726138f9bcffbe13813235bf4ea31d0"
 dependencies = [
  "hex",
  "serde",
@@ -1021,7 +1033,8 @@ dependencies = [
 [[package]]
 name = "essential-wallet"
 version = "0.1.0"
-source = "git+ssh://git@github.com/essential-contributions/essential-wallet.git#9dbfbbc35e61499a20599c1d70baea1c85a535d7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e66c2aae455261325377d77f62ec25739ebc7327d3ab6e701e6d02ca96189b37"
 dependencies = [
  "anyhow",
  "clap 4.5.7",

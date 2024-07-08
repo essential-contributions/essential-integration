@@ -17,10 +17,6 @@ rustPlatform.buildRustPackage {
 
   cargoLock = {
     inherit lockFile;
-    # FIXME: This enables using `builtins.fetchGit` which uses the user's local
-    # `git` (and hence ssh-agent for ssh support). Once the repos are public,
-    # this should be removed.
-    allowBuiltinFetchGit = true;
   };
 
   doCheck = false
