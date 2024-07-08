@@ -29,7 +29,7 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.86"
-app-utils = { git = "ssh://git@github.com/essential-contributions/essential-integration.git", version = "0.1.0" }
+essential-app-utils = { git = "ssh://git@github.com/essential-contributions/essential-integration.git", version = "0.1.0" }
 essential-deploy-contract = { git = "ssh://git@github.com/essential-contributions/essential-integration.git", version = "0.1.0" }
 essential-hash = { git = "ssh://git@github.com/essential-contributions/essential-base.git", version = "0.1.0" }
 essential-rest-client = { git = "ssh://git@github.com/essential-contributions/essential-integration.git", version = "0.1.0" }
@@ -37,7 +37,7 @@ essential-types = { git = "ssh://git@github.com/essential-contributions/essentia
 tokio = { version = "1.38.0", features = ["full"] }
 
 [dev-dependencies]
-app-utils = { git = "ssh://git@github.com/essential-contributions/essential-integration.git", features = ["test-utils"] }
+essential-app-utils = { git = "ssh://git@github.com/essential-contributions/essential-integration.git", features = ["test-utils"] }
 essential-wallet = { git = "ssh://git@github.com/essential-contributions/essential-wallet.git", features = ["test-utils"] }
 ```
 

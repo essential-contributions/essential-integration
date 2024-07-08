@@ -1,5 +1,5 @@
 use anyhow::bail;
-use app_utils::{
+use essential_app_utils::{
     addresses::{contract_hash, get_addresses},
     compile::compile_pint_project,
     inputs::Instance,

@@ -1,4 +1,4 @@
-use app_utils::inputs::{Int, WriteDecVars, B256};
+use essential_app_utils::inputs::{Int, WriteDecVars, B256};
 use essential_types::{solution::Mutation, PredicateAddress};
 
 pub struct TransientData {

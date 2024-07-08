@@ -1,5 +1,5 @@
 use anyhow::bail;
-use app_utils::inputs::Instance;
+use essential_app_utils::inputs::Instance;
 use essential_types::{
     convert::word_4_from_u8_32,
     solution::{Solution, SolutionData},

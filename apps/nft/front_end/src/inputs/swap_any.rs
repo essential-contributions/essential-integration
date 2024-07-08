@@ -1,4 +1,4 @@
-use app_utils::inputs::Int;
+use essential_app_utils::inputs::Int;
 use essential_types::{solution::Mutation, Key};
 
 pub mod init;

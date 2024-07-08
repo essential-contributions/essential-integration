@@ -1,5 +1,5 @@
 use crate::token::Addresses;
-use app_utils::{
+use essential_app_utils::{
     addresses::get_addresses,
     compile::compile_pint_project,
     print::{print_contract_address, print_predicate_address},

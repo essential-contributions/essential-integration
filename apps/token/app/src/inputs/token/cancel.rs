@@ -1,4 +1,4 @@
-use app_utils::inputs::{index_mutation, B256};
+use essential_app_utils::inputs::{index_mutation, B256};
 use essential_types::solution::Mutation;
 
 pub struct TransientData {

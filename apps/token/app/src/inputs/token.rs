@@ -1,4 +1,4 @@
-use app_utils::inputs::{index_key, Instance, Int, WriteDecVars, B256};
+use essential_app_utils::inputs::{index_key, Instance, Int, WriteDecVars, B256};
 use essential_types::{solution::Mutation, Key};
 
 pub mod burn;

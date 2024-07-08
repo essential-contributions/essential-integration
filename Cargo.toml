@@ -28,7 +28,7 @@ serde_json = "1"
 tokio = { version = "1.36.0", features = ["full"] }
 tracing = "0.1.40"
 
-app-utils = { path = "apps/utils" }
+essential-app-utils = { path = "apps/utils" }
 essential-deploy-contract = { path = "crates/essential-deploy-contract" }
 essential-read = { path = "crates/essential-read" }
 essential-rest-client = { path = "crates/essential-rest-client" }

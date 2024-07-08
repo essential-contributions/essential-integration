@@ -1,4 +1,4 @@
-use app_utils::cli::ServerName;
+use essential_app_utils::cli::ServerName;
 use clap::{Parser, Subcommand};
 use std::path::PathBuf;
 use token::{

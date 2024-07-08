@@ -1,4 +1,4 @@
-use app_utils::inputs::{Instance, Int, WriteDecVars};
+use essential_app_utils::inputs::{Instance, Int, WriteDecVars};
 
 pub type TransientData = super::TransientData;
 
