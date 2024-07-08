@@ -1,4 +1,4 @@
-use anyhow::ensure;
+use anyhow::{bail, ensure};
 use essential_types::{contract::Contract, predicate::Predicate};
 use std::path::PathBuf;
 use tokio::{
@@ -19,17 +19,16 @@ pub struct NamedContract {
     pub source: String,
 }
 
-pub async fn compile_pint_project(path: PathBuf, name: &str) -> anyhow::Result<Contract> {
-    let (bytes, _, _) = compile_pint_project_inner(path, name, false).await?;
+pub async fn compile_pint_project(path: PathBuf) -> anyhow::Result<Contract> {
+    let (bytes, _, _) = compile_pint_project_inner(path, false).await?;
     let contract: Contract = serde_json::from_slice(&bytes)?;
     Ok(contract)
 }
 
 pub async fn compile_pint_project_and_abi(
     path: PathBuf,
-    name: &str,
 ) -> anyhow::Result<(Contract, serde_json::Value)> {
-    let (bytes, abi, _) = compile_pint_project_inner(path, name, false).await?;
+    let (bytes, abi, _) = compile_pint_project_inner(path, false).await?;
     let contract: Contract = serde_json::from_slice(&bytes)?;
     let abi: serde_json::Value = serde_json::from_slice(&abi)?;
     Ok((contract, abi))
@@ -37,9 +36,8 @@ pub async fn compile_pint_project_and_abi(
 
 pub async fn compile_pint_project_and_abi_with_source(
     path: PathBuf,
-    name: &str,
 ) -> anyhow::Result<(Contract, serde_json::Value, String)> {
-    let (bytes, abi, source) = compile_pint_project_inner(path, name, true).await?;
+    let (bytes, abi, source) = compile_pint_project_inner(path, true).await?;
     let contract: Contract = serde_json::from_slice(&bytes)?;
     let abi: serde_json::Value = serde_json::from_slice(&abi)?;
     Ok((contract, abi, source))
@@ -47,7 +45,6 @@ pub async fn compile_pint_project_and_abi_with_source(
 
 pub async fn compile_pint_project_inner(
     path: PathBuf,
-    name: &str,
     include_source: bool,
 ) -> anyhow::Result<(Vec<u8>, Vec<u8>, String)> {
     let pint_manifest_path = path.join("pint.toml");
@@ -56,6 +53,16 @@ pub async fn compile_pint_project_inner(
         "pint.toml not found: {:?}",
         pint_manifest_path
     );
+
+    let pint_toml = tokio::fs::read_to_string(&pint_manifest_path).await?;
+    let pint_toml = pint_toml.parse::<toml::Table>()?;
+    let Some(name) = pint_toml
+        .get("package")
+        .and_then(|p| p.as_table()?.get("name"))
+        .and_then(|name| name.as_str())
+    else {
+        bail!("name not found in pint.toml")
+    };
 
     let output = if include_source {
         Command::new("pint")
@@ -122,7 +129,7 @@ pub async fn get_contracts(
 
     for name in contracts {
         let (contract, abi, source) =
-            compile_pint_project_and_abi_with_source(pint_directory.clone(), name).await?;
+            compile_pint_project_and_abi_with_source(pint_directory.clone().join(name)).await?;
         let predicate_names = abi["predicates"]
             .as_array()
             .unwrap()

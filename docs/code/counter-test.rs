@@ -1,7 +1,7 @@
 
 // ANCHOR: full
 // ANCHOR: use
-use app_utils::{compile::compile_pint_project, local_server::setup_server};
+use essential_app_utils::{compile::compile_pint_project, local_server::setup_server};
 use counter_app::App;
 use essential_types::{PredicateAddress, Word};
 // ANCHOR_END: use

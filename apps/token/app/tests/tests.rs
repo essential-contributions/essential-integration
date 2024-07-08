@@ -1,4 +1,4 @@
-use app_utils::local_server::setup_server;
+use essential_app_utils::local_server::setup_server;
 use std::path::PathBuf;
 use token::{actions::deploy_app, token::Token};
 

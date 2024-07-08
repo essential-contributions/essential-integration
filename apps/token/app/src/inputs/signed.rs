@@ -1,4 +1,4 @@
-use app_utils::inputs::B256;
+use essential_app_utils::inputs::B256;
 use essential_types::{solution::Mutation, PredicateAddress};
 
 pub mod burn;

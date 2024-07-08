@@ -1,5 +1,5 @@
-use app_utils::cli::ServerName;
 use clap::{Parser, Subcommand};
+use essential_app_utils::cli::ServerName;
 use std::path::PathBuf;
 use token::{
     actions::{compile_addresses, deploy_app, print_addresses},

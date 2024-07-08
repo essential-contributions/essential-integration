@@ -1,4 +1,4 @@
-use app_utils::inputs::{WriteDecVars, B256};
+use essential_app_utils::inputs::{WriteDecVars, B256};
 
 pub struct DecVars {
     pub contract: B256,

@@ -1,4 +1,4 @@
-use app_utils::local_server::setup_server;
+use essential_app_utils::local_server::setup_server;
 use nft::{deploy_app, print_addresses, Nft};
 use std::path::PathBuf;
 
