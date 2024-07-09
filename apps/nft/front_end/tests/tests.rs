@@ -3,20 +3,8 @@ use nft::{deploy_app, print_addresses, Nft};
 use std::path::PathBuf;
 
 #[tokio::test]
-#[ignore = "Will break CI because it requires the essential-rest-server to be on the path"]
-async fn mint_and_transfer_local() {
+async fn mint_and_transfer() {
     let (server_address, _child) = setup_server().await.unwrap();
-    mint_and_transfer(server_address).await;
-}
-
-#[tokio::test]
-#[ignore = "Will break CI because it runs on the deployed server."]
-async fn mint_and_transfer_remote() {
-    let server_address = std::env::var("ESSENTIAL_SERVER_ADDR").unwrap();
-    mint_and_transfer(server_address).await;
-}
-
-async fn mint_and_transfer(server_address: String) {
     let mut wallet = essential_wallet::Wallet::temp().unwrap();
 
     wallet

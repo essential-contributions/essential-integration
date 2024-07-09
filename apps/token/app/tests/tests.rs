@@ -5,20 +5,8 @@ use token::{actions::deploy_app, token::Token};
 const PRIV_KEY: &str = "128A3D2146A69581FD8FC4C0A9B7A96A5755D85255D4E47F814AFA69D7726C8D";
 
 #[tokio::test]
-#[ignore = "Will break CI because it requires the essential-rest-server to be on the path"]
-async fn mint_and_transfer_local() {
+async fn mint_and_transfer() {
     let (server_address, _child) = setup_server().await.unwrap();
-    mint_and_transfer(server_address).await;
-}
-
-#[tokio::test]
-#[ignore = "Will break CI because it runs on the deployed server."]
-async fn mint_and_transfer_remote() {
-    let server_address = std::env::var("ESSENTIAL_SERVER_ADDR").unwrap();
-    mint_and_transfer(server_address).await;
-}
-
-async fn mint_and_transfer(server_address: String) {
     // setup essential wallet
     let mut wallet = essential_wallet::Wallet::temp().unwrap();
 
