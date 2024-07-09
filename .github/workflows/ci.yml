@@ -20,15 +20,6 @@ jobs:
       contents: "read"
     steps:
     - uses: actions/checkout@v3
-    - uses: webfactory/ssh-agent@v0.9.0
-      with:
-        ssh-private-key: |
-          ${{ secrets.SSH_KEY_BASE }}
-          ${{ secrets.SSH_KEY_PINT }}
-          ${{ secrets.SSH_KEY_PINTNIX }}
-          ${{ secrets.SSH_KEY_SERVER }}
-          ${{ secrets.SSH_KEY_WALLET }}
-          ${{ secrets.SSH_KEY_DEBUGGER }}
     - uses: DeterminateSystems/nix-installer-action@v10
     - uses: DeterminateSystems/magic-nix-cache-action@v4
     - run: nix fmt -- --check ./
@@ -48,15 +39,6 @@ jobs:
       contents: "read"
     steps:
       - uses: actions/checkout@v3
-      - uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: |
-            ${{ secrets.SSH_KEY_BASE }}
-            ${{ secrets.SSH_KEY_PINT }}
-            ${{ secrets.SSH_KEY_PINTNIX }}
-            ${{ secrets.SSH_KEY_SERVER }}
-            ${{ secrets.SSH_KEY_WALLET }}
-            ${{ secrets.SSH_KEY_DEBUGGER }}
       - uses: DeterminateSystems/nix-installer-action@v10
       - uses: DeterminateSystems/magic-nix-cache-action@v4
       - run: nix ${{ matrix.command }}
@@ -69,21 +51,13 @@ jobs:
         include:
           # Add each app's test command here, each with a unique port.
           - command: nix run .#test-app-counter -- 44001
+          - command: nix develop .#essential-rust-app-dev --command cargo test
     runs-on: ubuntu-latest
     permissions:
       id-token: "write"
       contents: "read"
     steps:
       - uses: actions/checkout@v3
-      - uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: |
-            ${{ secrets.SSH_KEY_BASE }}
-            ${{ secrets.SSH_KEY_PINT }}
-            ${{ secrets.SSH_KEY_PINTNIX }}
-            ${{ secrets.SSH_KEY_SERVER }}
-            ${{ secrets.SSH_KEY_WALLET }}
-            ${{ secrets.SSH_KEY_DEBUGGER }}
       - uses: DeterminateSystems/nix-installer-action@v10
       - uses: DeterminateSystems/magic-nix-cache-action@v4
       - run: ${{ matrix.command }}
