@@ -9,6 +9,7 @@
         - [Nix](./getting-started/installation/nix.md)
         - [From source](./getting-started/installation/source.md)
         - [Download binaries](./getting-started/installation/binaries.md)
+        - [Syntax highlighting](./getting-started/installation/syntax.md)
     - [Essential applications 101](./getting-started/applications_101.md)
     - [Essential server](./getting-started/server.md)
     - [Counter example application](./getting-started/counter/index.md)
