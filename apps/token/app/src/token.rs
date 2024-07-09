@@ -7,6 +7,33 @@ use essential_types::{
 };
 use essential_wallet::Wallet;
 
+/// Items generated from `nft-abi.json`.
+mod token {
+    pint_abi::gen_from_file!("../pint/token/out/debug/token-abi.json");
+
+    // TODO: Remove the following after `pint-abi-gen` adds `keys()` builder.
+    use essential_app_utils::inputs::{Int, B256};
+    use essential_types::solution::Mutation;
+
+    pub fn query_owners(token: Int) -> essential_types::Key {
+        let mut m: Vec<Mutation> = storage::mutations()
+            .owners(|map| map.entry(token.0, Default::default()))
+            .into();
+        m.pop().unwrap().key
+    }
+    pub fn query_nonce(key: B256) -> essential_types::Key {
+        let mut m: Vec<Mutation> = storage::mutations()
+            .nonce(|map| map.entry(key.0, Default::default()))
+            .into();
+        m.pop().unwrap().key
+    }
+}
+
+/// Items generated from `signed-abi.json`.
+mod signed {
+    pint_abi::gen_from_file!("../pint/signed/out/debug/signed-abi.json");
+}
+
 pub struct Token {
     client: EssentialClient,
     wallet: Wallet,

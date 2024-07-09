@@ -2939,6 +2939,7 @@ dependencies = [
  "essential-types",
  "essential-wallet",
  "hex",
+ "pint-abi",
  "rpassword",
  "serde_json",
  "tokio",
