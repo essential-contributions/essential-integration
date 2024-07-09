@@ -18,12 +18,20 @@ mod nft {
     pint_abi::gen_from_file!("../pint/nft/out/debug/nft-abi.json");
 
     // TODO: Remove the following after `pint-abi-gen` adds `keys()` builder.
-    use essential_app_utils::inputs::{index_key, Int, B256};
+    use essential_app_utils::inputs::{Int, B256};
+    use essential_types::solution::Mutation;
+
     pub fn query_owners(token: Int) -> essential_types::Key {
-        index_key(0, token.to_key())
+        let mut m: Vec<Mutation> = storage::mutations()
+            .owners(|map| map.entry(token.0, Default::default()))
+            .into();
+        m.pop().unwrap().key
     }
     pub fn query_nonce(key: B256) -> essential_types::Key {
-        index_key(0, key.to_key())
+        let mut m: Vec<Mutation> = storage::mutations()
+            .nonce(|map| map.entry(key.0, Default::default()))
+            .into();
+        m.pop().unwrap().key
     }
 }
 
@@ -34,11 +42,14 @@ mod signed {
 
 /// Items generated from `swap-any-abi.json`.
 mod swap_any {
+    use essential_types::solution::Mutation;
+
     pint_abi::gen_from_file!("../pint/swap_any/out/debug/swap_any-abi.json");
 
     // TODO: Remove the following after `pint-abi-gen` adds `keys()` builder.
     pub(crate) fn query_token() -> essential_types::Key {
-        vec![0]
+        let mut m: Vec<Mutation> = storage::mutations().token(Default::default()).into();
+        m.pop().unwrap().key
     }
 }
 
@@ -264,9 +275,9 @@ impl Nft {
         };
 
         let transient_data = nft::Transfer::pub_vars::mutations()
-            .key(key.into())
-            .to(to.into())
-            .token(token.into())
+            .key(key)
+            .to(to)
+            .token(token)
             .into();
 
         let signed_tx_addr = self.deployed_predicates.signed_transfer.clone();
@@ -279,8 +290,8 @@ impl Nft {
         };
 
         let state_mutations = nft::storage::mutations()
-            .owners(|map| map.entry(token.into(), to.into()))
-            .nonce(|map| map.entry(key.into(), nonce.into()))
+            .owners(|map| map.entry(token, to))
+            .nonce(|map| map.entry(key, nonce))
             .into();
 
         let transfer_nft = SolutionData {
@@ -343,7 +354,7 @@ impl Nft {
 
         let decision_variables = swap_any::Swap::Vars { I_pathway: 3 }.into();
 
-        let state_mutations = swap_any::storage::mutations().token(token.into()).into();
+        let state_mutations = swap_any::storage::mutations().token(token).into();
 
         let swap_any_swap = SolutionData {
             predicate_to_solve: self.deployed_predicates.swap_any_swap.clone(),
@@ -353,9 +364,9 @@ impl Nft {
         };
 
         let transient_data = nft::Transfer::pub_vars::mutations()
-            .key(to.into())
-            .to(key.into())
-            .token(current_token.into())
+            .key(to)
+            .to(key)
+            .token(current_token)
             .into();
 
         let swap_any_swap_addr = self.deployed_predicates.swap_any_swap.clone();
@@ -370,8 +381,8 @@ impl Nft {
         .into();
 
         let state_mutations = nft::storage::mutations()
-            .owners(|map| map.entry(current_token.into(), key.into()))
-            .nonce(|map| map.entry(to.into(), nonce.into()))
+            .owners(|map| map.entry(current_token, key))
+            .nonce(|map| map.entry(to, nonce))
             .into();
 
         // Transfer existing token from swap_any to user

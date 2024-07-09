@@ -51,7 +51,11 @@ jobs:
         include:
           # Add each app's test command here, each with a unique port.
           - command: nix run .#test-app-counter -- 44001
-          - command: nix develop .#essential-rust-app-dev --command cargo test
+          - command: |
+              nix run .#print-proj -- -w apps/nft/pint/
+              nix run .#print-proj -- -w apps/token/pint/
+              nix run .#print-proj -- apps/counter/pint/
+              nix develop .#essential-rust-app-dev --command cargo test
     runs-on: ubuntu-latest
     permissions:
       id-token: "write"

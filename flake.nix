@@ -75,8 +75,10 @@
           cargo-readme = final.callPackage ./pkgs/cargo-readme.nix { inherit (inputs) cargo-readme-src; };
           # All app tests.
           test-app-counter = final.callPackage ./pkgs/test-app-counter.nix { };
-          # All app tests.
+          # The book.
           book = final.callPackage ./pkgs/book.nix { };
+          # Pint project compiler.
+          pint-proj = prev.callPackage ./pkgs/compile-pint-project.nix { };
         };
         default = inputs.self.overlays.essential-integration;
       };
@@ -91,6 +93,7 @@
         test-app-counter = pkgs.test-app-counter;
         book = pkgs.book;
         cargo-readme = pkgs.cargo-readme;
+        pint-proj = pkgs.pint-proj;
         default = inputs.self.packages.${pkgs.system}.essential-minimal;
       });
 
