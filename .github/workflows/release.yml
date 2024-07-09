@@ -33,7 +33,7 @@ jobs:
         uses: DeterminateSystems/nix-installer-action@v10
       - name: Cache Nix
         uses: DeterminateSystems/magic-nix-cache-action@v4
-      - run: nix build --print-build-logs --no-update-lock-file .#essential
+      - run: nix build --print-build-logs --no-update-lock-file .#essential-all
       - uses: actions/upload-artifact@v4
         with:
           name: essential-${{ matrix.os }}
