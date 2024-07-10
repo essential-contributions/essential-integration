@@ -43,6 +43,50 @@ jobs:
       - uses: DeterminateSystems/magic-nix-cache-action@v4
       - run: nix ${{ matrix.command }}
 
+  cargo:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: "write" # added for magic-nix-cache-action
+      contents: "read"  # added for magic-nix-cache-action
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - command: check --locked --all
+          - command: clippy --locked --all -- -D warnings
+          - command: fmt --all -- --check
+          - command: test --locked --all
+          - command: test --no-default-features --locked --all
+          - command: test --all-features --locked --all -- --nocapture
+    env:
+        CARGO_NET_GIT_FETCH_WITH_CLI: 'true'
+    steps:
+    - uses: actions/checkout@v3
+    - uses: webfactory/ssh-agent@v0.9.0
+      with:
+        ssh-private-key: |
+            ${{ secrets.SSH_PRIVATE_KEY }}
+            ${{ secrets.SSH_PRIVATE_KEY_SELF }}
+    - uses: DeterminateSystems/nix-installer-action@v10
+    - uses: DeterminateSystems/magic-nix-cache-action@v4
+    - uses: Swatinem/rust-cache@v2
+    - env:
+        TMPDIR: ${{ runner.temp }}
+      run: nix develop --command cargo ${{ matrix.command }}
+
+  # TODO: Update/fork this tool to provide a simpler, cargo-plugin-style CLI
+  # so that it can be merged in the command table above
+  cargo-toml-lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+    - uses: Swatinem/rust-cache@v2
+    - run: cargo install --version "0.1.1" cargo-toml-lint
+    - run: git ls-files | grep Cargo.toml$ | xargs --verbose -n 1 cargo-toml-lint
+
   # Test the apps.
   apps:
     strategy:
