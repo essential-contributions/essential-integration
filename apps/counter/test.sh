@@ -73,28 +73,36 @@ fi
 # SOLVE `increment`
 # ---------------------------------------------------------
 
-# Construct a solution to increment the counter for the first time.
-SOLUTION=$(jq -n \
-  --argjson predicate_addr "$PREDICATE_ADDRESS_INCREMENT" \
-'
-{
-  data: [
-    {
-      predicate_to_solve: $predicate_addr,
-      decision_variables: [],
-      state_mutations: [
-        {
-          key: [0],
-          value: [1]
-        }
-      ],
-      transient_data: []
-    }
-  ]
-}')
+# Construct the solution to increment the counter.
+construct_increment_solution() {
+  local NEXT_COUNT=$1
+  SOLUTION=$(jq -n \
+    --argjson predicate_addr "$PREDICATE_ADDRESS_INCREMENT" \
+    --argjson next_count "$NEXT_COUNT" \
+  '
+  {
+    data: [
+      {
+        predicate_to_solve: $predicate_addr,
+        decision_variables: [],
+        state_mutations: [
+          {
+            key: [0],
+            value: [$next_count]
+          }
+        ],
+        transient_data: []
+      }
+    ]
+  }')
+  echo $SOLUTION | jq '.'
+}
 
+# Construct the solution to increment the counter to 1.
+SOLUTION=$(construct_increment_solution 1)
+
+# Submit the solution.
 echo "Submitting 'increment' solution"
-echo $SOLUTION | jq '.'
 RESPONSE=$(curl -X POST --http2-prior-knowledge -H "Content-Type: application/json" \
   -d "$SOLUTION" \
   "http://localhost:$SERVER_PORT/submit-solution")
@@ -154,36 +162,16 @@ RESPONSE=$(curl -X GET --http2-prior-knowledge -H "Content-Type: application/jso
 echo "$RESPONSE" | jq .
 
 # ---------------------------------------------------------
-# SOLVE `increment`
+# SOLVE `increment` for the second time.
 # ---------------------------------------------------------
 
-# Construct a solution to increment the counter to 2.
+# Construct the solution to increment the counter to 2.
 PREV_COUNT=$(echo $RESPONSE | jq '.[0]')
 NEXT_COUNT=$(expr $PREV_COUNT + 1)
-SOLUTION=$(jq -n \
-  --argjson answer "42" \
-  --argjson predicate_addr "$PREDICATE_ADDRESS_INCREMENT" \
-  --argjson next_count "$NEXT_COUNT" \
-'
-{
-  data: [
-    {
-      predicate_to_solve: $predicate_addr,
-      decision_variables: [[$answer]],
-      state_mutations: [
-        {
-          key: [0],
-          value: [$next_count]
-        }
-      ],
-      transient_data: []
-    }
-  ]
-}')
+SOLUTION=$(construct_increment_solution $NEXT_COUNT)
 
 # Submit the solution.
-echo "Submitting 'increment' solution"
-echo $SOLUTION | jq '.'
+echo "Submitting 'increment' solution for the second time."
 RESPONSE=$(curl -X POST --http2-prior-knowledge -H "Content-Type: application/json" \
   -d "$SOLUTION" \
   "http://localhost:$SERVER_PORT/submit-solution")
