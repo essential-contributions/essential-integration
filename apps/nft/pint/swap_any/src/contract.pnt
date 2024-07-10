@@ -1,4 +1,5 @@
 use std::lib::PredicateAddress;
+use std::lib::@mut_keys;
 
 storage {
     token: int,
@@ -28,6 +29,8 @@ predicate Init {
     state token_owner = NftInstance::storage::owners[current_token'];
 
     constraint current_token == nil && token_owner' != nil;
+
+    @mut_keys(1);
     
     // TODO: Get hash of swap so that `token_owner'` can be constraint to the predicate address of swap.
 }
@@ -49,4 +52,6 @@ predicate Swap {
     constraint current_token_owner == I::key;
     constraint new_token_owner == I::to;
     constraint current_token == I::token;
+    
+    @mut_keys(1);
 }

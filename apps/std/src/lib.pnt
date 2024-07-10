@@ -58,3 +58,13 @@ macro @count($i) {
 macro @hash_this_addr() {
     __sha256({__this_set_address(), __this_address()})
 }
+
+// No mutations are allowed for this predicate
+macro @immutable() {
+    constraint __mut_keys_len() == 0;
+}
+
+// Number of allowed mutations using this predicate.
+macro @mut_keys($n) {
+    constraint __mut_keys_len() == $n;
+}

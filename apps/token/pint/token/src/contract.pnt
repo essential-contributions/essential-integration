@@ -3,6 +3,8 @@ use std::lib::@delta;
 use std::lib::@safe_increment;
 use std::lib::@init_once;
 use std::lib::@init_delta;
+use std::lib::@mut_keys;
+use auth::@auth;
 
 storage {
     // The balances of accounts
@@ -51,11 +53,11 @@ predicate Burn {
     constraint @safe_increment(nonce);
     
     // The balance and nonce are mutated.
-    constraint __mut_keys_len() == 2;
+    @mut_keys(2);
     
     // Check the authorization predicate.
     var auth_addr: PredicateAddress;
-    @auth(auth_addr; key; auth::@burn());
+    @auth(key; auth_addr; auth::@burn());
 }
 
 predicate Mint {
@@ -97,11 +99,11 @@ predicate Mint {
     constraint @init_once(nonce; 1);
 
     // All 5 state values are mutated.
-    constraint __mut_keys_len() == 5;
+    @mut_keys(5);
     
     // Check the authorization predicate.
     var auth_addr: PredicateAddress;
-    @auth(auth_addr; key; auth::@mint());
+    @auth(key; auth_addr; auth::@mint());
 }
 
 predicate Transfer {
@@ -136,11 +138,11 @@ predicate Transfer {
     constraint @safe_increment(nonce);
     
     // The sender balance, receiver balance, and nonce are mutated.
-    constraint __mut_keys_len() == 3;
+    @mut_keys(3);
     
     // Check the authorization predicate.
     var auth_addr: PredicateAddress;
-    @auth(auth_addr; key; auth::@transfer(); auth::@transfer_with());
+    @auth(key; auth_addr; auth::@transfer(); auth::@transfer_with());
 }
 
 predicate Cancel {
@@ -154,27 +156,9 @@ predicate Cancel {
     constraint @safe_increment(nonce);
 
     // The nonce is mutated.
-    constraint __mut_keys_len() == 1;
+    @mut_keys(1);
     
     // Check the authorization predicate.
     var auth_addr: PredicateAddress;
-    @auth(auth_addr; key; auth::@cancel());
-}
-
-macro @auth($auth_addr, $key, $allowed_addr, &rest) {
-    // Enforce that the predicate at this address is in this solution.
-    interface AuthI = Auth($auth_addr.contract);
-    predicate A = AuthI::Predicate($auth_addr.addr);
-
-    // Check the authorization predicate is valid.
-    std::auth::@auth($key; A; $auth_addr; $allowed_addr; &rest);
-}
-
-macro @auth($auth_addr, $key, $allowed_addr) {
-    // Enforce that the predicate at this address is in this solution.
-    interface AuthI = Auth($auth_addr.contract);
-    predicate A = AuthI::Predicate($auth_addr.addr);
-
-    // Check the authorization predicate is valid.
-    std::auth::@auth($key; A; $auth_addr; $allowed_addr);
+    @auth(key; auth_addr; auth::@cancel());
 }

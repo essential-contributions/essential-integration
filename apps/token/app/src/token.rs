@@ -87,8 +87,7 @@ impl Token {
             predicate_to_solve: self.deployed_predicates.signed_burn.clone(),
             decision_variables: signed::Burn::Vars {
                 ___I_pathway: BURN_PATH,
-                anon_0_sig: self.sign_data(account_name, data)?.encode(),
-                anon_0_public_key: self.get_pub_key(account_name)?.encode(),
+                sig: self.sign_data(account_name, data)?.encode(),
             },
             transient_data: signed::Burn::pub_vars::mutations().token(|addr| {
                 let (c, p) = self.deployed_predicates.burn.encode();
@@ -158,8 +157,7 @@ impl Token {
             predicate_to_solve: self.deployed_predicates.signed_mint.clone(),
             decision_variables: signed::Mint::Vars {
                 ___I_pathway: MINT_PATH,
-                anon_2_sig: self.sign_data(account_name, data)?.encode(),
-                anon_2_public_key: self.get_pub_key(account_name)?.encode(),
+                sig: self.sign_data(account_name, data)?.encode(),
             },
             transient_data: signed::Mint::pub_vars::mutations().token(|addr| {
                 let (c, p) = self.deployed_predicates.mint.encode();
@@ -239,8 +237,7 @@ impl Token {
             predicate_to_solve: self.deployed_predicates.signed_transfer.clone(),
             decision_variables: signed::Transfer::Vars {
                 ___I_pathway: TRANSFER_PATH,
-                anon_3_sig: self.sign_data(from_name, data)?.encode(),
-                anon_3_public_key: self.get_pub_key(from_name)?.encode(),
+                sig: self.sign_data(from_name, data)?.encode(),
             },
             transient_data: signed::Transfer::pub_vars::mutations().token(|addr| {
                 let (c, p) = self.deployed_predicates.transfer.encode();

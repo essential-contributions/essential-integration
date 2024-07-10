@@ -1,6 +1,7 @@
 use std::lib::PredicateAddress;
 use std::auth::@auth;
 use std::lib::@safe_increment;
+use std::lib::@mut_keys;
 
 storage {
     owners: (int => b256),
@@ -23,10 +24,9 @@ predicate Mint {
     state owner = storage::owners[token];
 
     constraint owner == nil;
-
     constraint owner' == new_owner;
     
-    constraint __mut_keys_len() == 1;
+    @mut_keys(1);
 }
 
 predicate Transfer {
@@ -36,11 +36,6 @@ predicate Transfer {
     pub var to: b256;
     // The token being transfered.
     pub var token: int;
-    
-    var auth_addr: PredicateAddress;
-    
-    interface AuthI = Auth(auth_addr.contract);
-    predicate A = AuthI::Predicate(auth_addr.addr);
 
     state owner = storage::owners[token];
     state nonce = storage::nonce[key];
@@ -49,18 +44,19 @@ predicate Transfer {
     constraint owner' == to;
     constraint @safe_increment(nonce);
 
-    constraint __mut_keys_len() == 2;
-    @auth(key; A; auth_addr; @transfer());
+    @mut_keys(2);
+    
+    // Check the authorization predicate.
+    var auth_addr: PredicateAddress;
+    interface AuthI = Auth(auth_addr.contract);
+    predicate A = AuthI::Predicate(auth_addr.addr);
+
+    @auth(key; A::addr; auth_addr; @transfer());
 }
 
 predicate Cancel {
     // The account that is cancelling a transfer or burn.
     pub var key: b256;
-    
-    var auth_addr: PredicateAddress;
-    
-    interface AuthI = Auth(auth_addr.contract);
-    predicate A = AuthI::Predicate(auth_addr.addr);
 
     state nonce = storage::nonce[key];
 
@@ -69,10 +65,14 @@ predicate Cancel {
     constraint @safe_increment(nonce);
 
     // The nonce is mutated.
-    constraint __mut_keys_len() == 1;
+    @mut_keys(1);
     
     // Check the authorization predicate.
-    @auth(key; A; auth_addr; @cancel());
+    var auth_addr: PredicateAddress;
+    interface AuthI = Auth(auth_addr.contract);
+    predicate A = AuthI::Predicate(auth_addr.addr);
+
+    @auth(key; A::addr; auth_addr; @cancel());
 }
 
 
