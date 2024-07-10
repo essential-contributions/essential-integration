@@ -58,15 +58,8 @@ jobs:
           - command: test --locked --all
           - command: test --no-default-features --locked --all
           - command: test --all-features --locked --all -- --nocapture
-    env:
-        CARGO_NET_GIT_FETCH_WITH_CLI: 'true'
     steps:
     - uses: actions/checkout@v3
-    - uses: webfactory/ssh-agent@v0.9.0
-      with:
-        ssh-private-key: |
-            ${{ secrets.SSH_PRIVATE_KEY }}
-            ${{ secrets.SSH_PRIVATE_KEY_SELF }}
     - uses: DeterminateSystems/nix-installer-action@v10
     - uses: DeterminateSystems/magic-nix-cache-action@v4
     - uses: Swatinem/rust-cache@v2
