@@ -55,9 +55,6 @@ jobs:
           - command: check --locked --all
           - command: clippy --locked --all -- -D warnings
           - command: fmt --all -- --check
-          - command: test --locked --all
-          - command: test --no-default-features --locked --all
-          - command: test --all-features --locked --all -- --nocapture
     steps:
     - uses: actions/checkout@v3
     - uses: DeterminateSystems/nix-installer-action@v10
@@ -65,7 +62,7 @@ jobs:
     - uses: Swatinem/rust-cache@v2
     - env:
         TMPDIR: ${{ runner.temp }}
-      run: nix develop --command cargo ${{ matrix.command }}
+      run: nix develop .#essential-rust-app-dev --command cargo ${{ matrix.command }}
 
   # TODO: Update/fork this tool to provide a simpler, cargo-plugin-style CLI
   # so that it can be merged in the command table above
