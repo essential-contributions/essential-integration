@@ -254,7 +254,7 @@ impl Nft {
         let pk = self.get_pub_key(account_name)?;
 
         let decision_variables = signed::Transfer::Vars {
-            I_pathway: 1.into(),
+            ___I_pathway: 1.into(),
             sig: tuple_from_ecdsa_sig(&sig),
             public_key: tuple_from_secp256k1_pubkey(&pk),
         };
@@ -286,7 +286,7 @@ impl Nft {
                 signed_tx_addr.contract.into(),
                 signed_tx_addr.predicate.into(),
             ),
-            A_pathway: 0,
+            ___A_pathway: 0,
         };
 
         let state_mutations = nft::storage::mutations()
@@ -352,7 +352,7 @@ impl Nft {
             })
             .into();
 
-        let decision_variables = swap_any::Swap::Vars { I_pathway: 3 }.into();
+        let decision_variables = swap_any::Swap::Vars { ___I_pathway: 3 }.into();
 
         let state_mutations = swap_any::storage::mutations().token(token).into();
 
@@ -376,7 +376,7 @@ impl Nft {
                 swap_any_swap_addr.predicate.into(),
             ),
             // Pathway to the auth predicate
-            A_pathway: 2,
+            ___A_pathway: 2,
         }
         .into();
 

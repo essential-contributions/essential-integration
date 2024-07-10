@@ -2100,8 +2100,7 @@ checksum = "8b870d8c151b6f2fb93e84a13146138f05d02ed11c7e7c54f8826aaaf7c9f184"
 [[package]]
 name = "pint-abi"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bdd6bb2fad53675e22c4dc3ad9ff1d37ca687465eb68173998b2b0787a6ec051"
+source = "git+https://github.com/essential-contributions/pint#62edaee50562526492538ddc4d37bcab630e34b2"
 dependencies = [
  "essential-types",
  "pint-abi-gen",
@@ -2113,8 +2112,7 @@ dependencies = [
 [[package]]
 name = "pint-abi-gen"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ad8a8aa641f454547e0e448758517bee15a5585fd200ad2e14388020e7588470"
+source = "git+https://github.com/essential-contributions/pint#62edaee50562526492538ddc4d37bcab630e34b2"
 dependencies = [
  "essential-types",
  "pint-abi-types",
@@ -2127,8 +2125,7 @@ dependencies = [
 [[package]]
 name = "pint-abi-types"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e1b39565ad3719b5b485e17c3e3c9a0299391f706e5d8e6f32255577d48ba898"
+source = "git+https://github.com/essential-contributions/pint#62edaee50562526492538ddc4d37bcab630e34b2"
 dependencies = [
  "serde",
 ]

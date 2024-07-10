@@ -1,3 +1,4 @@
+use essential_sign::secp256k1::{ecdsa::RecoverableSignature, PublicKey};
 use essential_types::{
     convert::word_4_from_u8_32, solution::Mutation, ContentAddress, Hash, Key, PredicateAddress,
     Value, Word,
@@ -139,5 +140,47 @@ impl Slots for Vec<Value> {
         I: IntoIterator<Item = Word>,
     {
         self.push(iter.into_iter().collect());
+    }
+}
+
+pub trait Encode {
+    type Output;
+
+    fn encode(&self) -> Self::Output;
+}
+
+impl Encode for RecoverableSignature {
+    type Output = ([Word; 4], [Word; 4], Word);
+
+    /// Convert an ECDSA signature into the form expected by the generated ABI type.
+    fn encode(&self) -> Self::Output {
+        let [a0, a1, a2, a3, b0, b1, b2, b3, c1] = essential_sign::encode::signature(self);
+        ([a0, a1, a2, a3], [b0, b1, b2, b3], c1)
+    }
+}
+
+impl Encode for PublicKey {
+    type Output = ([Word; 4], Word);
+
+    /// Convert a public key into the form expected by the generated ABI type.
+    fn encode(&self) -> Self::Output {
+        let [a0, a1, a2, a3, b0] = essential_sign::encode::public_key(self);
+        ([a0, a1, a2, a3], b0)
+    }
+}
+
+impl Encode for ContentAddress {
+    type Output = [Word; 4];
+
+    fn encode(&self) -> Self::Output {
+        word_4_from_u8_32(self.0)
+    }
+}
+
+impl Encode for PredicateAddress {
+    type Output = ([Word; 4], [Word; 4]);
+
+    fn encode(&self) -> Self::Output {
+        (self.contract.encode(), self.predicate.encode())
     }
 }
