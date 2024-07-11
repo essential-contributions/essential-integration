@@ -52,9 +52,7 @@ jobs:
           # Add each app's test command here, each with a unique port.
           - command: nix run .#test-app-counter -- 44001
           - command: |
-              nix run .#pint-proj -- -w apps/nft/pint/
-              nix run .#pint-proj -- -w apps/token/pint/
-              nix run .#pint-proj -- apps/counter/pint/
+              nix run .#compile-all-contracts
               nix develop .#essential-rust-app-dev --command cargo test
     runs-on: ubuntu-latest
     permissions:
