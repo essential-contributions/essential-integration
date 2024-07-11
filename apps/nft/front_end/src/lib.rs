@@ -2,10 +2,10 @@ use anyhow::bail;
 use essential_app_utils::{
     addresses::{contract_hash, get_addresses},
     compile::compile_pint_project,
+    inputs::Encode,
     print::{print_contract_address, print_predicate_address},
 };
 use essential_rest_client::EssentialClient;
-use essential_sign::secp256k1::{ecdsa::RecoverableSignature, PublicKey};
 use essential_types::{
     convert::word_4_from_u8_32,
     solution::{Solution, SolutionData},
@@ -255,8 +255,8 @@ impl Nft {
 
         let decision_variables = signed::Transfer::Vars {
             ___I_pathway: 1.into(),
-            sig: tuple_from_ecdsa_sig(&sig),
-            public_key: tuple_from_secp256k1_pubkey(&pk),
+            sig: sig.encode(),
+            public_key: pk.encode(),
         };
 
         let nft_transfer = self.deployed_predicates.nft_transfer.clone();
@@ -521,16 +521,4 @@ pub fn find_address(predicate: &str, num: usize) -> Option<&str> {
         .nth(num)
         .and_then(|s| s.split(&[' ', ')', ',']).next())
         .map(|s| s.trim())
-}
-
-// Convert an ECDSA signature into the form expected by the generated ABI type.
-fn tuple_from_ecdsa_sig(sig: &RecoverableSignature) -> ([Word; 4], [Word; 4], Word) {
-    let [a0, a1, a2, a3, b0, b1, b2, b3, c1] = essential_sign::encode::signature(sig);
-    ([a0, a1, a2, a3], [b0, b1, b2, b3], c1)
-}
-
-/// Convert a public key into the form expected by the generated ABI type.
-fn tuple_from_secp256k1_pubkey(pk: &PublicKey) -> ([Word; 4], Word) {
-    let [a0, a1, a2, a3, b0] = essential_sign::encode::public_key(pk);
-    ([a0, a1, a2, a3], b0)
 }

@@ -7,7 +7,7 @@ use essential_types::{
 };
 use essential_wallet::Wallet;
 
-/// Items generated from `nft-abi.json`.
+/// Items generated from `token-abi.json`.
 #[allow(clippy::module_inception)]
 mod token;
 
