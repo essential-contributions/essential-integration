@@ -1836,6 +1836,7 @@ dependencies = [
  "essential-types",
  "essential-wallet",
  "hex",
+ "pint-abi",
  "rpassword",
  "serde_json",
  "tokio",
@@ -2095,6 +2096,39 @@ name = "pin-utils"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8b870d8c151b6f2fb93e84a13146138f05d02ed11c7e7c54f8826aaaf7c9f184"
+
+[[package]]
+name = "pint-abi"
+version = "0.1.0"
+source = "git+https://github.com/essential-contributions/pint#62edaee50562526492538ddc4d37bcab630e34b2"
+dependencies = [
+ "essential-types",
+ "pint-abi-gen",
+ "pint-abi-types",
+ "serde_json",
+ "thiserror",
+]
+
+[[package]]
+name = "pint-abi-gen"
+version = "0.1.0"
+source = "git+https://github.com/essential-contributions/pint#62edaee50562526492538ddc4d37bcab630e34b2"
+dependencies = [
+ "essential-types",
+ "pint-abi-types",
+ "proc-macro2",
+ "quote",
+ "serde_json",
+ "syn 2.0.66",
+]
+
+[[package]]
+name = "pint-abi-types"
+version = "0.1.0"
+source = "git+https://github.com/essential-contributions/pint#62edaee50562526492538ddc4d37bcab630e34b2"
+dependencies = [
+ "serde",
+]
 
 [[package]]
 name = "pkcs8"
@@ -2902,6 +2936,7 @@ dependencies = [
  "essential-types",
  "essential-wallet",
  "hex",
+ "pint-abi",
  "rpassword",
  "serde_json",
  "tokio",

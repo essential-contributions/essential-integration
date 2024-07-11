@@ -2,7 +2,7 @@ use anyhow::bail;
 use essential_app_utils::{
     addresses::{contract_hash, get_addresses},
     compile::compile_pint_project,
-    inputs::Instance,
+    inputs::Encode,
     print::{print_contract_address, print_predicate_address},
 };
 use essential_rest_client::EssentialClient;
@@ -11,10 +11,47 @@ use essential_types::{
     solution::{Solution, SolutionData},
     ContentAddress, PredicateAddress, Word,
 };
-use inputs::nft::query_owners;
 use std::{path::PathBuf, vec};
 
-mod inputs;
+/// Items generated from `nft-abi.json`.
+mod nft {
+    pint_abi::gen_from_file!("../pint/nft/out/debug/nft-abi.json");
+
+    // TODO: Remove the following after `pint-abi-gen` adds `keys()` builder.
+    use essential_app_utils::inputs::{Int, B256};
+    use essential_types::solution::Mutation;
+
+    pub fn query_owners(token: Int) -> essential_types::Key {
+        let mut m: Vec<Mutation> = storage::mutations()
+            .owners(|map| map.entry(token.0, Default::default()))
+            .into();
+        m.pop().unwrap().key
+    }
+    pub fn query_nonce(key: B256) -> essential_types::Key {
+        let mut m: Vec<Mutation> = storage::mutations()
+            .nonce(|map| map.entry(key.0, Default::default()))
+            .into();
+        m.pop().unwrap().key
+    }
+}
+
+/// Items generated from `signed-abi.json`.
+mod signed {
+    pint_abi::gen_from_file!("../pint/signed/out/debug/signed-abi.json");
+}
+
+/// Items generated from `swap-any-abi.json`.
+mod swap_any {
+    use essential_types::solution::Mutation;
+
+    pint_abi::gen_from_file!("../pint/swap_any/out/debug/swap_any-abi.json");
+
+    // TODO: Remove the following after `pint-abi-gen` adds `keys()` builder.
+    pub(crate) fn query_token() -> essential_types::Key {
+        let mut m: Vec<Mutation> = storage::mutations().token(Default::default()).into();
+        m.pop().unwrap().key
+    }
+}
 
 pub struct Nft {
     client: EssentialClient,
@@ -56,19 +93,21 @@ impl Nft {
     }
 
     fn mint_inner(&mut self, key: [Word; 4], token: Word) -> anyhow::Result<Solution> {
-        let decision_variables = inputs::nft::mint::DecVars {
-            token: token.into(),
-            new_owner: key.into(),
+        let decision_variables = nft::Mint::Vars {
+            token,
+            new_owner: key,
         };
 
-        let mutation = inputs::nft::owners(token.into(), key.into());
+        let state_mutations = nft::storage::mutations()
+            .owners(|map| map.entry(token, key))
+            .into();
 
         let solution = Solution {
             data: vec![SolutionData {
                 predicate_to_solve: self.deployed_predicates.nft_mint.clone(),
-                decision_variables: decision_variables.encode(),
+                decision_variables: decision_variables.into(),
                 transient_data: Default::default(),
-                state_mutations: vec![mutation],
+                state_mutations,
             }],
         };
         Ok(solution)
@@ -99,7 +138,10 @@ impl Nft {
 
     async fn do_i_own_inner(&mut self, key: [Word; 4], token: Word) -> anyhow::Result<bool> {
         let state = self
-            .query(&self.deployed_predicates.nft, &query_owners(token.into()))
+            .query(
+                &self.deployed_predicates.nft,
+                &nft::query_owners(token.into()),
+            )
             .await?;
         Ok(state[..] == key[..])
     }
@@ -122,12 +164,12 @@ impl Nft {
         let solution = Solution {
             data: vec![SolutionData {
                 predicate_to_solve: self.deployed_predicates.swap_any_init.clone(),
-                decision_variables: inputs::swap_any::init::DecVars {
+                decision_variables: swap_any::Init::Vars {
                     contract: self.deployed_predicates.nft.clone().into(),
                 }
-                .encode(),
+                .into(),
                 transient_data: Default::default(),
-                state_mutations: vec![inputs::swap_any::token(token.into())],
+                state_mutations: swap_any::storage::mutations().token(token).into(),
             }],
         };
         self.client.submit_solution(solution).await?;
@@ -137,10 +179,7 @@ impl Nft {
 
     pub async fn swap_any_owns(&mut self) -> anyhow::Result<Option<Word>> {
         let state = self
-            .query(
-                &self.deployed_predicates.swap_any,
-                &inputs::swap_any::query_token(),
-            )
+            .query(&self.deployed_predicates.swap_any, &swap_any::query_token())
             .await?;
 
         if state.is_empty() {
@@ -192,10 +231,7 @@ impl Nft {
         token: Word,
     ) -> anyhow::Result<Solution> {
         let nonce = self
-            .query(
-                &self.deployed_predicates.nft,
-                &inputs::nft::query_nonce(key.into()),
-            )
+            .query(&self.deployed_predicates.nft, &nft::query_nonce(key.into()))
             .await?;
         let mut nonce = nonce.first().copied().unwrap_or_default();
         nonce += 1;
@@ -215,45 +251,56 @@ impl Nft {
             essential_signer::Signature::Secp256k1(sig) => sig,
             _ => bail!("Invalid signature"),
         };
+        let pk = self.get_pub_key(account_name)?;
 
-        let decision_variables = inputs::signed::transfer::DecVars {
-            nft_path: 1.into(),
-            sig,
-            public_key: self.get_pub_key(account_name)?,
+        let decision_variables = signed::Transfer::Vars {
+            ___I_pathway: 1.into(),
+            sig: sig.encode(),
+            public_key: pk.encode(),
         };
 
-        let transient_data = inputs::signed::transfer::TransientData {
-            nft: self.deployed_predicates.nft_transfer.clone(),
-        };
+        let nft_transfer = self.deployed_predicates.nft_transfer.clone();
+        let transient_data = signed::Transfer::pub_vars::mutations()
+            .nft(|tup| {
+                tup.contract(nft_transfer.contract.into())
+                    .addr(nft_transfer.predicate.into())
+            })
+            .into();
 
         let signed_transfer = SolutionData {
             predicate_to_solve: self.deployed_predicates.signed_transfer.clone(),
-            decision_variables: decision_variables.encode(),
-            transient_data: transient_data.encode(),
+            decision_variables: decision_variables.into(),
+            transient_data,
             state_mutations: vec![],
         };
 
-        let transient_data = inputs::nft::transfer::TransientData {
-            key: key.into(),
-            to: to.into(),
-            token: token.into(),
+        let transient_data = nft::Transfer::pub_vars::mutations()
+            .key(key)
+            .to(to)
+            .token(token)
+            .into();
+
+        let signed_tx_addr = self.deployed_predicates.signed_transfer.clone();
+        let decision_variables = nft::Transfer::Vars {
+            auth_addr: (
+                signed_tx_addr.contract.into(),
+                signed_tx_addr.predicate.into(),
+            ),
+            ___A_pathway: 0,
         };
+
+        let state_mutations = nft::storage::mutations()
+            .owners(|map| map.entry(token, to))
+            .nonce(|map| map.entry(key, nonce))
+            .into();
 
         let transfer_nft = SolutionData {
             predicate_to_solve: self.deployed_predicates.nft_transfer.clone(),
-            decision_variables: inputs::nft::transfer::DecVars {
-                auth_addr: Instance {
-                    address: self.deployed_predicates.signed_transfer.clone(),
-                    path: 0,
-                },
-            }
-            .encode(),
-            transient_data: transient_data.encode(),
-            state_mutations: vec![
-                inputs::nft::owners(token.into(), to.into()),
-                inputs::nft::nonce(key.into(), nonce.into()),
-            ],
+            decision_variables: decision_variables.into(),
+            transient_data,
+            state_mutations,
         };
+
         Ok(Solution {
             data: vec![signed_transfer, transfer_nft],
         })
@@ -279,10 +326,7 @@ impl Nft {
         let key = self.get_hashed_key(account_name)?;
         let to = contract_hash(&self.deployed_predicates.swap_any_swap);
         let nonce = self
-            .query(
-                &self.deployed_predicates.nft,
-                &inputs::nft::query_nonce(to.into()),
-            )
+            .query(&self.deployed_predicates.nft, &nft::query_nonce(to.into()))
             .await?;
         let mut nonce = nonce.first().copied().unwrap_or_default();
         nonce += 1;
@@ -293,51 +337,60 @@ impl Nft {
 
         // Get existing token
         let current_token = self
-            .query(
-                &self.deployed_predicates.swap_any,
-                &inputs::swap_any::query_token(),
-            )
+            .query(&self.deployed_predicates.swap_any, &swap_any::query_token())
             .await?;
 
         let Ok([current_token]): Result<[Word; 1], _> = current_token.try_into() else {
             bail!("Bad token state")
         };
 
-        let transient_data = inputs::swap_any::swap::TransientData {
-            nft: self.deployed_predicates.nft_transfer.clone(),
-        };
+        let nft_tx_addr = self.deployed_predicates.nft_transfer.clone();
+        let transient_data = swap_any::Swap::pub_vars::mutations()
+            .nft(|tup| {
+                tup.contract(nft_tx_addr.contract.into())
+                    .addr(nft_tx_addr.predicate.into())
+            })
+            .into();
 
-        let decision_variables = inputs::swap_any::swap::DecVars { nft_path: 3.into() };
+        let decision_variables = swap_any::Swap::Vars { ___I_pathway: 3 }.into();
+
+        let state_mutations = swap_any::storage::mutations().token(token).into();
 
         let swap_any_swap = SolutionData {
             predicate_to_solve: self.deployed_predicates.swap_any_swap.clone(),
-            decision_variables: decision_variables.encode(),
-            transient_data: transient_data.encode(),
-            state_mutations: vec![inputs::swap_any::token(token.into())],
+            decision_variables,
+            transient_data,
+            state_mutations,
         };
 
-        let transient_data = inputs::nft::transfer::TransientData {
-            key: to.into(),
-            to: key.into(),
-            token: current_token.into(),
-        };
+        let transient_data = nft::Transfer::pub_vars::mutations()
+            .key(to)
+            .to(key)
+            .token(current_token)
+            .into();
+
+        let swap_any_swap_addr = self.deployed_predicates.swap_any_swap.clone();
+        let decision_variables = nft::Transfer::Vars {
+            auth_addr: (
+                swap_any_swap_addr.contract.into(),
+                swap_any_swap_addr.predicate.into(),
+            ),
+            // Pathway to the auth predicate
+            ___A_pathway: 2,
+        }
+        .into();
+
+        let state_mutations = nft::storage::mutations()
+            .owners(|map| map.entry(current_token, key))
+            .nonce(|map| map.entry(to, nonce))
+            .into();
 
         // Transfer existing token from swap_any to user
         let transfer_nft = SolutionData {
             predicate_to_solve: self.deployed_predicates.nft_transfer.clone(),
-            // Pathway to the auth predicate
-            decision_variables: inputs::nft::transfer::DecVars {
-                auth_addr: Instance {
-                    address: self.deployed_predicates.swap_any_swap.clone(),
-                    path: 2,
-                },
-            }
-            .encode(),
-            transient_data: transient_data.encode(),
-            state_mutations: vec![
-                inputs::nft::owners(current_token.into(), key.into()),
-                inputs::nft::nonce(to.into(), nonce.into()),
-            ],
+            decision_variables,
+            transient_data,
+            state_mutations,
         };
 
         solution.data.push(swap_any_swap);

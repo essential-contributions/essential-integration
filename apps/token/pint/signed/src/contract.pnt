@@ -48,7 +48,9 @@ predicate Transfer {
 
     interface T = Token(token.contract);
     predicate I = T::TransferI(token.addr);
-    @common({I::key, I::to, I::amount}; T; I; token);
+    
+    var sig: std::lib::Secp256k1Signature;
+    @common({I::key, I::to, I::amount}; T; I; token; sig);
 }
 
 predicate TransferWith {
@@ -61,16 +63,14 @@ predicate TransferWith {
     predicate I = T::TransferI(token.addr);
     
     var sig: Secp256k1Signature;
-    var public_key: Secp256k1PublicKey;
     
     state nonce = T::storage::nonce[I::key];
     
-    @check_signature_if(mode == TransferMode::All; {I::key, I::to, I::amount, nonce', token, constraints}; sig; public_key);
-    @check_signature_if(mode == TransferMode::Key; {I::key, nonce', token, constraints}; sig; public_key);
-    @check_signature_if(mode == TransferMode::KeyTo; {I::key, I::to, nonce', token, constraints}; sig; public_key);
-    @check_signature_if(mode == TransferMode::KeyAmount; {I::key, I::amount, nonce', token, constraints}; sig; public_key);
+    @check_signature_if(mode == TransferMode::All; {I::key, I::to, I::amount, nonce', token, constraints}; sig; I::key);
+    @check_signature_if(mode == TransferMode::Key; {I::key, nonce', token, constraints}; sig; I::key);
+    @check_signature_if(mode == TransferMode::KeyTo; {I::key, I::to, nonce', token, constraints}; sig; I::key);
+    @check_signature_if(mode == TransferMode::KeyAmount; {I::key, I::amount, nonce', token, constraints}; sig; I::key);
     
-    constraint __sha256(public_key) == I::key;
     constraint __mut_keys_len() == 0;
     
     var constraints: std::lib::PredicateAddress;
@@ -85,7 +85,9 @@ predicate Burn {
 
     interface T = Token(token.contract);
     predicate I = T::BurnI(token.addr);
-    @common({I::key, I::amount}; T; I; token);
+    
+    var sig: std::lib::Secp256k1Signature;
+    @common({I::key, I::amount}; T; I; token; sig);
 }
 
 predicate Mint {
@@ -94,7 +96,9 @@ predicate Mint {
 
     interface T = Token(token.contract);
     predicate I = T::MintI(token.addr);
-    @common({I::key, I::amount, I::decimals}; T; I; token);
+    
+    var sig: std::lib::Secp256k1Signature;
+    @common({I::key, I::amount, I::decimals}; T; I; token; sig);
 }
 
 predicate Cancel {
@@ -103,20 +107,21 @@ predicate Cancel {
 
     interface T = Token(token.contract);
     predicate I = T::CancelI(token.addr);
-    @common(I::key; T; I; token);
-}
 
-macro @common($data, $token, $predicate, $token_addr) {
     var sig: std::lib::Secp256k1Signature;
-    var public_key: std::lib::Secp256k1PublicKey;
-    
-    state nonce = $token::storage::nonce[$predicate::key];
-    
-    constraint __recover_secp256k1(__sha256({$data, nonce', $token_addr}), sig) == public_key;
-    constraint __sha256(public_key) == $predicate::key;
-    constraint __mut_keys_len() == 0;
+    @common(I::key; T; I; token; sig);
 }
 
-macro @check_signature_if($cond, $data, $sig, $public_key) {
-    constraint ($cond && __recover_secp256k1(__sha256($data), $sig) == $public_key) || true;
+macro @common($data, $token, $predicate, $token_addr, $sig) {
+    state nonce = $token::storage::nonce[$predicate::key];
+    constraint @verify_key({$data, nonce', $token_addr}; $sig; $predicate::key);
+}
+
+macro @check_signature_if($cond, $data, $sig, $key) {
+    constraint ($cond && @verify_key($data; $sig; $key)) || true;
+}
+
+macro @verify_key($data, $sig, $key) {
+    __sha256(__recover_secp256k1(__sha256($data), $sig)) == $key
+
 }

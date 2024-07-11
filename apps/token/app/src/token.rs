@@ -1,11 +1,18 @@
-use crate::inputs::{self, token::query_balances, SignedBurn, SignedMint, SignedTransfer};
 use anyhow::bail;
+use essential_app_utils::inputs::Encode;
 use essential_rest_client::EssentialClient;
 use essential_server_types::SolutionOutcome;
 use essential_types::{
     convert::word_4_from_u8_32, solution::Solution, ContentAddress, PredicateAddress, Word,
 };
 use essential_wallet::Wallet;
+
+/// Items generated from `token-abi.json`.
+#[allow(clippy::module_inception)]
+mod token;
+
+/// Items generated from `signed-abi.json`.
+mod signed;
 
 pub struct Token {
     client: EssentialClient,
@@ -63,18 +70,47 @@ impl Token {
         // Calculate the new balance of the account after the burn
         let new_from_balance = self.calculate_from_balance(key, amount).await?;
 
-        let builder = SignedBurn {
-            auth_address: self.deployed_predicates.signed_burn.clone(),
-            burn_address: self.deployed_predicates.burn.clone(),
-            from_account_name: account_name.to_string(),
-            new_nonce,
-            amount,
-            new_from_balance,
+        const AUTH_PATH: Word = 0;
+        const BURN_PATH: Word = 1;
+
+        let mut data = key.to_vec();
+        data.push(amount);
+        data.push(new_nonce);
+        data.extend(self.deployed_predicates.burn.contract.encode());
+        data.extend(self.deployed_predicates.burn.predicate.encode());
+
+        let mut solution = Solution {
+            data: Default::default(),
         };
 
-        let solution = builder.build(&mut self.wallet)?;
+        let auth = signed::BurnData {
+            predicate_to_solve: self.deployed_predicates.signed_burn.clone(),
+            decision_variables: signed::Burn::Vars {
+                ___I_pathway: BURN_PATH,
+                sig: self.sign_data(account_name, data)?.encode(),
+            },
+            transient_data: signed::Burn::pub_vars::mutations().token(|addr| {
+                let (c, p) = self.deployed_predicates.burn.encode();
+                addr.contract(c).addr(p)
+            }),
+        };
 
-        // Submit the solution
+        solution.data.insert(AUTH_PATH as usize, auth.into());
+
+        let burn = token::BurnData {
+            predicate_to_solve: self.deployed_predicates.burn.clone(),
+            decision_variables: token::Burn::Vars {
+                auth_addr: self.deployed_predicates.signed_burn.encode(),
+                ___A_pathway: AUTH_PATH,
+            },
+            transient_data: token::Burn::pub_vars::mutations().key(key).amount(amount),
+            state_mutations: token::storage::mutations()
+                .balances(|map| map.entry(key, new_from_balance))
+                .nonce(|nonces| nonces.entry(key, new_nonce)),
+        };
+
+        solution.data.insert(BURN_PATH as usize, burn.into());
+
         self.client.submit_solution(solution).await
     }
 
@@ -103,18 +139,56 @@ impl Token {
         // Set the number of decimals for the token
         let decimals = 18;
 
-        let builder = SignedMint {
-            auth_address: self.deployed_predicates.signed_mint.clone(),
-            mint_address: self.deployed_predicates.mint.clone(),
-            account_name: account_name.to_string(),
-            new_nonce: nonce,
-            amount: balance,
-            decimals,
-            name: [0; 4],
-            symbol: [0; 4],
+        const AUTH_PATH: Word = 0;
+        const MINT_PATH: Word = 1;
+
+        let mut data = key.to_vec();
+        data.push(balance);
+        data.push(decimals);
+        data.push(nonce);
+        data.extend(self.deployed_predicates.mint.contract.encode());
+        data.extend(self.deployed_predicates.mint.predicate.encode());
+
+        let mut solution = Solution {
+            data: Default::default(),
         };
 
-        builder.build(&mut self.wallet)
+        let auth = signed::MintData {
+            predicate_to_solve: self.deployed_predicates.signed_mint.clone(),
+            decision_variables: signed::Mint::Vars {
+                ___I_pathway: MINT_PATH,
+                sig: self.sign_data(account_name, data)?.encode(),
+            },
+            transient_data: signed::Mint::pub_vars::mutations().token(|addr| {
+                let (c, p) = self.deployed_predicates.mint.encode();
+                addr.contract(c).addr(p)
+            }),
+        };
+
+        solution.data.insert(AUTH_PATH as usize, auth.into());
+
+        let mint = token::MintData {
+            predicate_to_solve: self.deployed_predicates.mint.clone(),
+            decision_variables: token::Mint::Vars {
+                auth_addr: self.deployed_predicates.signed_mint.encode(),
+                ___A_pathway: AUTH_PATH,
+                name: Default::default(),
+                symbol: Default::default(),
+            },
+            transient_data: token::Mint::pub_vars::mutations()
+                .key(key)
+                .decimals(decimals)
+                .amount(balance),
+            state_mutations: token::storage::mutations()
+                .balances(|map| map.entry(key, balance))
+                .token_name(Default::default())
+                .token_symbol(Default::default())
+                .decimals(decimals)
+                .nonce(|nonces| nonces.entry(key, nonce)),
+        };
+
+        solution.data.insert(MINT_PATH as usize, mint.into());
+        Ok(solution)
     }
 
     pub async fn transfer(
@@ -135,25 +209,63 @@ impl Token {
         let new_from_balance = self.calculate_from_balance(key, amount).await?;
 
         let state = self
-            .query(&self.deployed_predicates.token, &query_balances(to.into()))
+            .query(
+                &self.deployed_predicates.token,
+                &token::query_balances(to.into()),
+            )
             .await?;
         let to_balance = state.first().copied().unwrap_or_default();
         let Some(new_to_balance) = to_balance.checked_add(amount) else {
             bail!("Overflow error")
         };
 
-        let builder = SignedTransfer {
-            auth_address: self.deployed_predicates.signed_transfer.clone(),
-            token_address: self.deployed_predicates.transfer.clone(),
-            from_account_name: from_name.to_string(),
-            to_account_name: to_name.to_string(),
-            new_nonce,
-            amount,
-            new_from_balance,
-            new_to_balance,
+        const AUTH_PATH: Word = 0;
+        const TRANSFER_PATH: Word = 1;
+
+        let mut data = key.to_vec();
+        data.extend(to);
+        data.push(amount);
+        data.push(new_nonce);
+        data.extend(self.deployed_predicates.transfer.contract.encode());
+        data.extend(self.deployed_predicates.transfer.predicate.encode());
+
+        let mut solution = Solution {
+            data: Default::default(),
         };
 
-        let solution = builder.build(&mut self.wallet)?;
+        let auth = signed::TransferData {
+            predicate_to_solve: self.deployed_predicates.signed_transfer.clone(),
+            decision_variables: signed::Transfer::Vars {
+                ___I_pathway: TRANSFER_PATH,
+                sig: self.sign_data(from_name, data)?.encode(),
+            },
+            transient_data: signed::Transfer::pub_vars::mutations().token(|addr| {
+                let (c, p) = self.deployed_predicates.transfer.encode();
+                addr.contract(c).addr(p)
+            }),
+        };
+
+        solution.data.insert(AUTH_PATH as usize, auth.into());
+
+        let transfer = token::TransferData {
+            predicate_to_solve: self.deployed_predicates.transfer.clone(),
+            decision_variables: token::Transfer::Vars {
+                auth_addr: self.deployed_predicates.signed_transfer.encode(),
+                ___A_pathway: AUTH_PATH,
+            },
+            transient_data: token::Transfer::pub_vars::mutations()
+                .key(key)
+                .to(to)
+                .amount(amount),
+            state_mutations: token::storage::mutations()
+                .balances(|map| map.entry(key, new_from_balance))
+                .balances(|map| map.entry(to, new_to_balance))
+                .nonce(|nonces| nonces.entry(key, new_nonce)),
+        };
+
+        solution
+            .data
+            .insert(TRANSFER_PATH as usize, transfer.into());
 
         // Submit the solution
         self.client.submit_solution(solution).await
@@ -171,7 +283,10 @@ impl Token {
     pub async fn balance(&mut self, account_name: &str) -> anyhow::Result<Option<i64>> {
         let key = self.get_hashed_key(account_name)?;
         let state = self
-            .query(&self.deployed_predicates.token, &query_balances(key.into()))
+            .query(
+                &self.deployed_predicates.token,
+                &token::query_balances(key.into()),
+            )
             .await?;
         Ok(state.first().copied())
     }
@@ -181,21 +296,28 @@ impl Token {
         let nonce = self
             .query(
                 &self.deployed_predicates.token,
-                &inputs::token::query_nonce((key).into()),
+                &token::query_nonce(key.into()),
             )
             .await?;
         Ok(nonce.first().copied().unwrap_or_default())
     }
 
     // Query state
-    async fn query(&self, set_address: &ContentAddress, key: &[Word]) -> anyhow::Result<Vec<Word>> {
-        let state = self.client.query_state(set_address, &key.to_vec()).await?;
+    async fn query(
+        &self,
+        set_address: &ContentAddress,
+        key: &Vec<Word>,
+    ) -> anyhow::Result<Vec<Word>> {
+        let state = self.client.query_state(set_address, key).await?;
         Ok(state)
     }
 
     async fn calculate_from_balance(&self, key: [Word; 4], amount: Word) -> anyhow::Result<Word> {
         let state = self
-            .query(&self.deployed_predicates.token, &query_balances(key.into()))
+            .query(
+                &self.deployed_predicates.token,
+                &token::query_balances(key.into()),
+            )
             .await?;
         let from_balance = if state.is_empty() {
             0
@@ -216,12 +338,32 @@ impl Token {
         Ok(nonce + 1)
     }
 
-    fn get_hashed_key(&mut self, account_name: &str) -> anyhow::Result<[Word; 4]> {
+    fn get_pub_key(
+        &mut self,
+        account_name: &str,
+    ) -> anyhow::Result<essential_signer::secp256k1::PublicKey> {
         let public_key = self.wallet.get_public_key(account_name)?;
         let essential_signer::PublicKey::Secp256k1(public_key) = public_key else {
             anyhow::bail!("Invalid public key")
         };
+        Ok(public_key)
+    }
+
+    fn get_hashed_key(&mut self, account_name: &str) -> anyhow::Result<[Word; 4]> {
+        let public_key = self.get_pub_key(account_name)?;
         let encoded = essential_sign::encode::public_key(&public_key);
         Ok(word_4_from_u8_32(essential_hash::hash_words(&encoded)))
+    }
+    fn sign_data(
+        &mut self,
+        account_name: &str,
+        data: Vec<Word>,
+    ) -> anyhow::Result<essential_signer::secp256k1::ecdsa::RecoverableSignature> {
+        let sig = self.wallet.sign_words(&data, account_name)?;
+        let sig = match sig {
+            essential_signer::Signature::Secp256k1(sig) => sig,
+            _ => bail!("Invalid signature"),
+        };
+        Ok(sig)
     }
 }

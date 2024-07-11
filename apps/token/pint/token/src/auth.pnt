@@ -17,3 +17,21 @@ macro @mint() {
 macro @cancel() {
     { contract: signed::ADDRESS, addr: signed::Cancel::ADDRESS }
 }
+
+macro @auth($key, $auth_addr, $allowed_addr, &rest) {
+    // Enforce that the predicate at this address is in this solution.
+    interface AuthI = Auth($auth_addr.contract);
+    predicate A = AuthI::Predicate($auth_addr.addr);
+
+    // Check the authorization predicate is valid.
+    std::auth::@auth($key; A::addr; $auth_addr; $allowed_addr; &rest);
+}
+
+macro @auth($key, $auth_addr, $allowed_addr) {
+    // Enforce that the predicate at this address is in this solution.
+    interface AuthI = Auth($auth_addr.contract);
+    predicate A = AuthI::Predicate($auth_addr.addr);
+
+    // Check the authorization predicate is valid.
+    std::auth::@auth($key; A::addr; $auth_addr; $allowed_addr);
+}
