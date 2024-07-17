@@ -68,7 +68,9 @@ jobs:
               ls
               which rustc
               which cargo
-              nix develop .#essential-rust-app-dev --command ls && which rustc && which cargo
+              rustc --version
+              cargo --version
+              nix develop .#essential-rust-app-dev --command ls && which rustc && which cargo && rustc --version && cargo --version
               nix develop .#essential-rust-app-dev --command cargo check --locked --all
               nix develop .#essential-rust-app-dev --command cargo clippy --locked --all -- -D warnings
               nix develop .#essential-rust-app-dev --command cargo fmt --all -- --check
