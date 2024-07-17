@@ -43,6 +43,16 @@ jobs:
       - uses: DeterminateSystems/magic-nix-cache-action@v4
       - run: nix ${{ matrix.command }}
 
+  # TODO: Update/fork this tool to provide a simpler, cargo-plugin-style CLI
+  # so that it can be merged in the command table above
+  cargo-toml-lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: DeterminateSystems/nix-installer-action@v10
+    - uses: DeterminateSystems/magic-nix-cache-action@v4
+    - run: nix shell nixpkgs#cargo-toml-lint nixpkgs#findutils --command git ls-files | grep Cargo.toml$ | xargs --verbose -n 1 $(which cargo-toml-lint)
+
   # Test the apps.
   apps:
     strategy:
@@ -53,6 +63,7 @@ jobs:
           - command: nix run .#test-app-counter -- 44001
           - command: |
               nix run .#compile-all-contracts
+              nix develop .#essential-rust-app-dev --command cargo check --locked --all && cargo clippy --locked --all -- -D warnings && cargo fmt --all -- --check
               nix develop .#essential-rust-app-dev --command cargo test
     runs-on: ubuntu-latest
     permissions:

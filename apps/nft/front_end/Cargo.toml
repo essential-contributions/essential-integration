@@ -6,8 +6,8 @@ publish = false
 
 [dependencies]
 anyhow = { workspace = true }
-essential-app-utils = { workspace = true }
 clap = { workspace = true }
+essential-app-utils = { workspace = true }
 essential-hash = { workspace = true }
 essential-rest-client = { workspace = true }
 essential-sign.workspace = true
