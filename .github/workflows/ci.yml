@@ -65,6 +65,10 @@ jobs:
           - command: nix run .#test-app-counter -- 44001
           - command: |
               nix run .#compile-all-contracts
+              ls
+              which rustc
+              which cargo
+              nix develop .#essential-rust-app-dev --command ls && which rustc && which cargo
               nix develop .#essential-rust-app-dev --command cargo check --locked --all
               nix develop .#essential-rust-app-dev --command cargo clippy --locked --all -- -D warnings
               nix develop .#essential-rust-app-dev --command cargo fmt --all -- --check
