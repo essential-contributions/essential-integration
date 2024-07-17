@@ -21,7 +21,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - uses: DeterminateSystems/nix-installer-action@v10
-    - uses: DeterminateSystems/magic-nix-cache-action@v4
+    # - uses: DeterminateSystems/magic-nix-cache-action@v4
     - run: nix fmt -- --check ./
 
   # Check the devShell works on macOS and Linux.
@@ -40,7 +40,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: DeterminateSystems/nix-installer-action@v10
-      - uses: DeterminateSystems/magic-nix-cache-action@v4
+      # - uses: DeterminateSystems/magic-nix-cache-action@v4
       - run: nix ${{ matrix.command }}
 
   # # TODO: Update/fork this tool to provide a simpler, cargo-plugin-style CLI
