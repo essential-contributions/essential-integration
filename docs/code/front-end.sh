@@ -1,25 +1,27 @@
+#!/usr/bin/env bash
+
 temp_dir=$(mktemp -d)
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Setup the counter contract project.
-cd $temp_dir
+cd $temp_dir || exit
 mkdir counter
 pint new --name counter counter/contract
 cp "$SCRIPT_DIR/counter.pnt" "$temp_dir/counter/contract/src/contract.pnt"
 
-cd counter
+cd counter || exit
 # ANCHOR: cargo-new
 cargo new --lib counter-app
 # ANCHOR_END: cargo-new
 cd ..
 find counter -type f -not -path "*/.git/*" -not -path "*/.gitignore"
-cd counter
+cd counter || exit
 
 # Remove this `if` once crates are published.
 if false; then
 # ANCHOR: cargo-add
-cd counter-app
+cd counter-app || exit
 cargo add essential-app-utils
 cargo add essential-app-utils --features test-utils --dev
 cargo add essential-deploy-contract
@@ -34,7 +36,7 @@ cargo add clap
 fi
 
 # Remove when crates are published.
-cd counter-app
+cd counter-app || exit
 # cargo add essential-app-utils --git "ssh://git@github.com/essential-contributions/essential-integration.git"
 # cargo add essential-app-utils --git "ssh://git@github.com/essential-contributions/essential-integration.git" --features test-utils --dev
 # cargo add essential-deploy-contract --git "ssh://git@github.com/essential-contributions/essential-integration.git"
@@ -77,7 +79,7 @@ touch tests/counter.rs
 cd ../../
 find counter -type f -not -path "*/.git/*" -not -path "*/.gitignore"
 cp "$SCRIPT_DIR/counter.rs" "$temp_dir/counter/counter-app/src/lib.rs"
-cd counter/counter-app
+cd counter/counter-app || exit
 cargo check
 
 cp "$SCRIPT_DIR/counter-test.rs" "$temp_dir/counter/counter-app/tests/counter.rs"

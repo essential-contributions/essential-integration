@@ -1,0 +1,7 @@
+
+// ANCHOR: storage
+storage {
+    balances: (b256 => int),
+    nonce: (b256 => int),
+}
+// ANCHOR_END: storage

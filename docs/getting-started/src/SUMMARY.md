@@ -26,5 +26,9 @@
         - [Rust CLI](./getting-started/counter/cli/index.md)
             - [Commands](./getting-started/counter/cli/commands.md)
             - [Interact with server](./getting-started/counter/cli/interact.md)
+- [Token application](./token/index.md)
+    - [New project](./token/new.md)
+    - [Define the storage](./token/storage.md)
+    - [Write the mint predicate](./token/mint.md)
             
     

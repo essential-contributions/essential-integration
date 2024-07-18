@@ -7,3 +7,6 @@ title = "Getting Started with Essential Applications"
 
 [output.html]
 additional-js = ["theme/pint.js"]
+
+[build]
+extra-watch-dirs = ["../code"]
