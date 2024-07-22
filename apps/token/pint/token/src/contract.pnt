@@ -4,7 +4,11 @@ use std::lib::@safe_increment;
 use std::lib::@init_once;
 use std::lib::@init_delta;
 use std::lib::@mut_keys;
-use auth::@auth;
+use std::auth::AuthType;
+use std::auth::@verify_signed_key;
+use std::auth::@verify_hashed_signed_key;
+use std::auth::@check_if_predicate_owns;
+use std::lib::Secp256k1Signature;
 
 storage {
     // The balances of accounts
@@ -17,15 +21,6 @@ storage {
     token_symbol: b256,
     // The decimals of the token
     decimals: int,
-}
-
-interface Auth {
-    predicate Predicate {
-        // The address that the authorization predicate is outputting.
-        // This points the authorization predicate to an predicate in this set.
-        // By setting this address the authorization can't be used with the wrong predicate.
-        pub var addr: { contract: b256, addr: b256 };
-    }
 }
 
 predicate Burn {
@@ -55,9 +50,11 @@ predicate Burn {
     // The balance and nonce are mutated.
     @mut_keys(2);
     
-    // Check the authorization predicate.
-    var auth_addr: PredicateAddress;
-    @auth(key; auth_addr; auth::@burn());
+    // Check the authorization.
+    var auth_type: AuthType;
+    var owning_predicate: PredicateAddress;
+    var sig: Secp256k1Signature;
+    @check_auth({key, amount, nonce'}; auth_type; owning_predicate; sig; key);
 }
 
 predicate Mint {
@@ -101,10 +98,14 @@ predicate Mint {
     // All 5 state values are mutated.
     @mut_keys(5);
     
-    // Check the authorization predicate.
-    var auth_addr: PredicateAddress;
-    @auth(key; auth_addr; auth::@mint());
+    // Check the authorization.
+    var auth_type: AuthType;
+    var owning_predicate: PredicateAddress;
+    var sig: Secp256k1Signature;
+    @check_auth({key, amount, decimals, nonce'}; auth_type; owning_predicate; sig; key);
 }
+
+enum TransferSignType = All | Key | KeyTo | KeyAmount;
 
 predicate Transfer {
     // These are public so that the authorization can check them.
@@ -140,9 +141,22 @@ predicate Transfer {
     // The sender balance, receiver balance, and nonce are mutated.
     @mut_keys(3);
     
-    // Check the authorization predicate.
-    var auth_addr: PredicateAddress;
-    @auth(key; auth_addr; auth::@transfer(); auth::@transfer_with());
+    // Check the authorization.
+    var auth_type: AuthType;
+    var owning_predicate: PredicateAddress;
+
+    var sign_type: TransferSignType;
+    var sig: Secp256k1Signature;
+    @check_auth({key, to, amount, nonce'}; auth_type; owning_predicate; sig; key);
+}
+
+macro @sign_transfer_data($sign_type, $key, $to, $amount) {
+    cond {
+        $sign_type == TransferSignType::All => __sha256({ $key, $to, $amount }),
+        $sign_type == TransferSignType::Key => __sha256({ $key }),
+        $sign_type == TransferSignType::KeyTo => __sha256({ $key, $to }),
+        $sign_type == TransferSignType::KeyAmount => __sha256({ $key, $amount })
+    }
 }
 
 predicate Cancel {
@@ -158,7 +172,15 @@ predicate Cancel {
     // The nonce is mutated.
     @mut_keys(1);
     
-    // Check the authorization predicate.
-    var auth_addr: PredicateAddress;
-    @auth(key; auth_addr; auth::@cancel());
+    // Check the authorization.
+    var auth_type: AuthType;
+    var owning_predicate: PredicateAddress;
+    var sig: Secp256k1Signature;
+    @check_auth({key, nonce'}; auth_type; owning_predicate; sig; key);
+}
+
+macro @check_auth($data, $auth_type, $owning_predicate, $sig, $key) {
+    constraint ($auth_type == AuthType::Signed && @verify_signed_key($data; $sig; $key)) ||
+               ($auth_type == AuthType::Predicate && @check_if_predicate_owns($owning_predicate; $key))  ||
+               false;
 }

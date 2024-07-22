@@ -1,29 +1,20 @@
+// Types of authentication.
+enum AuthType = Predicate | Signed;
 
-macro @auth($key, $auth_for, $predicate, $allowed_predicate, &rest_allow_list) {
-    @is_this_predicate($auth_for);
-    constraint @check_if_predicate_owns($predicate; $key) || @check_if_predicate_in_allow_list($predicate; $allowed_predicate; &rest_allow_list);
+// Check if the hash of the public key that is recovered
+// from a signature over some data is equal to the key.
+macro @verify_signed_key($data, $sig, $key) {
+    __sha256(__recover_secp256k1(__sha256($data), $sig)) == $key
 }
 
-macro @auth($key, $auth_for, $predicate, $allowed_predicate) {
-    @is_this_predicate($auth_for);
-    constraint @check_if_predicate_owns($predicate; $key) || @check_if_predicate_in_allow_list($predicate; $allowed_predicate);
-}
-
-macro @check_if_predicate_in_allow_list($predicate, $allowed_predicate, &rest_allow_list) {
-    @check_if_predicate_in_allow_list($predicate; $allowed_predicate) || @check_if_predicate_in_allow_list($predicate; &rest_allow_list)
-}
-
-macro @check_if_predicate_in_allow_list($predicate, $allowed_predicate) {
-    $predicate == $allowed_predicate
+// Check if the hash of the public key that is recovered
+// from a signature over some data is equal to the key.
+macro @verify_hashed_signed_key($data, $sig, $key) {
+    __sha256(__recover_secp256k1($data, $sig)) == $key
 }
 
 // Check if the hash of the predicate address is equal to the key.
 // If so then this predicate owns the key.
-macro @check_if_predicate_owns($predicate, $key) {
-    __sha256($predicate) == $key
-}
-
-// Check if the authorization predicate is meant for this predicate.
-macro @is_this_predicate($auth_for) {
-    constraint $auth_for == { contract: __this_set_address(), addr: __this_address() };
+macro @check_if_predicate_owns($predicate_address, $key) {
+    __sha256($predicate_address) == $key
 }
