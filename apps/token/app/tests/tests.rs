@@ -36,16 +36,16 @@ async fn mint_and_transfer() {
 
     let pint_directory = PathBuf::from(concat!(env!("CARGO_MANIFEST_DIR"), "/../pint"));
 
-    let predicate_addresses = deploy_app(
+    deploy_app(
         server_address.clone(),
         &mut wallet,
         &deployer_name,
-        pint_directory.clone(),
+        &pint_directory,
     )
     .await
     .unwrap();
 
-    let mut token = Token::new(server_address.clone(), predicate_addresses, wallet).unwrap();
+    let mut token = Token::new(server_address.clone(), wallet).unwrap();
 
     // alice mint 800 tokens
     let first_mint_amount = 1000000;

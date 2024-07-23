@@ -2,51 +2,25 @@ use anyhow::bail;
 use essential_app_utils::inputs::Encode;
 use essential_rest_client::EssentialClient;
 use essential_server_types::SolutionOutcome;
-use essential_types::{
-    convert::word_4_from_u8_32, solution::Solution, ContentAddress, PredicateAddress, Word,
-};
+use essential_types::{convert::word_4_from_u8_32, solution::Solution, ContentAddress, Word};
 use essential_wallet::Wallet;
 
 /// Items generated from `token-abi.json`.
 #[allow(clippy::module_inception)]
-mod token;
+pub(crate) mod token;
 
 /// Items generated from `signed-abi.json`.
-mod signed;
+pub(crate) mod signed;
 
 pub struct Token {
     client: EssentialClient,
     wallet: Wallet,
-    deployed_predicates: Addresses,
-}
-
-#[derive(Debug, Clone)]
-pub struct Addresses {
-    pub token: ContentAddress,
-    pub burn: PredicateAddress,
-    pub mint: PredicateAddress,
-    pub transfer: PredicateAddress,
-    pub cancel: PredicateAddress,
-    pub signed: ContentAddress,
-    pub signed_transfer: PredicateAddress,
-    pub signed_transfer_with: PredicateAddress,
-    pub signed_mint: PredicateAddress,
-    pub signed_burn: PredicateAddress,
-    pub signed_cancel: PredicateAddress,
 }
 
 impl Token {
-    pub fn new(
-        addr: String,
-        deployed_predicates: Addresses,
-        wallet: essential_wallet::Wallet,
-    ) -> anyhow::Result<Self> {
+    pub fn new(addr: String, wallet: essential_wallet::Wallet) -> anyhow::Result<Self> {
         let client = EssentialClient::new(addr)?;
-        Ok(Self {
-            client,
-            deployed_predicates,
-            wallet,
-        })
+        Ok(Self { client, wallet })
     }
 
     pub fn create_account(&mut self, account_name: &str) -> anyhow::Result<()> {
@@ -76,21 +50,21 @@ impl Token {
         let mut data = key.to_vec();
         data.push(amount);
         data.push(new_nonce);
-        data.extend(self.deployed_predicates.burn.contract.encode());
-        data.extend(self.deployed_predicates.burn.predicate.encode());
+        data.extend(token::Burn::ADDRESS.contract.encode());
+        data.extend(token::Burn::ADDRESS.predicate.encode());
 
         let mut solution = Solution {
             data: Default::default(),
         };
 
         let auth = signed::BurnData {
-            predicate_to_solve: self.deployed_predicates.signed_burn.clone(),
+            predicate_to_solve: signed::Burn::ADDRESS,
             decision_variables: signed::Burn::Vars {
                 ___I_pathway: BURN_PATH,
                 sig: self.sign_data(account_name, data)?.encode(),
             },
             transient_data: signed::Burn::pub_vars::mutations().token(|addr| {
-                let (c, p) = self.deployed_predicates.burn.encode();
+                let (c, p) = token::Burn::ADDRESS.encode();
                 addr.contract(c).addr(p)
             }),
         };
@@ -98,9 +72,9 @@ impl Token {
         solution.data.insert(AUTH_PATH as usize, auth.into());
 
         let burn = token::BurnData {
-            predicate_to_solve: self.deployed_predicates.burn.clone(),
+            predicate_to_solve: token::Burn::ADDRESS,
             decision_variables: token::Burn::Vars {
-                auth_addr: self.deployed_predicates.signed_burn.encode(),
+                auth_addr: signed::Burn::ADDRESS.encode(),
                 ___A_pathway: AUTH_PATH,
             },
             transient_data: token::Burn::pub_vars::mutations().key(key).amount(amount),
@@ -152,21 +126,21 @@ impl Token {
         data.push(balance);
         data.push(decimals);
         data.push(nonce);
-        data.extend(self.deployed_predicates.mint.contract.encode());
-        data.extend(self.deployed_predicates.mint.predicate.encode());
+        data.extend(token::Mint::ADDRESS.contract.encode());
+        data.extend(token::Mint::ADDRESS.predicate.encode());
 
         let mut solution = Solution {
             data: Default::default(),
         };
 
         let auth = signed::MintData {
-            predicate_to_solve: self.deployed_predicates.signed_mint.clone(),
+            predicate_to_solve: signed::Mint::ADDRESS.clone(),
             decision_variables: signed::Mint::Vars {
                 ___I_pathway: MINT_PATH,
                 sig: self.sign_data(account_name, data)?.encode(),
             },
             transient_data: signed::Mint::pub_vars::mutations().token(|addr| {
-                let (c, p) = self.deployed_predicates.mint.encode();
+                let (c, p) = signed::Mint::ADDRESS.encode();
                 addr.contract(c).addr(p)
             }),
         };
@@ -174,9 +148,9 @@ impl Token {
         solution.data.insert(AUTH_PATH as usize, auth.into());
 
         let mint = token::MintData {
-            predicate_to_solve: self.deployed_predicates.mint.clone(),
+            predicate_to_solve: token::Mint::ADDRESS.clone(),
             decision_variables: token::Mint::Vars {
-                auth_addr: self.deployed_predicates.signed_mint.encode(),
+                auth_addr: signed::Mint::ADDRESS.encode(),
                 ___A_pathway: AUTH_PATH,
             },
             transient_data: token::Mint::pub_vars::mutations()
@@ -213,10 +187,7 @@ impl Token {
         let new_from_balance = self.calculate_from_balance(key, amount).await?;
 
         let state = self
-            .query(
-                &self.deployed_predicates.token,
-                &token::query_balances(to.into()),
-            )
+            .query(&token::ADDRESS, &token::query_balances(to.into()))
             .await?;
         let to_balance = state.first().copied().unwrap_or_default();
         let Some(new_to_balance) = to_balance.checked_add(amount) else {
@@ -230,21 +201,21 @@ impl Token {
         data.extend(to);
         data.push(amount);
         data.push(new_nonce);
-        data.extend(self.deployed_predicates.transfer.contract.encode());
-        data.extend(self.deployed_predicates.transfer.predicate.encode());
+        data.extend(token::Transfer::ADDRESS.contract.encode());
+        data.extend(token::Transfer::ADDRESS.predicate.encode());
 
         let mut solution = Solution {
             data: Default::default(),
         };
 
         let auth = signed::TransferData {
-            predicate_to_solve: self.deployed_predicates.signed_transfer.clone(),
+            predicate_to_solve: signed::Transfer::ADDRESS,
             decision_variables: signed::Transfer::Vars {
                 ___I_pathway: TRANSFER_PATH,
                 sig: self.sign_data(from_name, data)?.encode(),
             },
             transient_data: signed::Transfer::pub_vars::mutations().token(|addr| {
-                let (c, p) = self.deployed_predicates.transfer.encode();
+                let (c, p) = token::Transfer::ADDRESS.encode();
                 addr.contract(c).addr(p)
             }),
         };
@@ -252,9 +223,9 @@ impl Token {
         solution.data.insert(AUTH_PATH as usize, auth.into());
 
         let transfer = token::TransferData {
-            predicate_to_solve: self.deployed_predicates.transfer.clone(),
+            predicate_to_solve: token::Transfer::ADDRESS,
             decision_variables: token::Transfer::Vars {
-                auth_addr: self.deployed_predicates.signed_transfer.encode(),
+                auth_addr: signed::Transfer::ADDRESS.encode(),
                 ___A_pathway: AUTH_PATH,
             },
             transient_data: token::Transfer::pub_vars::mutations()
@@ -287,10 +258,7 @@ impl Token {
     pub async fn balance(&mut self, account_name: &str) -> anyhow::Result<Option<i64>> {
         let key = self.get_hashed_key(account_name)?;
         let state = self
-            .query(
-                &self.deployed_predicates.token,
-                &token::query_balances(key.into()),
-            )
+            .query(&token::ADDRESS, &token::query_balances(key.into()))
             .await?;
         Ok(state.first().copied())
     }
@@ -298,10 +266,7 @@ impl Token {
     /// Query the nonce of the account
     pub async fn nonce(&self, key: [Word; 4]) -> anyhow::Result<Word> {
         let nonce = self
-            .query(
-                &self.deployed_predicates.token,
-                &token::query_nonce(key.into()),
-            )
+            .query(&token::ADDRESS, &token::query_nonce(key.into()))
             .await?;
         Ok(nonce.first().copied().unwrap_or_default())
     }
@@ -318,10 +283,7 @@ impl Token {
 
     async fn calculate_from_balance(&self, key: [Word; 4], amount: Word) -> anyhow::Result<Word> {
         let state = self
-            .query(
-                &self.deployed_predicates.token,
-                &token::query_balances(key.into()),
-            )
+            .query(&token::ADDRESS, &token::query_balances(key.into()))
             .await?;
         let from_balance = if state.is_empty() {
             0
