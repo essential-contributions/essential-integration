@@ -21,21 +21,19 @@ mod nft {
         contract: "../pint/nft/out/debug/nft.json",
     }
 
-    // TODO: Remove the following after `pint-abi-gen` adds `keys()` builder.
     use essential_app_utils::inputs::{Int, B256};
-    use essential_types::solution::Mutation;
+    use essential_types::Key;
 
+    // Short-hand for retrieving the owner key for the given token.
     pub fn query_owners(token: Int) -> essential_types::Key {
-        let mut m: Vec<Mutation> = storage::mutations()
-            .owners(|map| map.entry(token.0, Default::default()))
-            .into();
-        m.pop().unwrap().key
+        let mut k: Vec<Key> = storage::keys().owners(|map| map.entry(token.0)).into();
+        k.pop().unwrap()
     }
+
+    // Short-hand for retrieving the nonce key for the given b256 key.
     pub fn query_nonce(key: B256) -> essential_types::Key {
-        let mut m: Vec<Mutation> = storage::mutations()
-            .nonce(|map| map.entry(key.0, Default::default()))
-            .into();
-        m.pop().unwrap().key
+        let mut k: Vec<Key> = storage::keys().nonce(|map| map.entry(key.0)).into();
+        k.pop().unwrap()
     }
 }
 
