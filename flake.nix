@@ -107,6 +107,28 @@
         default = inputs.self.devShells.${pkgs.system}.essential-integration-dev;
       });
 
+      templates = {
+        pint-app = {
+          path = ./templates;
+          description = "A Pint project.";
+          welcomeText = ''
+            # Pint Project
+
+            This is a Pint project. It is a template for creating a new Pint project.
+
+            ## Getting Started
+
+            To get started, run the following command:
+
+            ```shell
+            nix develop
+            ```
+          '';
+        };
+
+        default = inputs.self.templates.pint-app;
+      };
+
       formatter = perSystemPkgs (pkgs: pkgs.nixpkgs-fmt);
     };
 }
