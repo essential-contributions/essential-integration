@@ -1,21 +1,25 @@
-use anyhow::bail;
+use anyhow::{bail, ensure};
 use essential_app_utils::{
-    addresses::{contract_hash, get_addresses},
+    addresses::contract_hash,
     compile::compile_pint_project,
     inputs::Encode,
     print::{print_contract_address, print_predicate_address},
 };
 use essential_rest_client::EssentialClient;
 use essential_types::{
+    contract::Contract,
     convert::word_4_from_u8_32,
     solution::{Solution, SolutionData},
     ContentAddress, PredicateAddress, Word,
 };
-use std::{path::PathBuf, vec};
+use std::{path::Path, vec};
 
 /// Items generated from `nft-abi.json`.
 mod nft {
-    pint_abi::gen_from_file!("../pint/nft/out/debug/nft-abi.json");
+    pint_abi::gen_from_file! {
+        abi: "../pint/nft/out/debug/nft-abi.json",
+        contract: "../pint/nft/out/debug/nft.json",
+    }
 
     // TODO: Remove the following after `pint-abi-gen` adds `keys()` builder.
     use essential_app_utils::inputs::{Int, B256};
@@ -37,14 +41,20 @@ mod nft {
 
 /// Items generated from `signed-abi.json`.
 mod signed {
-    pint_abi::gen_from_file!("../pint/signed/out/debug/signed-abi.json");
+    pint_abi::gen_from_file! {
+        abi: "../pint/signed/out/debug/signed-abi.json",
+        contract:  "../pint/signed/out/debug/signed.json",
+    }
 }
 
 /// Items generated from `swap-any-abi.json`.
-mod swap_any {
+pub mod swap_any {
     use essential_types::solution::Mutation;
 
-    pint_abi::gen_from_file!("../pint/swap_any/out/debug/swap_any-abi.json");
+    pint_abi::gen_from_file! {
+        abi: "../pint/swap_any/out/debug/swap_any-abi.json",
+        contract:  "../pint/swap_any/out/debug/swap_any.json",
+    }
 
     // TODO: Remove the following after `pint-abi-gen` adds `keys()` builder.
     pub(crate) fn query_token() -> essential_types::Key {
@@ -56,35 +66,12 @@ mod swap_any {
 pub struct Nft {
     client: EssentialClient,
     wallet: essential_wallet::Wallet,
-    deployed_predicates: Addresses,
-}
-
-#[derive(Debug, Clone)]
-pub struct Addresses {
-    pub nft: ContentAddress,
-    pub nft_cancel: PredicateAddress,
-    pub nft_mint: PredicateAddress,
-    pub nft_transfer: PredicateAddress,
-    pub signed: ContentAddress,
-    pub signed_cancel: PredicateAddress,
-    pub signed_transfer: PredicateAddress,
-    pub swap_any: ContentAddress,
-    pub swap_any_init: PredicateAddress,
-    pub swap_any_swap: PredicateAddress,
 }
 
 impl Nft {
-    pub fn new(
-        addr: String,
-        deployed_predicates: Addresses,
-        wallet: essential_wallet::Wallet,
-    ) -> anyhow::Result<Self> {
+    pub fn new(addr: String, wallet: essential_wallet::Wallet) -> anyhow::Result<Self> {
         let client = EssentialClient::new(addr)?;
-        Ok(Self {
-            client,
-            deployed_predicates,
-            wallet,
-        })
+        Ok(Self { client, wallet })
     }
 
     pub fn create_account(&mut self, account_name: &str) -> anyhow::Result<()> {
@@ -104,7 +91,7 @@ impl Nft {
 
         let solution = Solution {
             data: vec![SolutionData {
-                predicate_to_solve: self.deployed_predicates.nft_mint.clone(),
+                predicate_to_solve: nft::Mint::ADDRESS,
                 decision_variables: decision_variables.into(),
                 transient_data: Default::default(),
                 state_mutations,
@@ -138,10 +125,7 @@ impl Nft {
 
     async fn do_i_own_inner(&mut self, key: [Word; 4], token: Word) -> anyhow::Result<bool> {
         let state = self
-            .query(
-                &self.deployed_predicates.nft,
-                &nft::query_owners(token.into()),
-            )
+            .query(&nft::ADDRESS, &nft::query_owners(token.into()))
             .await?;
         Ok(state[..] == key[..])
     }
@@ -163,9 +147,9 @@ impl Nft {
     pub async fn init_swap_any(&mut self, token: Word) -> anyhow::Result<()> {
         let solution = Solution {
             data: vec![SolutionData {
-                predicate_to_solve: self.deployed_predicates.swap_any_init.clone(),
+                predicate_to_solve: swap_any::Init::ADDRESS,
                 decision_variables: swap_any::Init::Vars {
-                    contract: self.deployed_predicates.nft.clone().into(),
+                    contract: nft::ADDRESS.into(),
                 }
                 .into(),
                 transient_data: Default::default(),
@@ -179,7 +163,7 @@ impl Nft {
 
     pub async fn swap_any_owns(&mut self) -> anyhow::Result<Option<Word>> {
         let state = self
-            .query(&self.deployed_predicates.swap_any, &swap_any::query_token())
+            .query(&swap_any::ADDRESS, &swap_any::query_token())
             .await?;
 
         if state.is_empty() {
@@ -231,7 +215,7 @@ impl Nft {
         token: Word,
     ) -> anyhow::Result<Solution> {
         let nonce = self
-            .query(&self.deployed_predicates.nft, &nft::query_nonce(key.into()))
+            .query(&nft::ADDRESS, &nft::query_nonce(key.into()))
             .await?;
         let mut nonce = nonce.first().copied().unwrap_or_default();
         nonce += 1;
@@ -241,10 +225,8 @@ impl Nft {
         to_hash.extend_from_slice(&to);
         to_hash.push(token);
         to_hash.push(nonce);
-        to_hash.extend(word_4_from_u8_32(self.deployed_predicates.nft.0));
-        to_hash.extend(word_4_from_u8_32(
-            self.deployed_predicates.nft_transfer.predicate.0,
-        ));
+        to_hash.extend(word_4_from_u8_32(nft::ADDRESS.0));
+        to_hash.extend(word_4_from_u8_32(nft::Transfer::ADDRESS.predicate.0));
 
         let sig = self.wallet.sign_words(&to_hash, account_name)?;
         let sig = match sig {
@@ -259,16 +241,15 @@ impl Nft {
             public_key: pk.encode(),
         };
 
-        let nft_transfer = self.deployed_predicates.nft_transfer.clone();
         let transient_data = signed::Transfer::pub_vars::mutations()
             .nft(|tup| {
-                tup.contract(nft_transfer.contract.into())
-                    .addr(nft_transfer.predicate.into())
+                tup.contract(nft::Transfer::ADDRESS.contract.into())
+                    .addr(nft::Transfer::ADDRESS.predicate.into())
             })
             .into();
 
         let signed_transfer = SolutionData {
-            predicate_to_solve: self.deployed_predicates.signed_transfer.clone(),
+            predicate_to_solve: signed::Transfer::ADDRESS,
             decision_variables: decision_variables.into(),
             transient_data,
             state_mutations: vec![],
@@ -280,11 +261,10 @@ impl Nft {
             .token(token)
             .into();
 
-        let signed_tx_addr = self.deployed_predicates.signed_transfer.clone();
         let decision_variables = nft::Transfer::Vars {
             auth_addr: (
-                signed_tx_addr.contract.into(),
-                signed_tx_addr.predicate.into(),
+                signed::Transfer::ADDRESS.contract.into(),
+                signed::Transfer::ADDRESS.predicate.into(),
             ),
             ___A_pathway: 0,
         };
@@ -295,7 +275,7 @@ impl Nft {
             .into();
 
         let transfer_nft = SolutionData {
-            predicate_to_solve: self.deployed_predicates.nft_transfer.clone(),
+            predicate_to_solve: nft::Transfer::ADDRESS,
             decision_variables: decision_variables.into(),
             transient_data,
             state_mutations,
@@ -324,9 +304,9 @@ impl Nft {
         token: Word,
     ) -> anyhow::Result<Solution> {
         let key = self.get_hashed_key(account_name)?;
-        let to = contract_hash(&self.deployed_predicates.swap_any_swap);
+        let to = contract_hash(&swap_any::Swap::ADDRESS);
         let nonce = self
-            .query(&self.deployed_predicates.nft, &nft::query_nonce(to.into()))
+            .query(&nft::ADDRESS, &nft::query_nonce(to.into()))
             .await?;
         let mut nonce = nonce.first().copied().unwrap_or_default();
         nonce += 1;
@@ -337,18 +317,17 @@ impl Nft {
 
         // Get existing token
         let current_token = self
-            .query(&self.deployed_predicates.swap_any, &swap_any::query_token())
+            .query(&swap_any::ADDRESS, &swap_any::query_token())
             .await?;
 
         let Ok([current_token]): Result<[Word; 1], _> = current_token.try_into() else {
             bail!("Bad token state")
         };
 
-        let nft_tx_addr = self.deployed_predicates.nft_transfer.clone();
         let transient_data = swap_any::Swap::pub_vars::mutations()
             .nft(|tup| {
-                tup.contract(nft_tx_addr.contract.into())
-                    .addr(nft_tx_addr.predicate.into())
+                tup.contract(nft::Transfer::ADDRESS.contract.into())
+                    .addr(nft::Transfer::ADDRESS.predicate.into())
             })
             .into();
 
@@ -357,7 +336,7 @@ impl Nft {
         let state_mutations = swap_any::storage::mutations().token(token).into();
 
         let swap_any_swap = SolutionData {
-            predicate_to_solve: self.deployed_predicates.swap_any_swap.clone(),
+            predicate_to_solve: swap_any::Swap::ADDRESS,
             decision_variables,
             transient_data,
             state_mutations,
@@ -369,11 +348,10 @@ impl Nft {
             .token(current_token)
             .into();
 
-        let swap_any_swap_addr = self.deployed_predicates.swap_any_swap.clone();
         let decision_variables = nft::Transfer::Vars {
             auth_addr: (
-                swap_any_swap_addr.contract.into(),
-                swap_any_swap_addr.predicate.into(),
+                swap_any::Swap::ADDRESS.contract.into(),
+                swap_any::Swap::ADDRESS.predicate.into(),
             ),
             // Pathway to the auth predicate
             ___A_pathway: 2,
@@ -387,7 +365,7 @@ impl Nft {
 
         // Transfer existing token from swap_any to user
         let transfer_nft = SolutionData {
-            predicate_to_solve: self.deployed_predicates.nft_transfer.clone(),
+            predicate_to_solve: nft::Transfer::ADDRESS,
             decision_variables,
             transient_data,
             state_mutations,
@@ -429,30 +407,11 @@ pub async fn deploy_app(
     addr: String,
     wallet: &mut essential_wallet::Wallet,
     account_name: &str,
-    pint_directory: PathBuf,
-) -> anyhow::Result<Addresses> {
+    pint_directory: &Path,
+) -> anyhow::Result<()> {
     let client = EssentialClient::new(addr)?;
-    let signed_contract = compile_pint_project(pint_directory.clone().join("signed")).await?;
-    let signed_addresses = get_addresses(&signed_contract);
-
-    let nft_contract = compile_pint_project(pint_directory.clone().join("nft")).await?;
-    let nft_addresses = get_addresses(&nft_contract);
-
-    let swap_any_predicates = compile_pint_project(pint_directory.clone().join("swap_any")).await?;
-    let swap_any_addresses = get_addresses(&swap_any_predicates);
-
-    let addresses = Addresses {
-        nft: nft_addresses.0.clone(),
-        nft_cancel: nft_addresses.1[0].clone(),
-        nft_mint: nft_addresses.1[1].clone(),
-        nft_transfer: nft_addresses.1[2].clone(),
-        signed: signed_addresses.0.clone(),
-        signed_cancel: signed_addresses.1[0].clone(),
-        signed_transfer: signed_addresses.1[1].clone(),
-        swap_any: swap_any_addresses.0.clone(),
-        swap_any_init: swap_any_addresses.1[0].clone(),
-        swap_any_swap: swap_any_addresses.1[1].clone(),
-    };
+    let (nft_contract, signed_contract, swap_any_predicates) =
+        compile_contracts(pint_directory).await?;
 
     let predicates = wallet.sign_contract(nft_contract, account_name)?;
     client.deploy_contract(predicates).await?;
@@ -461,58 +420,41 @@ pub async fn deploy_app(
     let predicates = wallet.sign_contract(swap_any_predicates, account_name)?;
     client.deploy_contract(predicates).await?;
 
-    Ok(addresses)
+    Ok(())
 }
 
-pub async fn compile_addresses(pint_directory: PathBuf) -> anyhow::Result<Addresses> {
-    let signed_contract = compile_pint_project(pint_directory.clone().join("signed")).await?;
-    let signed_addresses = get_addresses(&signed_contract);
+/// Compiles the signed, nft and swap_any contracts and returns them in a tuple of that order.
+///
+/// Returns an `Err` in the case that a newly compiled contract address differs
+/// from the ABI-provided address.
+pub async fn compile_contracts(
+    pint_directory: &Path,
+) -> anyhow::Result<(Contract, Contract, Contract)> {
+    let signed_contract = compile_pint_project(pint_directory.join("signed")).await?;
+    let nft_contract = compile_pint_project(pint_directory.join("nft")).await?;
+    let swap_any_predicates = compile_pint_project(pint_directory.join("swap_any")).await?;
 
-    let nft_contract = compile_pint_project(pint_directory.clone().join("nft")).await?;
-    let nft_addresses = get_addresses(&nft_contract);
+    // Check that the newly compiled addresses match the ABI-generated addresses.
+    ensure!(signed::ADDRESS == essential_hash::contract_addr::from_contract(&signed_contract));
+    ensure!(nft::ADDRESS == essential_hash::contract_addr::from_contract(&nft_contract));
+    ensure!(
+        swap_any::ADDRESS == essential_hash::contract_addr::from_contract(&swap_any_predicates)
+    );
 
-    let swap_any_predicates = compile_pint_project(pint_directory.clone().join("swap_any")).await?;
-    let swap_any_addresses = get_addresses(&swap_any_predicates);
-
-    let addresses = Addresses {
-        nft: nft_addresses.0.clone(),
-        nft_cancel: nft_addresses.1[0].clone(),
-        nft_mint: nft_addresses.1[1].clone(),
-        nft_transfer: nft_addresses.1[2].clone(),
-        signed: signed_addresses.0.clone(),
-        signed_cancel: signed_addresses.1[0].clone(),
-        signed_transfer: signed_addresses.1[1].clone(),
-        swap_any: swap_any_addresses.0.clone(),
-        swap_any_init: swap_any_addresses.1[0].clone(),
-        swap_any_swap: swap_any_addresses.1[1].clone(),
-    };
-
-    Ok(addresses)
+    Ok((signed_contract, nft_contract, swap_any_predicates))
 }
 
-pub fn print_addresses(addresses: &Addresses) {
-    let Addresses {
-        nft,
-        nft_cancel,
-        nft_mint,
-        nft_transfer,
-        signed,
-        signed_cancel,
-        signed_transfer,
-        swap_any,
-        swap_any_init,
-        swap_any_swap,
-    } = addresses;
-    print_contract_address("nft", nft);
-    print_predicate_address("nft_cancel", nft_cancel);
-    print_predicate_address("nft_mint", nft_mint);
-    print_predicate_address("nft_transfer", nft_transfer);
-    print_contract_address("signed", signed);
-    print_predicate_address("signed_cancel", signed_cancel);
-    print_predicate_address("signed_transfer", signed_transfer);
-    print_contract_address("swap_any", swap_any);
-    print_predicate_address("swap_any_init", swap_any_init);
-    print_predicate_address("swap_any_swap", swap_any_swap);
+pub fn print_addresses() {
+    print_contract_address("nft", &nft::ADDRESS);
+    print_predicate_address("nft_cancel", &nft::Cancel::ADDRESS);
+    print_predicate_address("nft_mint", &nft::Mint::ADDRESS);
+    print_predicate_address("nft_transfer", &nft::Transfer::ADDRESS);
+    print_contract_address("signed", &signed::ADDRESS);
+    print_predicate_address("signed_cancel", &signed::Cancel::ADDRESS);
+    print_predicate_address("signed_transfer", &signed::Transfer::ADDRESS);
+    print_contract_address("swap_any", &swap_any::ADDRESS);
+    print_predicate_address("swap_any_init", &swap_any::Init::ADDRESS);
+    print_predicate_address("swap_any_swap", &swap_any::Swap::ADDRESS);
 }
 
 pub fn find_address(predicate: &str, num: usize) -> Option<&str> {

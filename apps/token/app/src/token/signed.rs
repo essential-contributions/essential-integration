@@ -3,7 +3,10 @@ use essential_types::{
     PredicateAddress, Value,
 };
 
-pint_abi::gen_from_file!("../pint/signed/out/debug/signed-abi.json");
+pint_abi::gen_from_file! {
+    abi: "../pint/signed/out/debug/signed-abi.json",
+    contract: "../pint/signed/out/debug/signed.json",
+}
 
 pub type BurnData = Data<Burn::Vars, Burn::pub_vars::Mutations>;
 pub type MintData = Data<Mint::Vars, Mint::pub_vars::Mutations>;

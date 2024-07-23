@@ -13,21 +13,21 @@ async fn mint_and_transfer() {
 
     let pint_directory = PathBuf::from(concat!(env!("CARGO_MANIFEST_DIR"), "/../pint"));
 
-    let addresses = deploy_app(
+    deploy_app(
         server_address.clone(),
         &mut wallet,
         "deployer",
-        pint_directory.clone(),
+        &pint_directory,
     )
     .await
     .unwrap();
-    print_addresses(&addresses);
+    print_addresses();
 
     let account_name = "alice";
 
     let token = 0;
 
-    let mut nft = Nft::new(server_address.clone(), addresses.clone(), wallet).unwrap();
+    let mut nft = Nft::new(server_address.clone(), wallet).unwrap();
 
     nft.create_account(account_name).ok();
 
@@ -58,12 +58,12 @@ async fn mint_and_transfer() {
 
     let art_token = 1;
 
-    nft.mint_for_contract(&addresses.swap_any_swap, art_token)
+    nft.mint_for_contract(&nft::swap_any::Swap::ADDRESS, art_token)
         .await
         .unwrap();
 
     while !nft
-        .do_i_own_contract(&addresses.swap_any_swap, art_token)
+        .do_i_own_contract(&nft::swap_any::Swap::ADDRESS, art_token)
         .await
         .unwrap()
     {
@@ -94,7 +94,7 @@ async fn mint_and_transfer() {
     println!("Bob owns different nft");
 
     while !nft
-        .do_i_own_contract(&addresses.swap_any_swap, token)
+        .do_i_own_contract(&nft::swap_any::Swap::ADDRESS, token)
         .await
         .unwrap()
     {

@@ -4,7 +4,10 @@ use essential_types::{
     PredicateAddress, Value,
 };
 
-pint_abi::gen_from_file!("../pint/token/out/debug/token-abi.json");
+pint_abi::gen_from_file! {
+    abi: "../pint/token/out/debug/token-abi.json",
+    contract:  "../pint/token/out/debug/token.json",
+}
 
 // TODO: Remove the following after `pint-abi-gen` adds `keys()` builder.
 pub fn query_balances(owner: B256) -> essential_types::Key {
