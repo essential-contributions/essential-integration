@@ -140,7 +140,7 @@ impl Token {
                 sig: self.sign_data(account_name, data)?.encode(),
             },
             transient_data: signed::Mint::pub_vars::mutations().token(|addr| {
-                let (c, p) = signed::Mint::ADDRESS.encode();
+                let (c, p) = token::Mint::ADDRESS.encode();
                 addr.contract(c).addr(p)
             }),
         };
