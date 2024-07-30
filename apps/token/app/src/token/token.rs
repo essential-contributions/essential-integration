@@ -1,42 +1,41 @@
 use essential_app_utils::inputs::B256;
 use essential_types::{
     solution::{Mutation, SolutionData},
-    PredicateAddress, Value,
+    Key, PredicateAddress, Value,
 };
 
-pint_abi::gen_from_file!("../pint/token/out/debug/token-abi.json");
+pint_abi::gen_from_file! {
+    abi: "../pint/token/out/debug/token-abi.json",
+    contract:  "../pint/token/out/debug/token.json",
+}
 
 // TODO: Remove the following after `pint-abi-gen` adds `keys()` builder.
 pub fn query_balances(owner: B256) -> essential_types::Key {
-    let mut m: Vec<Mutation> = storage::mutations()
-        .balances(|map| map.entry(owner.0, Default::default()))
-        .into();
-    m.pop().unwrap().key
+    let mut k: Vec<Key> = storage::keys().balances(|map| map.entry(owner.0)).into();
+    k.pop().unwrap()
 }
 
 pub fn query_nonce(key: B256) -> essential_types::Key {
-    let mut m: Vec<Mutation> = storage::mutations()
-        .nonce(|map| map.entry(key.0, Default::default()))
-        .into();
-    m.pop().unwrap().key
+    let mut k: Vec<Key> = storage::keys().nonce(|map| map.entry(key.0)).into();
+    k.pop().unwrap()
 }
 
 #[allow(dead_code)]
 pub fn query_token_name() -> essential_types::Key {
-    let mut m: Vec<Mutation> = storage::mutations().token_name(Default::default()).into();
-    m.pop().unwrap().key
+    let mut k: Vec<Key> = storage::keys().token_name().into();
+    k.pop().unwrap()
 }
 
 #[allow(dead_code)]
 pub fn query_token_symbol() -> essential_types::Key {
-    let mut m: Vec<Mutation> = storage::mutations().token_symbol(Default::default()).into();
-    m.pop().unwrap().key
+    let mut k: Vec<Key> = storage::keys().token_symbol().into();
+    k.pop().unwrap()
 }
 
 #[allow(dead_code)]
 pub fn query_decimals() -> essential_types::Key {
-    let mut m: Vec<Mutation> = storage::mutations().token_symbol(Default::default()).into();
-    m.pop().unwrap().key
+    let mut k: Vec<Key> = storage::keys().token_symbol().into();
+    k.pop().unwrap()
 }
 
 pub type BurnData = Data<Burn::Vars, Burn::pub_vars::Mutations>;

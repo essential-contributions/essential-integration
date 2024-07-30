@@ -1,16 +1,4 @@
-use essential_types::{contract::Contract, ContentAddress, PredicateAddress, Word};
-
-pub fn get_addresses(contract: &Contract) -> (ContentAddress, Vec<PredicateAddress>) {
-    let contract_addr = essential_hash::contract_addr::from_contract(contract);
-    let predicates = contract
-        .iter()
-        .map(|predicate| PredicateAddress {
-            contract: contract_addr.clone(),
-            predicate: essential_hash::content_addr(predicate),
-        })
-        .collect();
-    (contract_addr, predicates)
-}
+use essential_types::{PredicateAddress, Word};
 
 pub fn contract_hash(contract: &PredicateAddress) -> [Word; 4] {
     let set_hash = essential_types::convert::word_4_from_u8_32(contract.contract.0);

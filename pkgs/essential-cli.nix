@@ -56,7 +56,7 @@ rustPlatform.buildRustPackage {
   cargoLock = {
     inherit lockFile;
     outputHashes = {
-      "pint-abi-0.1.0" = "sha256-WBUmiqHSPlH/9zqdWnhAA8I9PK1RM0NT066MbKwd1KU=";
+      "pint-abi-0.1.0" = "sha256-v4WNf7Xn1XNyt4vcQab67TkQjq/Gx8uLhkHAkpgVW14=";
     };
   };
 
