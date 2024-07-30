@@ -3,6 +3,8 @@ use std::path::PathBuf;
 use token::{actions::deploy_app, token::Token};
 
 const PRIV_KEY: &str = "128A3D2146A69581FD8FC4C0A9B7A96A5755D85255D4E47F814AFA69D7726C8D";
+const TOKEN_NAME: &str = "alice coin";
+const TOKEN_SYMBOL: &str = "ALC";
 
 #[tokio::test]
 async fn mint_and_transfer() {
@@ -48,7 +50,10 @@ async fn mint_and_transfer() {
     // alice mint 800 tokens
     let first_mint_amount = 1000000;
 
-    let _mint_solution_address = token.mint(alice, first_mint_amount).await.unwrap();
+    let _mint_solution_address = token
+        .mint(alice, first_mint_amount, TOKEN_NAME, TOKEN_SYMBOL)
+        .await
+        .unwrap();
     let mut balance = None;
     while balance.is_none() {
         println!("{} balance {}", alice, 0);
@@ -111,4 +116,10 @@ pub fn find_address(predicate: &str, num: usize) -> Option<&str> {
         .nth(num)
         .and_then(|s| s.split(&[' ', ')', ',', ']', ';']).next())
         .map(|s| s.trim())
+}
+
+#[test]
+fn feature() {
+    dbg!(hex::encode_upper(essential_hash::hash(&TOKEN_NAME)));
+    dbg!(hex::encode_upper(essential_hash::hash(&TOKEN_SYMBOL)));
 }

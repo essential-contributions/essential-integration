@@ -73,11 +73,6 @@ predicate Mint {
     // The number of decimals for the token.
     pub var decimals: int;
 
-    // The name and the symbol are hard coded so 
-    // that if they change we get a new token.
-    var name: b256 = config::NAME;
-    var symbol: b256 = config::SYMBOL;
-    
     // Read all the state that is being initialized.
     state balance = storage::balances[key];
     state nonce = storage::nonce[key];
@@ -93,8 +88,8 @@ predicate Mint {
     // This enforces the pre state must be null 
     // and the post state must be set to the provided value.
     constraint @init_once(balance; amount);
-    constraint @init_once(token_name; name);
-    constraint @init_once(token_symbol; symbol);
+    constraint @init_once(token_name; config::NAME);
+    constraint @init_once(token_symbol; config::SYMBOL);
     constraint @init_once(token_decimals; decimals);
     constraint @init_once(nonce; 1);
 
