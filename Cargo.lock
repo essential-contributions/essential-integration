@@ -2116,7 +2116,7 @@ checksum = "8b870d8c151b6f2fb93e84a13146138f05d02ed11c7e7c54f8826aaaf7c9f184"
 [[package]]
 name = "pint-abi"
 version = "0.1.0"
-source = "git+https://github.com/essential-contributions/pint#62d73c0745b836f525b2135945ad3b95ee0255f8"
+source = "git+https://github.com/essential-contributions/pint#a8a93dcec0c90075ec165b2be1cd930e49a37f2f"
 dependencies = [
  "essential-types",
  "pint-abi-gen",
@@ -2128,7 +2128,7 @@ dependencies = [
 [[package]]
 name = "pint-abi-gen"
 version = "0.1.0"
-source = "git+https://github.com/essential-contributions/pint#62d73c0745b836f525b2135945ad3b95ee0255f8"
+source = "git+https://github.com/essential-contributions/pint#a8a93dcec0c90075ec165b2be1cd930e49a37f2f"
 dependencies = [
  "essential-hash",
  "essential-types",
@@ -2144,7 +2144,7 @@ dependencies = [
 [[package]]
 name = "pint-abi-types"
 version = "0.1.0"
-source = "git+https://github.com/essential-contributions/pint#62d73c0745b836f525b2135945ad3b95ee0255f8"
+source = "git+https://github.com/essential-contributions/pint#a8a93dcec0c90075ec165b2be1cd930e49a37f2f"
 dependencies = [
  "serde",
 ]
@@ -2152,7 +2152,7 @@ dependencies = [
 [[package]]
 name = "pint-abi-visit"
 version = "0.0.1"
-source = "git+https://github.com/essential-contributions/pint#62d73c0745b836f525b2135945ad3b95ee0255f8"
+source = "git+https://github.com/essential-contributions/pint#a8a93dcec0c90075ec165b2be1cd930e49a37f2f"
 dependencies = [
  "essential-types",
  "petgraph",
