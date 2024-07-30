@@ -37,6 +37,10 @@ enum Command {
         server: ServerName,
         /// The amount of token to mint.
         amount: u64,
+        /// The name of the token.
+        token_name: String,
+        /// The symbol of the token.
+        token_symbol: String,
     },
     Burn {
         #[command(flatten)]
@@ -102,10 +106,19 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
                     pint_directory,
                 },
             amount,
+            token_name,
+            token_symbol,
         } => {
             let deployed_predicates = compile_addresses(pint_directory).await?;
             let mut token = Token::new(server, deployed_predicates, wallet)?;
-            token.mint(&account, amount.try_into().unwrap()).await?;
+            token
+                .mint(
+                    &account,
+                    amount.try_into().unwrap(),
+                    &token_name,
+                    &token_symbol,
+                )
+                .await?;
             println!("Minted {} of token to {}", amount, account);
         }
         Command::Burn {

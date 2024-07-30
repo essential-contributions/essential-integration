@@ -118,8 +118,12 @@ impl Token {
         &mut self,
         account_name: &str,
         balance: Word,
+        token_name: &str,
+        token_symbol: &str,
     ) -> anyhow::Result<ContentAddress> {
-        let solution = self.mint_solution(account_name, balance).await?;
+        let solution = self
+            .mint_solution(account_name, balance, token_name, token_symbol)
+            .await?;
 
         // Submit the solution
         self.client.submit_solution(solution).await
@@ -129,6 +133,8 @@ impl Token {
         &mut self,
         account_name: &str,
         balance: Word,
+        token_name: &str,
+        token_symbol: &str,
     ) -> anyhow::Result<Solution> {
         // Get the hashed public key of the account
         let key = self.get_hashed_key(account_name)?;
@@ -172,8 +178,6 @@ impl Token {
             decision_variables: token::Mint::Vars {
                 auth_addr: self.deployed_predicates.signed_mint.encode(),
                 ___A_pathway: AUTH_PATH,
-                name: Default::default(),
-                symbol: Default::default(),
             },
             transient_data: token::Mint::pub_vars::mutations()
                 .key(key)
@@ -181,8 +185,8 @@ impl Token {
                 .amount(balance),
             state_mutations: token::storage::mutations()
                 .balances(|map| map.entry(key, balance))
-                .token_name(Default::default())
-                .token_symbol(Default::default())
+                .token_name(word_4_from_u8_32(essential_hash::hash(&token_name)))
+                .token_symbol(word_4_from_u8_32(essential_hash::hash(&token_symbol)))
                 .decimals(decimals)
                 .nonce(|nonces| nonces.entry(key, nonce)),
         };
