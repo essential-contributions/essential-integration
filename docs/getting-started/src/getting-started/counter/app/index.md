@@ -19,6 +19,7 @@ nix develop github:essential-contributions/essential-integration#dev
 Or you can create your own `flake` using:
 ```bash
 cd counter
-nix flake init
+nix flake init -t github:essential-contributions/essential-integration
+nix develop
 ```
 </details>
