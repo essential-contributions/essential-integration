@@ -25,5 +25,5 @@ macro @check_if_predicate_owns($predicate, $key) {
 
 // Check if the authorization predicate is meant for this predicate.
 macro @is_this_predicate($auth_for) {
-    constraint $auth_for == { contract: __this_set_address(), addr: __this_address() };
+    constraint $auth_for == { contract: __this_contract_address(), addr: __this_address() };
 }

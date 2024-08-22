@@ -109,8 +109,8 @@ async fn test_api() {
     let r = client.list_winning_blocks(None, None).await.unwrap();
     assert_eq!(r.len(), 1);
     assert_eq!(r[0].number, 0);
-    assert_eq!(r[0].batch.solutions.len(), 1);
-    assert_eq!(r[0].batch.solutions[0], solution.clone());
+    assert_eq!(r[0].solutions.len(), 1);
+    assert_eq!(r[0].solutions[0], solution.clone());
 
     let query = QueryStateReads::from_solution(
         solution.clone(),

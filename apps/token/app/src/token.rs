@@ -123,6 +123,7 @@ impl Token {
         const MINT_PATH: Word = 1;
 
         let mut data = key.to_vec();
+
         data.push(balance);
         data.push(decimals);
         data.push(nonce);

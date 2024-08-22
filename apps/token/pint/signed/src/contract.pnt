@@ -71,8 +71,6 @@ predicate TransferWith {
     @check_signature_if(mode == TransferMode::KeyTo; {I::key, I::to, nonce', token, constraints}; sig; I::key);
     @check_signature_if(mode == TransferMode::KeyAmount; {I::key, I::amount, nonce', token, constraints}; sig; I::key);
     
-    constraint __mut_keys_len() == 0;
-    
     var constraints: std::lib::PredicateAddress;
     interface Other = OtherConstraints(constraints.contract);
     predicate O = Other::Constraints(constraints.addr);
