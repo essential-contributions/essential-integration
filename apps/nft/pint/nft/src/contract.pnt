@@ -21,12 +21,10 @@ predicate Mint {
     var token: int;
     var new_owner: b256;
 
-    state owner = storage::owners[token];
+    state owner = mut storage::owners[token];
 
     constraint owner == nil;
     constraint owner' == new_owner;
-    
-    @mut_keys(1);
 }
 
 predicate Transfer {
@@ -37,15 +35,13 @@ predicate Transfer {
     // The token being transfered.
     pub var token: int;
 
-    state owner = storage::owners[token];
-    state nonce = storage::nonce[key];
+    state owner = mut storage::owners[token];
+    state nonce = mut storage::nonce[key];
 
     constraint owner == key;
     constraint owner' == to;
     constraint @safe_increment(nonce);
 
-    @mut_keys(2);
-    
     // Check the authorization predicate.
     var auth_addr: PredicateAddress;
     interface AuthI = Auth(auth_addr.contract);
@@ -58,15 +54,12 @@ predicate Cancel {
     // The account that is cancelling a transfer or burn.
     pub var key: b256;
 
-    state nonce = storage::nonce[key];
+    state nonce = mut storage::nonce[key];
 
     // Increment the nonce so that any pending transfers or 
     // burns are invalidated.
     constraint @safe_increment(nonce);
 
-    // The nonce is mutated.
-    @mut_keys(1);
-    
     // Check the authorization predicate.
     var auth_addr: PredicateAddress;
     interface AuthI = Auth(auth_addr.contract);

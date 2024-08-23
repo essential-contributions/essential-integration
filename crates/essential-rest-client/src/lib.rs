@@ -259,12 +259,12 @@ impl EssentialClient {
     }
 
     /// List blocks that have been successfully created.
-    pub async fn list_winning_blocks(
+    pub async fn list_blocks(
         &self,
         time_range: Option<Range<Duration>>,
         page: Option<u64>,
     ) -> anyhow::Result<Vec<Block>> {
-        let mut url = self.url.join("/list-winning-blocks")?;
+        let mut url = self.url.join("/list-blocks")?;
         if let Some(time_range) = time_range {
             url.query_pairs_mut()
                 .append_pair("start", time_range.start.as_secs().to_string().as_str())

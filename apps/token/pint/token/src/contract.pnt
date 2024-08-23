@@ -37,8 +37,8 @@ predicate Burn {
     pub var amount: int;
     
     // Read the balance and nonce from storage.
-    state balance = storage::balances[key];
-    state nonce = storage::nonce[key];
+    state balance = mut storage::balances[key];
+    state nonce = mut storage::nonce[key];
 
     // Don't allow empty burns.
     constraint amount > 0;
@@ -51,9 +51,6 @@ predicate Burn {
 
     // Increment the nonce.
     constraint @safe_increment(nonce);
-    
-    // The balance and nonce are mutated.
-    @mut_keys(2);
     
     // Check the authorization predicate.
     var auth_addr: PredicateAddress;
@@ -74,11 +71,11 @@ predicate Mint {
     pub var decimals: int;
 
     // Read all the state that is being initialized.
-    state balance = storage::balances[key];
-    state nonce = storage::nonce[key];
-    state token_name = storage::token_name;
-    state token_symbol = storage::token_symbol;
-    state token_decimals = storage::decimals;
+    state balance = mut storage::balances[key];
+    state nonce = mut storage::nonce[key];
+    state token_name = mut storage::token_name;
+    state token_symbol = mut storage::token_symbol;
+    state token_decimals = mut storage::decimals;
 
     // The only authorized minting address.
     // Note that changing this also creates a new token.
@@ -93,9 +90,6 @@ predicate Mint {
     constraint @init_once(token_decimals; decimals);
     constraint @init_once(nonce; 1);
 
-    // All 5 state values are mutated.
-    @mut_keys(5);
-    
     // Check the authorization predicate.
     var auth_addr: PredicateAddress;
     @auth(key; auth_addr; auth::@mint());
@@ -112,9 +106,9 @@ predicate Transfer {
     pub var amount: int;
 
     // Read the balances and nonce from storage.
-    state sender_balance = storage::balances[key];
-    state receiver_balance = storage::balances[to];
-    state nonce = storage::nonce[key];
+    state sender_balance = mut storage::balances[key];
+    state receiver_balance = mut storage::balances[to];
+    state nonce = mut storage::nonce[key];
 
     // Don't allow empty transfers.
     constraint amount > 0;
@@ -132,9 +126,6 @@ predicate Transfer {
     // Increment the nonce.
     constraint @safe_increment(nonce);
     
-    // The sender balance, receiver balance, and nonce are mutated.
-    @mut_keys(3);
-    
     // Check the authorization predicate.
     var auth_addr: PredicateAddress;
     @auth(key; auth_addr; auth::@transfer(); auth::@transfer_with());
@@ -144,15 +135,12 @@ predicate Cancel {
     // The account that is cancelling a transfer or burn.
     pub var key: b256;
     
-    state nonce = storage::nonce[key];
+    state nonce = mut storage::nonce[key];
 
     // Increment the nonce so that any pending transfers or 
     // burns are invalidated.
     constraint @safe_increment(nonce);
 
-    // The nonce is mutated.
-    @mut_keys(1);
-    
     // Check the authorization predicate.
     var auth_addr: PredicateAddress;
     @auth(key; auth_addr; auth::@cancel());

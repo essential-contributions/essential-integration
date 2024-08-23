@@ -39,11 +39,6 @@ macro @constrain_keys($key, &rest) {
     // TODO: Constrain that this key is contained in the proposed mutable set
 }
 
-// Base case for the above macro.
-macro @constrain_keys($key) {
-    constraint __mut_keys_len() == 1;
-}
-
 // Count the number of keys in the mutable set.
 macro @count($i, &rest) {
     @count(&rest) + 1
@@ -56,15 +51,5 @@ macro @count($i) {
 
 // Hash the address of the current predicate.
 macro @hash_this_addr() {
-    __sha256({__this_set_address(), __this_address()})
-}
-
-// No mutations are allowed for this predicate
-macro @immutable() {
-    constraint __mut_keys_len() == 0;
-}
-
-// Number of allowed mutations using this predicate.
-macro @mut_keys($n) {
-    constraint __mut_keys_len() == $n;
+    __sha256({__this_contract_address(), __this_address()})
 }

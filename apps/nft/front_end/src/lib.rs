@@ -16,6 +16,7 @@ use std::{path::Path, vec};
 
 /// Items generated from `nft-abi.json`.
 mod nft {
+
     pint_abi::gen_from_file! {
         abi: "../pint/nft/out/debug/nft-abi.json",
         contract: "../pint/nft/out/debug/nft.json",

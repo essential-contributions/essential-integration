@@ -1,6 +1,6 @@
 [package]
 name = "essential-dry-run"
-version = "0.1.0"
+version = "0.2.0"
 description = "Cli and library for dry running solutions against a running essential-server"
 edition.workspace = true
 authors.workspace = true

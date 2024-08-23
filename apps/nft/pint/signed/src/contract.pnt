@@ -36,7 +36,6 @@ predicate Transfer {
     constraint ::std::lib::@recover({I::key, I::to, I::token, nonce', nft}; sig; public_key);
     
     constraint __sha256(public_key) == I::key;
-    constraint __mut_keys_len() == 0;
 }
 
 predicate Cancel {
@@ -53,5 +52,4 @@ predicate Cancel {
     constraint ::std::lib::@recover({I::key, nonce', nft}; sig; public_key);
 
     constraint __sha256(public_key) == I::key;
-    constraint __mut_keys_len() == 0;
 }

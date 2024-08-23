@@ -1,6 +1,6 @@
 [package]
 name = "essential-deploy-contract"
-version = "0.1.0"
+version = "0.2.0"
 description = "Cli and library for deploying contracts to the Essential protocol"
 edition.workspace = true
 authors.workspace = true

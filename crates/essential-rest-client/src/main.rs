@@ -79,8 +79,8 @@ enum Commands {
         #[arg(default_value(None))]
         page: Option<u64>,
     },
-    /// List winning blocks on the server.
-    ListWinningBlocks {
+    /// List blocks on the server.
+    ListBlocks {
         /// Time range to list winning blocks in as `start..end` in unix timestamp seconds.
         #[arg(default_value(None))]
         time_range: Option<TimeRange>,
@@ -240,11 +240,11 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
             let output = client.list_solutions_pool(page).await?;
             print!("{}", serde_json::to_string(&output)?);
         }
-        Commands::ListWinningBlocks { time_range, page } => {
+        Commands::ListBlocks { time_range, page } => {
             let time_range = time_range.map(|time_range| {
                 Duration::from_secs(time_range.start)..Duration::from_secs(time_range.end)
             });
-            let output = client.list_winning_blocks(time_range, page).await?;
+            let output = client.list_blocks(time_range, page).await?;
             print!("{}", serde_json::to_string(&output)?);
         }
         Commands::QueryState { address, key } => {

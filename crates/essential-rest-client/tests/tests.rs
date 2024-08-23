@@ -101,16 +101,16 @@ async fn test_api() {
     assert_eq!(r, signed_contract);
 
     let r = client.list_contracts(None, None).await.unwrap();
-    assert_eq!(r, vec![contract.clone()]);
+    assert_eq!(r[1], contract);
 
     let r = client.list_solutions_pool(None).await.unwrap();
     assert!(r.is_empty());
 
-    let r = client.list_winning_blocks(None, None).await.unwrap();
+    let r = client.list_blocks(None, None).await.unwrap();
     assert_eq!(r.len(), 1);
     assert_eq!(r[0].number, 0);
-    assert_eq!(r[0].batch.solutions.len(), 1);
-    assert_eq!(r[0].batch.solutions[0], solution.clone());
+    assert_eq!(r[0].solutions.len(), 1);
+    assert_eq!(r[0].solutions[0], solution.clone());
 
     let query = QueryStateReads::from_solution(
         solution.clone(),
