@@ -789,7 +789,7 @@ dependencies = [
 
 [[package]]
 name = "essential-app-utils"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "clap 4.5.16",
@@ -831,7 +831,7 @@ dependencies = [
 
 [[package]]
 name = "essential-cli"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "clap 4.5.16",
  "essential-hash",
@@ -890,7 +890,7 @@ dependencies = [
 
 [[package]]
 name = "essential-deploy-contract"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "clap 4.5.16",
@@ -905,7 +905,7 @@ dependencies = [
 
 [[package]]
 name = "essential-dry-run"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "clap 4.5.16",
@@ -932,7 +932,7 @@ dependencies = [
 
 [[package]]
 name = "essential-read"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "essential-types",
@@ -943,7 +943,7 @@ dependencies = [
 
 [[package]]
 name = "essential-rest-client"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "base64",
