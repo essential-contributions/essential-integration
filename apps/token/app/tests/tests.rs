@@ -50,25 +50,6 @@ async fn mint_and_transfer() {
     // alice mint 800 tokens
     let first_mint_amount = 1000000;
 
-    let mint_solution = token
-        .mint_solution(alice, first_mint_amount, TOKEN_NAME, TOKEN_SYMBOL)
-        .await
-        .unwrap();
-    for data in &mint_solution.data {
-        println!(
-            "predicate_to_solve contract: {}",
-            data.predicate_to_solve.contract
-        );
-        println!(
-            "predicate_to_solve predicate: {}",
-            data.predicate_to_solve.predicate
-        );
-    }
-
-    essential_app_utils::debug::Target::new("signed", "mint", 0, 0)
-        .debug(&pint_directory, &server_address, &mint_solution)
-        .await;
-
     let _mint_solution_address = token
         .mint(alice, first_mint_amount, TOKEN_NAME, TOKEN_SYMBOL)
         .await
