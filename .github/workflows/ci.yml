@@ -65,7 +65,7 @@ jobs:
               nix run .#compile-all-contracts
               nix develop .#essential-rust-app-dev --command cargo check --locked --all && cargo clippy --locked --all -- -D warnings && cargo fmt --all -- --check
               nix develop .#essential-rust-app-dev --command cargo test
-              nix develop .#essential-rust-app-dev --command cd docs/code && ./front-end.sh
+              cd docs/code && nix develop .#essential-rust-app-dev --command ./front-end.sh
     runs-on: ubuntu-latest
     permissions:
       id-token: "write"
