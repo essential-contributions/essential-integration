@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # This test script does the following:
 #
 # 1. Builds the pint contract.

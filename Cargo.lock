@@ -479,7 +479,7 @@ dependencies = [
  "clap 4.5.16",
  "essential-app-utils",
  "essential-deploy-contract",
- "essential-hash",
+ "essential-hash 0.3.0",
  "essential-rest-client",
  "essential-types",
  "essential-wallet",
@@ -794,10 +794,10 @@ dependencies = [
  "anyhow",
  "clap 4.5.16",
  "essential-debugger",
- "essential-hash",
+ "essential-hash 0.3.0",
  "essential-rest-client",
  "essential-server-types",
- "essential-sign",
+ "essential-sign 0.3.0",
  "essential-signer",
  "essential-types",
  "hex",
@@ -834,8 +834,8 @@ name = "essential-cli"
 version = "0.2.0"
 dependencies = [
  "clap 4.5.16",
- "essential-hash",
- "essential-sign",
+ "essential-hash 0.3.0",
+ "essential-sign 0.3.0",
  "essential-types",
  "secp256k1",
  "serde_json",
@@ -878,8 +878,8 @@ dependencies = [
  "dialoguer",
  "essential-constraint-asm",
  "essential-constraint-vm",
- "essential-hash",
- "essential-sign",
+ "essential-hash 0.2.0",
+ "essential-sign 0.2.0",
  "essential-state-asm",
  "essential-state-read-vm",
  "essential-types",
@@ -931,6 +931,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "essential-hash"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0f045e1c908495efbfd2afa486bf5f36cde96e118362abec292facb05a5f445f"
+dependencies = [
+ "essential-types",
+ "postcard",
+ "serde",
+ "sha2 0.10.8",
+]
+
+[[package]]
 name = "essential-read"
 version = "0.2.0"
 dependencies = [
@@ -948,7 +960,7 @@ dependencies = [
  "anyhow",
  "base64",
  "clap 4.5.16",
- "essential-hash",
+ "essential-hash 0.3.0",
  "essential-server-types",
  "essential-types",
  "essential-wallet",
@@ -975,7 +987,18 @@ version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8296e78787d967590dd3d1799fb30194085a038e5baa128cd7ae0c901cefff90"
 dependencies = [
- "essential-hash",
+ "essential-hash 0.2.0",
+ "essential-types",
+ "secp256k1",
+]
+
+[[package]]
+name = "essential-sign"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fc29fbe4951ac9a3679169ba05290e469aa6dda22d311e392030291bc7521c43"
+dependencies = [
+ "essential-hash 0.3.0",
  "essential-types",
  "secp256k1",
 ]
@@ -990,8 +1013,8 @@ dependencies = [
  "base64",
  "clap 4.5.16",
  "ed25519-dalek",
- "essential-hash",
- "essential-sign",
+ "essential-hash 0.2.0",
+ "essential-sign 0.2.0",
  "essential-types",
  "hex",
  "postcard",
@@ -1046,7 +1069,7 @@ dependencies = [
  "clap 4.5.16",
  "cryptex",
  "dirs",
- "essential-sign",
+ "essential-sign 0.2.0",
  "essential-signer",
  "essential-types",
  "rand",
@@ -1842,9 +1865,9 @@ dependencies = [
  "anyhow",
  "clap 4.5.16",
  "essential-app-utils",
- "essential-hash",
+ "essential-hash 0.3.0",
  "essential-rest-client",
- "essential-sign",
+ "essential-sign 0.3.0",
  "essential-signer",
  "essential-types",
  "essential-wallet",
@@ -2129,7 +2152,7 @@ version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "780a1710b843b0e5a10e83039d7f038cdcce2af167410d8751fce292959b32b2"
 dependencies = [
- "essential-hash",
+ "essential-hash 0.2.0",
  "essential-types",
  "pint-abi-types",
  "pint-abi-visit",
@@ -2964,10 +2987,10 @@ dependencies = [
  "anyhow",
  "clap 4.5.16",
  "essential-app-utils",
- "essential-hash",
+ "essential-hash 0.3.0",
  "essential-rest-client",
  "essential-server-types",
- "essential-sign",
+ "essential-sign 0.3.0",
  "essential-signer",
  "essential-types",
  "essential-wallet",
