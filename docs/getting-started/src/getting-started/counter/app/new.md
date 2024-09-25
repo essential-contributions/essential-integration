@@ -27,18 +27,18 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-anyhow = "1.0.86"
-clap = "4.5.8"
-essential-app-utils = "0.1.0"
-essential-deploy-contract = "0.1.0"
-essential-hash = "0.1.0"
-essential-rest-client = "0.1.0"
-essential-types = "0.1.0"
-tokio = { version = "1.38.0", features = ["full"] }
+anyhow = "1.0.89"
+clap = { version = "4.5.18", features = ["derive"] }
+essential-app-utils = "0.2.0"
+essential-deploy-contract = "0.2.0"
+essential-hash = "0.3.0"
+essential-rest-client = "0.2.0"
+essential-types = "0.2.0"
+tokio = { version = "1.40.0", features = ["full"] }
 
 [dev-dependencies]
-essential-app-utils = { version = "0.1.0", features = ["test-utils"] }
-essential-wallet = { version = "0.1.0", features = ["test-utils"] }
+essential-app-utils = { version = "0.2.0", features = ["test-utils"] }
+essential-wallet = { version = "0.2.0", features = ["test-utils"] }
 ```
 
 ## Add a test

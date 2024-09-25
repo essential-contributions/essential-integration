@@ -9,7 +9,7 @@ storage {
 predicate Increment {
 // ANCHOR_END: pred_start
 // ANCHOR: read_storage
-    state counter: int = storage::counter;
+    state counter: int = mut storage::counter;
 // ANCHOR_END: read_storage
 // ANCHOR: constraint
     constraint (counter == nil && counter' == 1) || counter' == counter + 1;
