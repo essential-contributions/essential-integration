@@ -1,0 +1,11 @@
+storage {
+    nonce: int,
+}
+
+union thing = a(int) | b(bool) | c(b256);
+
+predicate Increment {
+    state nonce: int = mut storage::nonce;
+    var current_thing: thing;
+    constraint (nonce == nil && nonce' == 1) || nonce' == nonce + 1;
+}
