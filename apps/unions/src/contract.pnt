@@ -2,7 +2,7 @@ storage {
     nonce: int,
 }
 
-union thing = a(int) | b(bool) | c(b256);
+// union thing = a(int) | b(bool) | c(b256);
 
 predicate Increment {
     state nonce: int = mut storage::nonce;
