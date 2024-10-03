@@ -1,0 +1,20 @@
+[package]
+name = "unions"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+anyhow.workspace = true
+clap = { workspace = true, features = ["derive"] }
+essential-app-utils.workspace = true
+essential-deploy-contract.workspace = true
+essential-hash.workspace = true
+essential-rest-client.workspace = true
+essential-types.workspace = true
+pint-abi.workspace = true
+tokio = { workspace = true, features = ["full"] }
+
+[dev-dependencies]
+essential-app-utils = { workspace = true, features = ["test-utils"] }
+essential-wallet = { workspace = true, features = ["test-utils"] }
