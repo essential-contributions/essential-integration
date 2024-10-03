@@ -6,12 +6,12 @@ union thing = a(int) | b(bool) | c(b256);
 
 predicate Increment {
     state nonce: int = mut storage::nonce;
-    var current_thing: thing;
-    constraint match current_thing {
-        thing::a(n) => n > 0,
-        thing::b(b) => b,    // or just b ?
-        thing::c(n) => n != 0x0000000000000000000000000000000000000000000000000000000000000000
+    // var current_thing: thing;
+    // constraint match current_thing {
+    //     thing::a(n) => n > 0,
+    //     thing::b(b) => b,    // or just b ?
+    //     thing::c(n) => n != 0x0000000000000000000000000000000000000000000000000000000000000000
 
-    };
+    // };
     constraint (nonce == nil && nonce' == 1) || nonce' == nonce + 1;
 }

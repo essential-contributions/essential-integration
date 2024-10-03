@@ -2,7 +2,7 @@
 members = [
     "apps/counter/app",
     "apps/nft/front_end",
-    "apps/token/app",
+    "apps/token/app", "apps/unions/app",
     "apps/utils",
     "crates/*",
 ]
