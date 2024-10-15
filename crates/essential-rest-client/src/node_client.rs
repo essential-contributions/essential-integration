@@ -1,8 +1,5 @@
 use crate::handle_response;
-use essential_types::{
-    contract::Contract, convert::bytes_from_word, predicate::Predicate, Block, ContentAddress, Key,
-    Value, Word,
-};
+use essential_types::{convert::bytes_from_word, Block, ContentAddress, Key, Value, Word};
 use reqwest::{Client, ClientBuilder};
 use std::ops::Range;
 
@@ -22,20 +19,6 @@ impl EssentialNodeClient {
         Ok(Self { client, url })
     }
 
-    /// Get contract at content address.
-    pub async fn get_contract(&self, contract_ca: &ContentAddress) -> anyhow::Result<Contract> {
-        let url = self.url.join(&format!("/get-contract/{contract_ca}"))?;
-        let response = handle_response(self.client.get(url).send().await?).await?;
-        Ok(response.json::<Contract>().await?)
-    }
-
-    /// Get predicate at content address.
-    pub async fn get_predicate(&self, predicate_ca: &ContentAddress) -> anyhow::Result<Predicate> {
-        let url = self.url.join(&format!("/get-predicate/{predicate_ca}"))?;
-        let response = handle_response(self.client.get(url).send().await?).await?;
-        Ok(response.json::<Predicate>().await?)
-    }
-
     /// List blocks in the given L2 block number range.
     ///
     /// Blocks are only created if there are valid solutions.
@@ -47,19 +30,6 @@ impl EssentialNodeClient {
         ))?;
         let response = handle_response(self.client.get(url).send().await?).await?;
         Ok(response.json::<Vec<Block>>().await?)
-    }
-
-    /// List contracts in the given L2 block number range.
-    pub async fn list_contracts(
-        &self,
-        range: Range<Word>,
-    ) -> anyhow::Result<Vec<(Word, Vec<Contract>)>> {
-        let url = self.url.join(&format!(
-            "/list-contracts?start={}&end={}",
-            range.start, range.end
-        ))?;
-        let response = handle_response(self.client.get(url).send().await?).await?;
-        Ok(response.json::<Vec<(Word, Vec<Contract>)>>().await?)
     }
 
     /// Query state in the given contract address and key.

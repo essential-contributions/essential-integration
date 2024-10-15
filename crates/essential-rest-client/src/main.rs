@@ -31,24 +31,9 @@ enum Commands {
 /// Commands for calling node functions.
 #[derive(Subcommand, Debug)]
 enum NodeCommands {
-    /// Get a contract.
-    GetContract {
-        /// Address of the contract to get, encoded as hex.
-        address: ContentAddress,
-    },
-    /// Get a predicate.
-    GetPredicate {
-        /// Address of the predicate to get, encoded as hex.
-        address: ContentAddress,
-    },
     /// List blocks in the given block number range.
     ListBlocks {
         /// Range of block number of blocks to list, end of range exclusive.
-        range: BlockRange,
-    },
-    /// List contracts in the given block number range.
-    ListContracts {
-        /// Range of block number of contracts to list, end of range exclusive.
         range: BlockRange,
     },
     /// Query the state of a contract.
@@ -101,20 +86,8 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
         let node_client = EssentialNodeClient::new(addr)?;
         match commands {
             Commands::Node(ref node_commands) => match node_commands {
-                NodeCommands::GetContract { address } => {
-                    let output = node_client.get_contract(address).await?;
-                    print!("{}", serde_json::to_string(&output)?);
-                }
-                NodeCommands::GetPredicate { address } => {
-                    let output = node_client.get_predicate(address).await?;
-                    print!("{}", serde_json::to_string(&output)?);
-                }
                 NodeCommands::ListBlocks { range } => {
                     let output = node_client.list_blocks(range.start..range.end).await?;
-                    print!("{}", serde_json::to_string(&output)?);
-                }
-                NodeCommands::ListContracts { range } => {
-                    let output = node_client.list_contracts(range.start..range.end).await?;
                     print!("{}", serde_json::to_string(&output)?);
                 }
                 NodeCommands::QueryState { address, key } => {
