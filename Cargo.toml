@@ -2,7 +2,7 @@
 members = [
     "apps/counter/app",
     "apps/nft/front_end",
-    "apps/token/app", "apps/unions/app",
+    "apps/token/app",
     "apps/utils",
     "crates/*",
 ]
@@ -21,11 +21,11 @@ anyhow = "1.0.80"
 base64 = "0.22.0"
 clap = { version = "4.5.16", features = ["derive"] }
 essential-debugger = "0.2.0"
-essential-hash = "0.3.0"
+essential-hash = "0.4.0"
 essential-server-types = "0.2.0"
-essential-sign = "0.3.0"
+essential-sign = "0.4.0"
 essential-signer = "0.2.0"
-essential-types = "0.2.0"
+essential-types = "0.3.0"
 essential-wallet = "0.2.0"
 pint-abi = "0.2.0"
 hex = "0.4.3"
@@ -42,3 +42,11 @@ essential-app-utils = { path = "apps/utils", version = "0.2.0" }
 essential-deploy-contract = { path = "crates/essential-deploy-contract", version = "0.2.0" }
 essential-read = { path = "crates/essential-read", version = "0.2.0" }
 essential-rest-client = { path = "crates/essential-rest-client", version = "0.2.0" }
+
+[patch.crates-io]
+pint-abi = { path = "/home/furnic/Dev/essential/pint/pint-abi" }
+essential-hash = { path = "/home/furnic/Dev/essential/essential-base/crates/hash" }
+essential-rest-client = { path = "/home/furnic/Dev/essential/essential-integration/crates/essential-rest-client" }
+essential-deploy-contract = { path = "/home/furnic/Dev/essential/essential-integration/crates/essential-deploy-contract" }
+essential-app-utils = { path = "/home/furnic/Dev/essential/essential-integration/apps/utils" }
+essential-wallet = { path = "/home/furnic/Dev/essential/essential-wallet/crates/wallet" }
