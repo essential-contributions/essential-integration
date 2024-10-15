@@ -1,10 +1,5 @@
 [workspace]
 members = [
-    "apps/counter/app",
-    "apps/nft/front_end",
-    "apps/token/app",
-    "apps/utils",
-    "crates/*",
 ]
 resolver = "2"
 
@@ -15,18 +10,14 @@ homepage = "https://essential.builders/"
 license = "Apache-2.0"
 repository = "https://github.com/essential-contributions/essential-integration"
 
-
 [workspace.dependencies]
 anyhow = "1.0.80"
 base64 = "0.22.0"
 clap = { version = "4.5.16", features = ["derive"] }
 essential-debugger = "0.2.0"
-essential-hash = "0.3.0"
-essential-server-types = "0.2.0"
-essential-sign = "0.3.0"
-essential-signer = "0.2.0"
-essential-types = "0.2.0"
-essential-wallet = "0.2.0"
+essential-hash = "0.4.0"
+essential-sign = "0.4.0"
+essential-types = "0.3.0"
 pint-abi = "0.2.0"
 hex = "0.4.3"
 reqwest = "0.12.7"
@@ -37,8 +28,3 @@ serde_json = "1"
 tokio = { version = "1.39.3", features = ["full"] }
 toml = "0.8.19"
 tracing = "0.1.40"
-
-essential-app-utils = { path = "apps/utils", version = "0.2.0" }
-essential-deploy-contract = { path = "crates/essential-deploy-contract", version = "0.2.0" }
-essential-read = { path = "crates/essential-read", version = "0.2.0" }
-essential-rest-client = { path = "crates/essential-rest-client", version = "0.2.0" }
