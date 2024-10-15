@@ -1,172 +1,65 @@
-use clap::{Args, Parser, Subcommand, ValueEnum};
-use essential_rest_client::EssentialClient;
-use essential_server_types::{QueryStateReads, SlotsRequest, StateReadRequestType};
-use essential_types::{
-    contract::{Contract, SignedContract},
-    convert::{bytes_from_word, word_from_bytes},
-    predicate::Predicate,
-    solution::{Solution, SolutionData, SolutionDataIndex},
-    ContentAddress, PredicateAddress, StateReadBytecode,
+use clap::{Parser, Subcommand};
+use essential_rest_client::{
+    builder_client::EssentialBuilderClient, node_client::EssentialNodeClient,
 };
-use serde::{Deserialize, Serialize};
-use std::{path::PathBuf, str::FromStr, time::Duration};
+use essential_types::{convert::word_from_bytes, solution::Solution, ContentAddress, Word};
+use std::{path::PathBuf, str::FromStr};
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
 /// Essential REST Client
 struct Cli {
-    /// Server address to bind to. Default: "http://0.0.0.0:0"
-    #[arg(default_value_t = String::from("http://0.0.0.0:0"))]
-    address: String,
+    /// The endpoint of node to bind to.
+    #[arg(long)]
+    node_address: Option<String>,
+    /// The endpoint of builder to bind to.
+    #[arg(long)]
+    builder_address: Option<String>,
     #[command(subcommand)]
     commands: Commands,
 }
 
-/// Commands for calling server functions.
+/// Commands for calling functions.
 #[derive(Subcommand, Debug)]
 enum Commands {
-    /// Deploy a contract to the server.
-    DeployContract {
-        /// Path to the contract file as a json `SignedContract`.
-        contract: PathBuf,
+    #[command(flatten)]
+    Node(NodeCommands),
+    #[command(flatten)]
+    Builder(BuilderCommands),
+}
+
+/// Commands for calling node functions.
+#[derive(Subcommand, Debug)]
+enum NodeCommands {
+    /// List blocks in the given block number range.
+    ListBlocks {
+        /// Range of block number of blocks to list, end of range exclusive.
+        range: BlockRange,
     },
-    /// Check a solution against the server.
-    CheckSolution {
-        /// Path to the solution file as a json `Solution`.
-        solution: PathBuf,
+    /// Query the state of a contract.
+    QueryState {
+        /// Address of the contract to query, encoded as hex.
+        address: ContentAddress,
+        /// Key to query, encoded as hex.
+        key: Key,
     },
-    /// Check a solution against the server with data.
-    CheckSolutionWithContracts {
-        /// Path to the solution file as a json `Solution`.
-        solution: PathBuf,
-        /// Paths to the contract files as a json `Contract`.
-        contracts: Vec<PathBuf>,
-    },
-    /// Submit a solution to the server.
+}
+
+/// Commands for calling builder functions.
+#[derive(Parser, Debug)]
+enum BuilderCommands {
+    /// Submit a solution.
     SubmitSolution {
         /// Path to the solution file as a json `Solution`.
         solution: PathBuf,
     },
-    /// Get the outcome of a solution.
-    SolutionOutcome {
-        /// Hash of the solution to get the outcome of as Base64.
-        solution_hash: ContentAddress,
-    },
-    /// Get a predicate from a contract.
-    GetPredicate {
-        /// Address of the contract to get the predicate from as Base64.
-        contract: ContentAddress,
-        /// Address of the predicate to get as Base64.
-        predicate: ContentAddress,
-    },
-    /// Get a contract from the server.
-    GetContract {
-        /// Address of the contract to get as Base64.
+    /// Get the latest failures for solution.
+    LatestSolutionFailures {
+        /// The content address of the solution.
         address: ContentAddress,
+        /// The number of failures to get.
+        limit: u32,
     },
-    /// List contracts on the server.
-    ListContracts {
-        /// Time range to list contracts in as `start..end` in unix timestamp seconds.
-        #[arg(default_value(None))]
-        time_range: Option<TimeRange>,
-        /// Page number to list.
-        #[arg(default_value(None))]
-        page: Option<u64>,
-    },
-    /// List solutions in the pool on the server.
-    ListSolutionsPool {
-        /// Page number to list.
-        #[arg(default_value(None))]
-        page: Option<u64>,
-    },
-    /// List blocks on the server.
-    ListBlocks {
-        /// Time range to list winning blocks in as `start..end` in unix timestamp seconds.
-        #[arg(default_value(None))]
-        time_range: Option<TimeRange>,
-        /// Page number to list.
-        #[arg(default_value(None))]
-        page: Option<u64>,
-    },
-    /// Query the state of a contract.
-    QueryState {
-        /// Address of the contract to query as Base64.
-        address: ContentAddress,
-        /// Key to query as hex.
-        key: Key,
-    },
-    /// Query the state of a contract by running state read programs.
-    QueryStateReads {
-        /// Path to the state reads file as a json `Vec<Vec<u8>>`.
-        state_reads_path: PathBuf,
-        #[command(flatten)]
-        args: QueryStateReadsArgs,
-    },
-    /// Query the state of a contract by running the state read programs in a predicate.
-    QueryPredicate {
-        /// Path to the predicate file as a json `Predicate`.
-        predicate_path: PathBuf,
-        #[command(flatten)]
-        args: QueryStateReadsArgs,
-    },
-    /// Query the state of a contract by running state read programs with a single solution data input.
-    QueryInline {
-        /// Path to the state reads file as a json `Vec<Vec<u8>>`.
-        state_reads_path: PathBuf,
-        /// Path to the solution data file as a json `SolutionData`.
-        solution_data: PathBuf,
-        #[command(flatten)]
-        request: RequestArgs,
-    },
-    /// Query the state of an external contract by running state read programs.
-    /// This uses an empty solution that doesn't solve anything.
-    /// It only makes sense to query state that is in an external contract.
-    QueryExtern {
-        /// Path to the state reads file as a json `Vec<Vec<u8>>`.
-        state_reads_path: PathBuf,
-        #[command(flatten)]
-        request: RequestArgs,
-    },
-}
-
-#[derive(Args, Debug)]
-struct QueryStateReadsArgs {
-    /// Index of the solution data to use as an input to the state reads.
-    index: SolutionDataIndex,
-    /// Path to the solution file as a json `Solution`.
-    solution: PathBuf,
-    #[command(flatten)]
-    request: RequestArgs,
-}
-
-#[derive(Args, Debug)]
-struct RequestArgs {
-    /// Whether to capture keys and values in the state reads.
-    #[arg(value_enum)]
-    capture_reads: CaptureReads,
-    /// Whether to capture slots in the state reads.
-    #[arg(value_enum)]
-    capture_slots: CaptureSlots,
-}
-
-#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
-enum CaptureReads {
-    /// Capture the keys and values in the state reads.
-    Capture,
-    /// Ignore the keys and values in the state reads.
-    Ignore,
-}
-
-#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
-enum CaptureSlots {
-    /// Capture the slots in the state reads.
-    Capture,
-    /// Capture only the pre slots in the state reads.
-    CapturePre,
-    /// Capture only the post slots in the state reads.
-    CapturePost,
-    /// Ignore the slots in the state reads.
-    Ignore,
 }
 
 #[tokio::main]
@@ -178,144 +71,52 @@ async fn main() {
 }
 
 async fn run(cli: Cli) -> anyhow::Result<()> {
-    let Cli { address, commands } = cli;
-    let client = EssentialClient::new(address)?;
-    match commands {
-        Commands::DeployContract { contract } => {
-            let contract = from_file(contract).await?;
-            let contract = serde_json::from_str::<SignedContract>(&contract)?;
-            let output = client.deploy_contract(contract).await?;
-            print!("{}", output);
+    let Cli {
+        node_address,
+        builder_address,
+        commands,
+    } = cli;
+    node_address
+        .as_ref()
+        .or(builder_address.as_ref())
+        .ok_or_else(|| {
+            anyhow::anyhow!("No address provided. Please provide either a node or builder address.")
+        })?;
+    if let Some(addr) = node_address {
+        let node_client = EssentialNodeClient::new(addr)?;
+        match commands {
+            Commands::Node(ref node_commands) => match node_commands {
+                NodeCommands::ListBlocks { range } => {
+                    let output = node_client.list_blocks(range.start..range.end).await?;
+                    print!("{}", serde_json::to_string(&output)?);
+                }
+                NodeCommands::QueryState { address, key } => {
+                    let output = node_client
+                        .query_state(address.to_owned(), key.0.to_owned())
+                        .await?;
+                    print!("{}", serde_json::to_string(&output)?);
+                }
+            },
+            Commands::Builder(_) => {}
         }
-        Commands::CheckSolution { solution } => {
-            let solution = serde_json::from_str::<Solution>(&from_file(solution).await?)?;
-            let output = client.check_solution(solution).await?;
-            print!("{:#?}", output);
-        }
-        Commands::CheckSolutionWithContracts {
-            solution,
-            contracts,
-        } => {
-            let solution = serde_json::from_str::<Solution>(&from_file(solution).await?)?;
-            let mut c = Vec::new();
-            for contract in contracts {
-                let contract = serde_json::from_str::<Contract>(&from_file(contract).await?)?;
-                c.push(contract);
-            }
-            let output = client.check_solution_with_contracts(solution, c).await?;
-            print!("{:#?}", output);
-        }
-        Commands::SubmitSolution { solution } => {
-            let solution = serde_json::from_str::<Solution>(&from_file(solution).await?)?;
-            let output = client.submit_solution(solution).await?;
-            print!("{}", output);
-        }
-        Commands::SolutionOutcome { solution_hash } => {
-            let output = client.solution_outcome(&solution_hash.0).await?;
-            print!("{:#?}", output);
-        }
-        Commands::GetPredicate {
-            contract,
-            predicate,
-        } => {
-            let address = PredicateAddress {
-                contract,
-                predicate,
-            };
-            let output = client.get_predicate(&address).await?;
-            print!("{}", serde_json::to_string(&output)?);
-        }
-        Commands::GetContract { address } => {
-            let output = client.get_contract(&address).await?;
-            print!("{}", serde_json::to_string(&output)?);
-        }
-        Commands::ListContracts { time_range, page } => {
-            let time_range = time_range.map(|time_range| {
-                Duration::from_secs(time_range.start)..Duration::from_secs(time_range.end)
-            });
-            let output = client.list_contracts(time_range, page).await?;
-            print!("{}", serde_json::to_string(&output)?);
-        }
-        Commands::ListSolutionsPool { page } => {
-            let output = client.list_solutions_pool(page).await?;
-            print!("{}", serde_json::to_string(&output)?);
-        }
-        Commands::ListBlocks { time_range, page } => {
-            let time_range = time_range.map(|time_range| {
-                Duration::from_secs(time_range.start)..Duration::from_secs(time_range.end)
-            });
-            let output = client.list_blocks(time_range, page).await?;
-            print!("{}", serde_json::to_string(&output)?);
-        }
-        Commands::QueryState { address, key } => {
-            let output = client.query_state(&address, &key.0).await?;
-            print!(
-                "{}",
-                hex::encode_upper(
-                    output
-                        .into_iter()
-                        .flat_map(bytes_from_word)
-                        .collect::<Vec<_>>()
-                )
-            );
-        }
-        Commands::QueryStateReads {
-            state_reads_path,
-            args:
-                QueryStateReadsArgs {
-                    index,
-                    solution,
-                    request,
-                },
-        } => {
-            let state_read =
-                serde_json::from_str::<StateReads>(&from_file(state_reads_path).await?)?.0;
-            let solution = serde_json::from_str::<Solution>(&from_file(solution).await?)?;
-            let query = QueryStateReads {
-                state_read,
-                index,
-                solution,
-                request_type: request.into(),
-            };
-            let output = client.query_state_reads(query).await?;
-            print!("{}", serde_json::to_string(&output)?);
-        }
-        Commands::QueryPredicate {
-            predicate_path,
-            args:
-                QueryStateReadsArgs {
-                    index,
-                    solution,
-                    request,
-                },
-        } => {
-            let predicate = serde_json::from_str::<Predicate>(&from_file(predicate_path).await?)?;
-            let solution = serde_json::from_str::<Solution>(&from_file(solution).await?)?;
-            let query = QueryStateReads::from_solution(solution, index, &predicate, request.into());
-            let output = client.query_state_reads(query).await?;
-            print!("{}", serde_json::to_string(&output)?);
-        }
-        Commands::QueryInline {
-            state_reads_path,
-            solution_data,
-            request,
-        } => {
-            let state_read =
-                serde_json::from_str::<StateReads>(&from_file(state_reads_path).await?)?.0;
-            let data = serde_json::from_str::<SolutionData>(&from_file(solution_data).await?)?;
-            let query = QueryStateReads::inline(state_read, data, request.into());
-            let output = client.query_state_reads(query).await?;
-            print!("{}", serde_json::to_string(&output)?);
-        }
-        Commands::QueryExtern {
-            state_reads_path,
-            request,
-        } => {
-            let state_read =
-                serde_json::from_str::<StateReads>(&from_file(state_reads_path).await?)?.0;
-            let query = QueryStateReads::inline_empty(state_read, request.into());
-            let output = client.query_state_reads(query).await?;
-            print!("{}", serde_json::to_string(&output)?);
+    }
+    if let Some(addr) = builder_address {
+        let builder_client = EssentialBuilderClient::new(addr)?;
+        match commands {
+            Commands::Builder(builder_commands) => match builder_commands {
+                BuilderCommands::SubmitSolution { solution } => {
+                    let solution = serde_json::from_str::<Solution>(&from_file(solution).await?)?;
+                    let output = builder_client.submit_solution(&solution).await?;
+                    print!("{}", output);
+                }
+                BuilderCommands::LatestSolutionFailures { address, limit } => {
+                    let output = builder_client
+                        .latest_solution_failures(&address, limit)
+                        .await?;
+                    print!("{}", serde_json::to_string(&output)?);
+                }
+            },
+            Commands::Node(_) => {}
         }
     }
     Ok(())
@@ -327,20 +128,22 @@ async fn from_file(path: PathBuf) -> anyhow::Result<String> {
 }
 
 #[derive(Clone, Debug)]
-struct TimeRange {
-    start: u64,
-    end: u64,
+pub struct BlockRange {
+    start: Word,
+    end: Word,
 }
 
-impl FromStr for TimeRange {
+impl FromStr for BlockRange {
     type Err = anyhow::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut split = s.split("..");
         let start = split
             .next()
-            .ok_or_else(|| anyhow::anyhow!("No start time"))?;
-        let end = split.next().ok_or_else(|| anyhow::anyhow!("No end time"))?;
+            .ok_or_else(|| anyhow::anyhow!("No start block"))?;
+        let end = split
+            .next()
+            .ok_or_else(|| anyhow::anyhow!("No end block"))?;
         Ok(Self {
             start: start.parse()?,
             end: end.parse()?,
@@ -361,53 +164,5 @@ impl FromStr for Key {
                 .map(|chunk| word_from_bytes(chunk.try_into().expect("Always 8 bytes")))
                 .collect(),
         ))
-    }
-}
-
-#[derive(Serialize, Deserialize)]
-struct StateReads(
-    #[serde(
-        serialize_with = "essential_types::serde::bytecode::serialize_vec",
-        deserialize_with = "essential_types::serde::bytecode::deserialize_vec"
-    )]
-    Vec<StateReadBytecode>,
-);
-
-impl From<RequestArgs> for StateReadRequestType {
-    fn from(value: RequestArgs) -> Self {
-        match value {
-            RequestArgs {
-                capture_reads: CaptureReads::Capture,
-                capture_slots: CaptureSlots::Capture,
-            } => Self::All(SlotsRequest::All),
-            RequestArgs {
-                capture_reads: CaptureReads::Capture,
-                capture_slots: CaptureSlots::CapturePre,
-            } => Self::All(SlotsRequest::Pre),
-            RequestArgs {
-                capture_reads: CaptureReads::Capture,
-                capture_slots: CaptureSlots::CapturePost,
-            } => Self::All(SlotsRequest::Post),
-            RequestArgs {
-                capture_reads: CaptureReads::Capture,
-                capture_slots: CaptureSlots::Ignore,
-            } => Self::Reads,
-            RequestArgs {
-                capture_reads: CaptureReads::Ignore,
-                capture_slots: CaptureSlots::Capture,
-            } => Self::Slots(SlotsRequest::All),
-            RequestArgs {
-                capture_reads: CaptureReads::Ignore,
-                capture_slots: CaptureSlots::CapturePre,
-            } => Self::Slots(SlotsRequest::Pre),
-            RequestArgs {
-                capture_reads: CaptureReads::Ignore,
-                capture_slots: CaptureSlots::CapturePost,
-            } => Self::Slots(SlotsRequest::Post),
-            RequestArgs {
-                capture_reads: CaptureReads::Ignore,
-                capture_slots: CaptureSlots::Ignore,
-            } => panic!("Cannot have a query state reads where both reads and slots are ignored."),
-        }
     }
 }
