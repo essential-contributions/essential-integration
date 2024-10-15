@@ -1,6 +1,11 @@
 use crate::handle_response;
 use essential_builder_types::SolutionFailure;
-use essential_types::{solution::Solution, ContentAddress};
+// use essential_node_types::register_contract_solution;
+use essential_types::{
+    contract::Contract,
+    solution::{Solution, SolutionData},
+    ContentAddress, PredicateAddress,
+};
 use reqwest::{Client, ClientBuilder};
 
 /// Client that binds to an Essential builder address.
@@ -17,6 +22,27 @@ impl EssentialBuilderClient {
         let client = ClientBuilder::new().http2_prior_knowledge().build()?;
         let url = reqwest::Url::parse(&addr)?;
         Ok(Self { client, url })
+    }
+
+    /// Deploy contract.
+    ///
+    /// Creates a solution to the contract registry predicate and submits it.
+    pub async fn deploy_contract(
+        &self,
+        registry_predicate: &PredicateAddress,
+        _contract: &Contract,
+    ) -> anyhow::Result<ContentAddress> {
+        // TODO: placeholder
+        let solution = Solution {
+            data: vec![SolutionData {
+                predicate_to_solve: registry_predicate.to_owned(),
+                transient_data: vec![],
+                decision_variables: vec![],
+                state_mutations: vec![],
+            }],
+        };
+        // let solution = register_contract_solution(registry_predicate, contract)?;
+        self.submit_solution(&solution).await
     }
 
     /// Submit solution.
