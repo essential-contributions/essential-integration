@@ -2,7 +2,7 @@ use essential_builder as builder;
 use essential_builder_db as builder_db;
 use essential_node as node;
 use essential_signer::Signature;
-use essential_types::{convert::word_4_from_u8_32, Word};
+use essential_types::{convert::word_4_from_u8_32, solution::Solution, Word};
 use essential_wallet::Wallet;
 
 const PRIV_KEY: &str = "128A3D2146A69581FD8FC4C0A9B7A96A5755D85255D4E47F814AFA69D7726C8D";
@@ -67,6 +67,12 @@ async fn mint_and_transfer() {
     let solution = token::mint::build_solution(build_solution).unwrap();
 
     let builder_conn = builder_db::ConnectionPool::with_tables(&Default::default()).unwrap();
+
+    submit_solution(&builder_conn, solution).await;
+
+    builder::build_block_fifo(&builder_conn, &node_conn, &Default::default())
+        .await
+        .unwrap();
 }
 
 fn hash_key(wallet: &mut Wallet, account_name: &str) -> [Word; 4] {
@@ -76,4 +82,16 @@ fn hash_key(wallet: &mut Wallet, account_name: &str) -> [Word; 4] {
     };
     let encoded = essential_sign::encode::public_key(&public_key);
     word_4_from_u8_32(essential_hash::hash_words(&encoded))
+}
+
+async fn submit_solution(builder_conn: &builder_db::ConnectionPool, solution: Solution) {
+    builder_conn
+        .insert_solution_submission(
+            std::sync::Arc::new(solution),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap(),
+        )
+        .await
+        .unwrap();
 }
