@@ -11,7 +11,7 @@ essential-app-utils = { workspace = true }
 essential-hash = { workspace = true }
 essential-rest-client = { workspace = true }
 essential-sign = { workspace = true }
-# essential-signer = { workspace = true }
+essential-signer = { workspace = true }
 essential-types = { workspace = true }
 essential-wallet = { workspace = true }
 hex = { workspace = true }
@@ -22,4 +22,7 @@ tokio = { workspace = true }
 
 [dev-dependencies]
 essential-app-utils = { workspace = true, features = ["test-utils"] }
-# essential-wallet = { workspace = true, features = ["test-utils"] }
+essential-wallet = { workspace = true, features = ["test-utils"] }
+essential-builder.workspace = true
+essential-builder-db.workspace = true
+essential-node.workspace = true
