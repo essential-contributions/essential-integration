@@ -98,11 +98,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1729045487,
-        "narHash": "sha256-+BazEN2YVpHZfqU8KtuB4hV9eTu7Jqa8fmGfjLweh2w=",
+        "lastModified": 1729073317,
+        "narHash": "sha256-8NpWAdf/f5Z1yV5PRbGQWa7CNPfTuTyBEzT5Y2FW5uM=",
         "owner": "essential-contributions",
         "repo": "essential-node",
-        "rev": "d0f9139eb3c74c3e1feba75c03949068caf692a5",
+        "rev": "03661c0bd49874d84dd29678ed413548086e6e31",
         "type": "github"
       },
       "original": {

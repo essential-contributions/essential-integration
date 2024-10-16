@@ -7,3 +7,4 @@ pub mod token {
 
 pub mod burn;
 pub mod mint;
+pub mod transfer;

@@ -1,3 +1,5 @@
+use essential_builder as builder;
+use essential_builder_db as builder_db;
 use essential_node as node;
 use essential_signer::Signature;
 use essential_types::{convert::word_4_from_u8_32, Word};
@@ -44,7 +46,7 @@ async fn mint_and_transfer() {
     let Signature::Secp256k1(sig) = sig else {
         panic!("Invalid signature")
     };
-    
+
     let balance: Vec<_> = token::token::storage::keys::keys()
         .balances(|e| e.entry(hashed_key))
         .into();
@@ -64,6 +66,7 @@ async fn mint_and_transfer() {
     };
     let solution = token::mint::build_solution(build_solution).unwrap();
 
+    let builder_conn = builder_db::ConnectionPool::with_tables(&Default::default()).unwrap();
 }
 
 fn hash_key(wallet: &mut Wallet, account_name: &str) -> [Word; 4] {

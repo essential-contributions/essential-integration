@@ -2,7 +2,6 @@ use anyhow::bail;
 use essential_app_utils::inputs::Encode;
 use essential_sign::secp256k1::ecdsa::RecoverableSignature;
 use essential_types::{
-    convert::word_4_from_u8_32,
     solution::{Solution, SolutionData},
     Value, Word,
 };
@@ -10,28 +9,27 @@ use essential_types::{
 pub struct Query(pub Option<Value>);
 
 pub struct Account {
-    pub hashed_key: [Word; 4],
+    pub hashed_from_key: [Word; 4],
+    pub hashed_to_key: [Word; 4],
     pub amount: Word,
-    pub decimals: Word,
     pub nonce: Query,
 }
 
 pub struct ToSign {
-    pub hashed_key: [Word; 4],
+    pub hashed_from_key: [Word; 4],
+    pub hashed_to_key: [Word; 4],
     pub amount: Word,
-    pub decimals: Word,
     pub new_nonce: Word,
 }
 
 pub struct BuildSolution {
+    pub hashed_from_key: [Word; 4],
+    pub hashed_to_key: [Word; 4],
     pub new_nonce: Word,
-    pub current_balance: Query,
-    pub hashed_key: [Word; 4],
     pub amount: Word,
-    pub decimals: Word,
+    pub current_from_balance: Query,
+    pub current_to_balance: Query,
     pub signature: RecoverableSignature,
-    pub token_name: String,
-    pub token_symbol: String,
 }
 
 pub struct Submit(pub Solution);
@@ -39,62 +37,65 @@ pub struct Submit(pub Solution);
 impl ToSign {
     pub fn to_words(&self) -> Vec<Word> {
         vec![
-            self.hashed_key[0],
-            self.hashed_key[1],
-            self.hashed_key[2],
-            self.hashed_key[3],
+            self.hashed_from_key[0],
+            self.hashed_from_key[1],
+            self.hashed_from_key[2],
+            self.hashed_from_key[3],
+            self.hashed_to_key[0],
+            self.hashed_to_key[1],
+            self.hashed_to_key[2],
+            self.hashed_to_key[3],
             self.amount,
             self.new_nonce,
-            self.decimals,
         ]
     }
 }
 
 pub fn data_to_sign(account: Account) -> anyhow::Result<ToSign> {
     let Account {
-        hashed_key,
-        nonce: current_nonce,
+        hashed_from_key,
+        hashed_to_key,
         amount,
-        decimals,
+        nonce: current_nonce,
     } = account;
     let new_nonce = increment_nonce(nonce(current_nonce)?);
     Ok(ToSign {
-        hashed_key,
         amount,
         new_nonce,
-        decimals,
+        hashed_from_key,
+        hashed_to_key,
     })
 }
 
 pub fn build_solution(build: BuildSolution) -> anyhow::Result<Solution> {
     let BuildSolution {
+        hashed_from_key,
+        hashed_to_key,
         new_nonce,
-        current_balance,
-        hashed_key,
         amount,
+        current_from_balance,
+        current_to_balance,
         signature,
-        decimals,
-        token_name,
-        token_symbol,
     } = build;
-    let balance = balance(current_balance)?;
-    let pub_vars = super::token::Mint::PubVars {
-        key: hashed_key,
+    let from_balance = calculate_from_balance(balance(current_from_balance)?, amount)?;
+    let to_balance = calculate_to_balance(balance(current_to_balance)?, amount)?;
+    let pub_vars = super::token::Transfer::PubVars {
+        key: hashed_from_key,
+        to: hashed_to_key,
         amount,
-        decimals,
     };
     let signature = signature.encode();
-    let vars = super::token::Mint::Vars {
-        auth: super::token::MintAuth::Signed(signature),
+    let auth =
+        super::token::TransferAuthMode::Signed((signature, super::token::TransferSignedMode::All));
+    let vars = super::token::Transfer::Vars {
+        auth: (auth, super::token::ExtraConstraints::None),
     };
     let mutations = super::token::storage::mutations()
-        .balances(|map| map.entry(hashed_key, balance))
-        .token_name(word_4_from_u8_32(essential_hash::hash(&token_name)))
-        .token_symbol(word_4_from_u8_32(essential_hash::hash(&token_symbol)))
-        .decimals(decimals)
-        .nonce(|nonces| nonces.entry(hashed_key, new_nonce));
+        .balances(|map| map.entry(hashed_from_key, from_balance))
+        .balances(|map| map.entry(hashed_to_key, to_balance))
+        .nonce(|nonces| nonces.entry(hashed_from_key, new_nonce));
     let solution = SolutionData {
-        predicate_to_solve: super::token::Mint::ADDRESS,
+        predicate_to_solve: super::token::Transfer::ADDRESS,
         decision_variables: vars.into(),
         transient_data: pub_vars.into(),
         state_mutations: mutations.into(),
@@ -130,4 +131,16 @@ fn balance(balance: Query) -> anyhow::Result<Word> {
 
 fn increment_nonce(nonce: Word) -> Word {
     nonce + 1
+}
+
+fn calculate_from_balance(from_balance: Word, amount: Word) -> anyhow::Result<Word> {
+    from_balance
+        .checked_sub(amount)
+        .ok_or(anyhow::anyhow!("Insufficient balance"))
+}
+
+fn calculate_to_balance(to_balance: Word, amount: Word) -> anyhow::Result<Word> {
+    to_balance
+        .checked_add(amount)
+        .ok_or(anyhow::anyhow!("Insufficient balance"))
 }
