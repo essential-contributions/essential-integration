@@ -2,7 +2,9 @@ use clap::{Parser, Subcommand};
 use essential_rest_client::{
     builder_client::EssentialBuilderClient, node_client::EssentialNodeClient,
 };
-use essential_types::{convert::word_from_bytes, solution::Solution, ContentAddress, Word};
+use essential_types::{
+    contract::Contract, convert::word_from_bytes, solution::Solution, ContentAddress, Word,
+};
 use std::{path::PathBuf, str::FromStr};
 
 #[derive(Parser)]
@@ -48,6 +50,11 @@ enum NodeCommands {
 /// Commands for calling builder functions.
 #[derive(Parser, Debug)]
 enum BuilderCommands {
+    /// Deploy a contract.
+    DeployContract {
+        /// Path to the contract file as a json `Contract`.
+        contract: PathBuf,
+    },
     /// Submit a solution.
     SubmitSolution {
         /// Path to the solution file as a json `Solution`.
@@ -104,6 +111,11 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
         let builder_client = EssentialBuilderClient::new(addr)?;
         match commands {
             Commands::Builder(builder_commands) => match builder_commands {
+                BuilderCommands::DeployContract { contract } => {
+                    let contract = serde_json::from_str::<Contract>(&from_file(contract).await?)?;
+                    let output = builder_client.deploy_contract(&contract).await?;
+                    print!("{}", output);
+                }
                 BuilderCommands::SubmitSolution { solution } => {
                     let solution = serde_json::from_str::<Solution>(&from_file(solution).await?)?;
                     let output = builder_client.submit_solution(&solution).await?;
