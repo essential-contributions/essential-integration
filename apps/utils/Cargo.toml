@@ -14,9 +14,7 @@ clap = { workspace = true }
 essential-debugger = { workspace = true, optional = true }
 essential-hash = { workspace = true }
 essential-rest-client = { workspace = true, optional = true }
-essential-server-types = { workspace = true }
 essential-sign = { workspace = true }
-essential-signer = { workspace = true }
 essential-types = { workspace = true }
 hex = { workspace = true }
 serde_json = { workspace = true }

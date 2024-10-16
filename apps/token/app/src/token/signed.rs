@@ -8,15 +8,16 @@ pint_abi::gen_from_file! {
     contract: "../pint/signed/out/debug/signed.json",
 }
 
-pub type BurnData = Data<Burn::Vars, Burn::pub_vars::Mutations>;
-pub type MintData = Data<Mint::Vars, Mint::pub_vars::Mutations>;
-pub type TransferData = Data<Transfer::Vars, Transfer::pub_vars::Mutations>;
+pub type BurnData = Data<Burn::Vars, Burn::PubVars>;
+pub type MintData = Data<Mint::Vars, Mint::PubVars>;
+pub type TransferData = Data<Transfer::Vars, Transfer::PubVars>;
 
 pub struct Data<D, P> {
     pub predicate_to_solve: PredicateAddress,
     pub decision_variables: D,
     pub transient_data: P,
 }
+
 
 impl<D, P> From<Data<D, P>> for SolutionData
 where

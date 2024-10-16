@@ -16,6 +16,30 @@
         "type": "github"
       }
     },
+    "essential-builder": {
+      "inputs": {
+        "essential-node": "essential-node",
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "systems": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1728959306,
+        "narHash": "sha256-WAwEp8/kduhrGjkiOp6RCMnj9+A/5gLhKmh0A5mpa8A=",
+        "owner": "essential-contributions",
+        "repo": "essential-builder",
+        "rev": "721bd54f0ab73c862ebe1deb3ff9beb387ba7d3a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "essential-contributions",
+        "repo": "essential-builder",
+        "type": "github"
+      }
+    },
     "essential-debugger": {
       "inputs": {
         "nixpkgs": [
@@ -39,7 +63,32 @@
         "type": "github"
       }
     },
-    "essential-server": {
+    "essential-node": {
+      "inputs": {
+        "nixpkgs": [
+          "essential-builder",
+          "nixpkgs"
+        ],
+        "systems": [
+          "essential-builder",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1728638342,
+        "narHash": "sha256-TtUkGxLeya6ziEdz5nrKA2Cj0fipVoKkkkTEeIBxYxg=",
+        "owner": "essential-contributions",
+        "repo": "essential-node",
+        "rev": "8db2978b23da4a122483f7e205ee3d6c55613e32",
+        "type": "github"
+      },
+      "original": {
+        "owner": "essential-contributions",
+        "repo": "essential-node",
+        "type": "github"
+      }
+    },
+    "essential-node_2": {
       "inputs": {
         "nixpkgs": [
           "nixpkgs"
@@ -49,16 +98,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1723602193,
-        "narHash": "sha256-L4U+4UABsSYuXwWSu13U3ryR13+ZWZuNtVbNLaYLOf8=",
+        "lastModified": 1728972885,
+        "narHash": "sha256-1b8oklwVVidl0PphCj9B7oBtr/UuFA260gJh8O+rVBY=",
         "owner": "essential-contributions",
-        "repo": "essential-server",
-        "rev": "9cc770f7766bc1297092bcf9f8ee38b32e11f85c",
+        "repo": "essential-node",
+        "rev": "6f300ac579042133d55a86c08cefeaed4bb7ae14",
         "type": "github"
       },
       "original": {
         "owner": "essential-contributions",
-        "repo": "essential-server",
+        "repo": "essential-node",
         "type": "github"
       }
     },
@@ -87,11 +136,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1724224976,
-        "narHash": "sha256-Z/ELQhrSd7bMzTO8r7NZgi9g5emh+aRKoCdaAv5fiO0=",
+        "lastModified": 1728492678,
+        "narHash": "sha256-9UTxR8eukdg+XZeHgxW5hQA9fIKHsKCdOIUycTryeVw=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "c374d94f1536013ca8e92341b540eba4c22f9c62",
+        "rev": "5633bcff0c6162b9e4b5f1264264611e950c8ec7",
         "type": "github"
       },
       "original": {
@@ -112,11 +161,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1724377452,
-        "narHash": "sha256-tu7VFkN8aGHB+6kNJ767sgGYu627yNk3Z/lxnRYzKqo=",
+        "lastModified": 1727834582,
+        "narHash": "sha256-sQR9+KuxNoRzfq3/447LaHrvFqIs++iky3rkOy3qflA=",
         "owner": "essential-contributions",
         "repo": "pint.nix",
-        "rev": "8b44167238b0bae26e8d9fd9c9c11ce7e62be244",
+        "rev": "d20ab49444a6fc9d10e4981a05e579a253a3833f",
         "type": "github"
       },
       "original": {
@@ -128,11 +177,11 @@
     "pint-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1724372811,
-        "narHash": "sha256-30KcTcd0P0izAFI+mhmYHjYXkM0D72Z6iVUYLeZI5H8=",
+        "lastModified": 1727794072,
+        "narHash": "sha256-PNlAeHmm/65wNGdmO+TKwHoLgkFDw0PN6SeDr2qxy+Q=",
         "owner": "essential-contributions",
         "repo": "pint",
-        "rev": "71f1d11c190f74622da0d14a9906b33e8a022289",
+        "rev": "6ec051667f25f24b8cbe2aa4382f21a00c582ede",
         "type": "github"
       },
       "original": {
@@ -144,8 +193,9 @@
     "root": {
       "inputs": {
         "cargo-readme-src": "cargo-readme-src",
+        "essential-builder": "essential-builder",
         "essential-debugger": "essential-debugger",
-        "essential-server": "essential-server",
+        "essential-node": "essential-node_2",
         "essential-wallet": "essential-wallet",
         "nixpkgs": "nixpkgs",
         "pint": "pint",

@@ -1,12 +1,14 @@
 # The minimal essential tools for app dev.
-{ essential-rest-server
+{ essential-builder
+, essential-node
 , pint
 , symlinkJoin
 }:
 symlinkJoin {
   name = "essential-minimal";
   paths = [
-    essential-rest-server
+    essential-builder
+    essential-node
     pint
   ];
 }

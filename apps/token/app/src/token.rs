@@ -1,7 +1,5 @@
 use anyhow::bail;
 use essential_app_utils::inputs::Encode;
-use essential_rest_client::EssentialClient;
-use essential_server_types::SolutionOutcome;
 use essential_types::{convert::word_4_from_u8_32, solution::Solution, ContentAddress, Word};
 use essential_wallet::Wallet;
 
@@ -13,14 +11,12 @@ pub(crate) mod token;
 pub(crate) mod signed;
 
 pub struct Token {
-    client: EssentialClient,
     wallet: Wallet,
 }
 
 impl Token {
-    pub fn new(addr: String, wallet: essential_wallet::Wallet) -> anyhow::Result<Self> {
-        let client = EssentialClient::new(addr)?;
-        Ok(Self { client, wallet })
+    pub fn new(wallet: essential_wallet::Wallet) -> anyhow::Result<Self> {
+        Ok(Self { wallet })
     }
 
     pub fn create_account(&mut self, account_name: &str) -> anyhow::Result<()> {
@@ -63,10 +59,9 @@ impl Token {
                 ___I_pathway: BURN_PATH,
                 sig: self.sign_data(account_name, data)?.encode(),
             },
-            transient_data: signed::Burn::pub_vars::mutations().token(|addr| {
-                let (c, p) = token::Burn::ADDRESS.encode();
-                addr.contract(c).addr(p)
-            }),
+            transient_data: signed::Burn::PubVars {
+                token: token::Burn::ADDRESS.encode(),
+            },
         };
 
         solution.data.insert(AUTH_PATH as usize, auth.into());
@@ -77,7 +72,10 @@ impl Token {
                 auth_addr: signed::Burn::ADDRESS.encode(),
                 ___A_pathway: AUTH_PATH,
             },
-            transient_data: token::Burn::pub_vars::mutations().key(key).amount(amount),
+            transient_data: token::Burn::PubVars {
+                key: key.into(),
+                amount,
+            },
             state_mutations: token::storage::mutations()
                 .balances(|map| map.entry(key, new_from_balance))
                 .nonce(|nonces| nonces.entry(key, new_nonce)),

@@ -38,9 +38,9 @@ pub fn query_decimals() -> essential_types::Key {
     k.pop().unwrap()
 }
 
-pub type BurnData = Data<Burn::Vars, Burn::pub_vars::Mutations>;
-pub type MintData = Data<Mint::Vars, Mint::pub_vars::Mutations>;
-pub type TransferData = Data<Transfer::Vars, Transfer::pub_vars::Mutations>;
+pub type BurnData = Data<Burn::Vars, Burn::PubVars>;
+pub type MintData = Data<Mint::Vars, Mint::PubVars>;
+pub type TransferData = Data<Transfer::Vars, Transfer::PubVars>;
 
 pub struct Data<D, P> {
     pub predicate_to_solve: PredicateAddress,

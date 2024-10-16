@@ -4,7 +4,6 @@ use essential_app_utils::{
     compile::compile_pint_project,
     print::{print_contract_address, print_predicate_address},
 };
-use essential_rest_client::EssentialClient;
 use essential_types::contract::Contract;
 use std::path::{Path, PathBuf};
 
@@ -34,22 +33,22 @@ pub fn print_addresses() {
     print_predicate_address("signed_cancel", &signed::Cancel::ADDRESS);
 }
 
-pub async fn deploy_app(
-    addr: String,
-    wallet: &mut essential_wallet::Wallet,
-    account_name: &str,
-    pint_directory: &Path,
-) -> anyhow::Result<()> {
-    let client = EssentialClient::new(addr)?;
-    let (token_contract, signed_contract) = compile_contracts(pint_directory).await?;
+// pub async fn deploy_app(
+//     addr: String,
+//     wallet: &mut essential_wallet::Wallet,
+//     account_name: &str,
+//     pint_directory: &Path,
+// ) -> anyhow::Result<()> {
+//     let client = EssentialClient::new(addr)?;
+//     let (token_contract, signed_contract) = compile_contracts(pint_directory).await?;
 
-    let predicates = wallet.sign_contract(token_contract, account_name)?;
-    client.deploy_contract(predicates).await?;
-    let predicates = wallet.sign_contract(signed_contract, account_name)?;
-    client.deploy_contract(predicates).await?;
+//     let predicates = wallet.sign_contract(token_contract, account_name)?;
+//     client.deploy_contract(predicates).await?;
+//     let predicates = wallet.sign_contract(signed_contract, account_name)?;
+//     client.deploy_contract(predicates).await?;
 
-    Ok(())
-}
+//     Ok(())
+// }
 
 pub async fn get_contracts(pint_directory: PathBuf) -> anyhow::Result<Vec<Contract>> {
     let token_contract = compile_pint_project(pint_directory.clone().join("token")).await?;

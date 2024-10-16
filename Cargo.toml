@@ -1,6 +1,10 @@
 [workspace]
 members = [
-    "crates/*",
+    "crates/essential-rest-client",
+    "apps/utils",
+    "apps/counter/app",
+    # "apps/token/app",
+    "apps/token/app2",
 ]
 resolver = "2"
 
@@ -16,6 +20,8 @@ anyhow = "1.0.80"
 base64 = "0.22.0"
 clap = { version = "4.5.16", features = ["derive"] }
 essential-builder-types = "0.1.0"
+essential-builder = "0.2.0"
+essential-builder-db = "0.2.0"
 essential-debugger = "0.2.0"
 essential-hash = "0.4.0"
 essential-node-api = "0.3.0"
@@ -23,6 +29,7 @@ essential-node = "0.3.0"
 essential-node-types = "0.1.0"
 essential-sign = "0.4.0"
 essential-types = "0.3.0"
+essential-wallet = "0.3.0"
 pint-abi = "0.3.0"
 hex = "0.4.3"
 reqwest = "0.12.8"
@@ -36,3 +43,4 @@ tracing = "0.1.40"
 uuid = { version = "1.11.0", features = ["v4"] }
 
 essential-rest-client = { path = "crates/essential-rest-client", version = "0.2.0" }
+essential-app-utils = { path = "apps/utils", version = "0.2.0" }
