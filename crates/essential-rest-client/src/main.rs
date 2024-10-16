@@ -3,16 +3,9 @@ use essential_rest_client::{
     builder_client::EssentialBuilderClient, node_client::EssentialNodeClient,
 };
 use essential_types::{
-    contract::Contract, convert::word_from_bytes, solution::Solution, ContentAddress,
-    PredicateAddress, Word,
+    contract::Contract, convert::word_from_bytes, solution::Solution, ContentAddress, Word,
 };
 use std::{path::PathBuf, str::FromStr};
-
-// TODO: placeholder
-const REGISTRY_PREDICATE: PredicateAddress = PredicateAddress {
-    contract: ContentAddress([4u8; 32]),
-    predicate: ContentAddress([2u8; 32]),
-};
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -120,9 +113,7 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
             Commands::Builder(builder_commands) => match builder_commands {
                 BuilderCommands::DeployContract { contract } => {
                     let contract = serde_json::from_str::<Contract>(&from_file(contract).await?)?;
-                    let output = builder_client
-                        .deploy_contract(&REGISTRY_PREDICATE, &contract)
-                        .await?;
+                    let output = builder_client.deploy_contract(&contract).await?;
                     print!("{}", output);
                 }
                 BuilderCommands::SubmitSolution { solution } => {

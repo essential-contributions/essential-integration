@@ -13,6 +13,7 @@ anyhow = { workspace = true }
 base64 = { workspace = true }
 clap = { workspace = true }
 essential-builder-types = { workspace = true }
+essential-node-types = { workspace = true }
 essential-types = { workspace = true }
 hex.workspace = true
 reqwest = { workspace = true, features = ["json", "native-tls-alpn"] }

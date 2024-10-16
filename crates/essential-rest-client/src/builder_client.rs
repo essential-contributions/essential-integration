@@ -1,11 +1,7 @@
 use crate::handle_response;
 use essential_builder_types::SolutionFailure;
-// use essential_node_types::register_contract_solution;
-use essential_types::{
-    contract::Contract,
-    solution::{Solution, SolutionData},
-    ContentAddress, PredicateAddress,
-};
+use essential_node_types::register_contract_solution;
+use essential_types::{contract::Contract, solution::Solution, ContentAddress};
 use reqwest::{Client, ClientBuilder};
 
 /// Client that binds to an Essential builder address.
@@ -27,22 +23,13 @@ impl EssentialBuilderClient {
     /// Deploy contract.
     ///
     /// Creates a solution to the contract registry predicate and submits it.
-    pub async fn deploy_contract(
-        &self,
-        registry_predicate: &PredicateAddress,
-        _contract: &Contract,
-    ) -> anyhow::Result<ContentAddress> {
-        // TODO: placeholder
-        let solution = Solution {
-            data: vec![SolutionData {
-                predicate_to_solve: registry_predicate.to_owned(),
-                transient_data: vec![],
-                decision_variables: vec![],
-                state_mutations: vec![],
-            }],
-        };
-        // let solution = register_contract_solution(registry_predicate, contract)?;
-        self.submit_solution(&solution).await
+    pub async fn deploy_contract(&self, contract: &Contract) -> anyhow::Result<ContentAddress> {
+        let registry_predicate = essential_node_types::BigBang::default().contract_registry;
+        let solution = register_contract_solution(registry_predicate, contract)?;
+        self.submit_solution(&Solution {
+            data: vec![solution],
+        })
+        .await
     }
 
     /// Submit solution.

@@ -611,13 +611,14 @@ dependencies = [
 
 [[package]]
 name = "essential-node"
-version = "0.2.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f8ed34c3cee5b93dbcc103ea4e342012479a238c14593aa018081faedbe3d854"
+checksum = "a52af4c23e76a469b7c15a4860a32f2fab39eb490e83997b671e978d429f0f8b"
 dependencies = [
  "essential-check",
  "essential-hash",
- "essential-node-db",
+ "essential-node-db 0.3.0",
+ "essential-node-types",
  "essential-relayer",
  "essential-types",
  "futures",
@@ -632,9 +633,9 @@ dependencies = [
 
 [[package]]
 name = "essential-node-api"
-version = "0.2.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9815c05cec2e8bebdd7cb4ba85f0df902dde35d303084d270e09d55e9aa3d90c"
+checksum = "ffd3d7919132bd09587144a12aac973a22622337cb67cadf15df73e00871ddd4"
 dependencies = [
  "axum",
  "essential-node",
@@ -659,7 +660,23 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6cfdb4f3fcb5c704f49a06e3e69b9988805aee732cd04cfe81ef69c0f2a4565b"
 dependencies = [
  "essential-hash",
- "essential-node-db-sql",
+ "essential-node-db-sql 0.2.0",
+ "essential-types",
+ "futures",
+ "postcard",
+ "rusqlite",
+ "serde",
+ "thiserror",
+]
+
+[[package]]
+name = "essential-node-db"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c8f7399e37615c724d5323d9b7eeaffdff6fe051f3f9e4873c0085a8d534f48a"
+dependencies = [
+ "essential-hash",
+ "essential-node-db-sql 0.3.0",
  "essential-types",
  "futures",
  "postcard",
@@ -675,13 +692,31 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "94c78238c2a4cd4b23ba657a833d759dec7eaa75b2fd564ae6b143ff2b69f369"
 
 [[package]]
+name = "essential-node-db-sql"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e556425f396eb5d192bef02692804f677b3cedfcaa50f6e23dece674aec81c61"
+
+[[package]]
+name = "essential-node-types"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4784629a144377904dd89b8101f7656f79a783e60a42050f4c87801b98d037cd"
+dependencies = [
+ "essential-hash",
+ "essential-types",
+ "serde",
+ "serde_yaml",
+]
+
+[[package]]
 name = "essential-relayer"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fc94b2d0dbba89b159793dcee120ccaa372a645031eaf6cbd201e63ca33d5d95"
 dependencies = [
  "essential-hash",
- "essential-node-db",
+ "essential-node-db 0.2.0",
  "essential-types",
  "futures",
  "reqwest",
@@ -705,6 +740,7 @@ dependencies = [
  "essential-builder-types",
  "essential-node",
  "essential-node-api",
+ "essential-node-types",
  "essential-types",
  "hex",
  "reqwest",
@@ -1592,9 +1628,9 @@ dependencies = [
 
 [[package]]
 name = "reqwest"
-version = "0.12.7"
+version = "0.12.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f8f4955649ef5c38cc7f9e8aa41761d48fb9677197daea9984dc54f56aad5e63"
+checksum = "f713147fbe92361e52392c73b8c9e48c04c6625bce969ef54dc901e58e042a7b"
 dependencies = [
  "base64",
  "bytes",
@@ -2299,9 +2335,9 @@ checksum = "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821"
 
 [[package]]
 name = "uuid"
-version = "1.10.0"
+version = "1.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "81dfa00651efa65069b0b6b651f4aaa31ba9e3c3ce0137aaad053604ee7e0314"
+checksum = "f8c5f0a0af699448548ad1a2fbf920fb4bee257eae39953ba95cb84891a0446a"
 dependencies = [
  "getrandom",
 ]
