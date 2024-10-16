@@ -2516,7 +2516,7 @@ dependencies = [
  "essential-builder",
  "essential-builder-db",
  "essential-hash 0.4.0",
- "essential-node",
+ "essential-node 0.3.0",
  "essential-rest-client",
  "essential-sign 0.4.0",
  "essential-signer",
