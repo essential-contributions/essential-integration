@@ -73,6 +73,13 @@ async fn mint_and_transfer() {
     builder::build_block_fifo(&builder_conn, &node_conn, &Default::default())
         .await
         .unwrap();
+
+    let account = token::transfer::Account {
+        hashed_from_key: hashed_key,
+        hashed_to_key: todo!(),
+        amount: todo!(),
+        nonce: todo!(),
+    };
 }
 
 fn hash_key(wallet: &mut Wallet, account_name: &str) -> [Word; 4] {
