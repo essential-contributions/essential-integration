@@ -53,7 +53,6 @@ pub async fn compile_pint_project_inner(
         "pint.toml not found: {:?}",
         pint_manifest_path
     );
-    dbg!(&pint_manifest_path);
 
     let pint_toml = tokio::fs::read_to_string(&pint_manifest_path).await?;
     let pint_toml = pint_toml.parse::<toml::Table>()?;

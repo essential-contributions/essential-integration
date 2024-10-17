@@ -72,7 +72,8 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
             let (solution, new_count) = incremented_solution(address, count)?;
             let builder =
                 essential_rest_client::builder_client::EssentialBuilderClient::new(builder_api)?;
-            builder.submit_solution(&solution).await?;
+            let ca = builder.submit_solution(&solution).await?;
+            println!("Submitted solution: {}", ca);
             println!("Incremented count to: {}", new_count);
         }
     }

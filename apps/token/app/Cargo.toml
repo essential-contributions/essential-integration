@@ -26,4 +26,5 @@ tokio = { workspace = true }
 
 [dev-dependencies]
 essential-app-utils = { workspace = true, features = ["test-utils"] }
+
 # essential-wallet = { workspace = true, features = ["test-utils"] }

@@ -4,12 +4,12 @@ use essential_sign::secp256k1::ecdsa::RecoverableSignature;
 use essential_types::{
     convert::word_4_from_u8_32,
     solution::{Solution, SolutionData},
-    Value, Word,
+    Word,
 };
 
-pub struct Query(pub Option<Value>);
+use crate::Query;
 
-pub struct Account {
+pub struct Init {
     pub hashed_key: [Word; 4],
     pub amount: Word,
     pub decimals: Word,
@@ -44,14 +44,14 @@ impl ToSign {
             self.hashed_key[2],
             self.hashed_key[3],
             self.amount,
-            self.new_nonce,
             self.decimals,
+            self.new_nonce,
         ]
     }
 }
 
-pub fn data_to_sign(account: Account) -> anyhow::Result<ToSign> {
-    let Account {
+pub fn data_to_sign(account: Init) -> anyhow::Result<ToSign> {
+    let Init {
         hashed_key,
         nonce: current_nonce,
         amount,
@@ -77,7 +77,7 @@ pub fn build_solution(build: BuildSolution) -> anyhow::Result<Solution> {
         token_name,
         token_symbol,
     } = build;
-    let balance = balance(current_balance)?;
+    let balance = calculate_new_balance(balance(current_balance)?, amount)?;
     let pub_vars = super::token::Mint::PubVars {
         key: hashed_key,
         amount,
@@ -130,4 +130,10 @@ fn balance(balance: Query) -> anyhow::Result<Word> {
 
 fn increment_nonce(nonce: Word) -> Word {
     nonce + 1
+}
+
+fn calculate_new_balance(balance: Word, amount: Word) -> anyhow::Result<Word> {
+    balance
+        .checked_add(amount)
+        .ok_or(anyhow::anyhow!("Insufficient balance"))
 }

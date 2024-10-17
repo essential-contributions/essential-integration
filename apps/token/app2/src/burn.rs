@@ -3,12 +3,12 @@ use essential_app_utils::inputs::Encode;
 use essential_sign::secp256k1::ecdsa::RecoverableSignature;
 use essential_types::{
     solution::{Solution, SolutionData},
-    Value, Word,
+    Word,
 };
 
-pub struct Query(pub Option<Value>);
+use crate::Query;
 
-pub struct Account {
+pub struct Init {
     pub hashed_key: [Word; 4],
     pub nonce: Query,
     pub amount: Word,
@@ -30,8 +30,8 @@ pub struct BuildSolution {
 
 pub struct Submit(pub Solution);
 
-pub fn data_to_sign(account: Account) -> anyhow::Result<ToSign> {
-    let Account {
+pub fn data_to_sign(account: Init) -> anyhow::Result<ToSign> {
+    let Init {
         hashed_key,
         nonce: current_nonce,
         amount,

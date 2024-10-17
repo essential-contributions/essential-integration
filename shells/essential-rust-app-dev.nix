@@ -13,6 +13,7 @@
 , stdenv
 , libiconv
 , openssl
+, sqlite
 }:
 mkShell {
   buildInputs = [
@@ -27,6 +28,7 @@ mkShell {
     openssl.dev
     rustc
     cargo
+    sqlite
   ] ++ lib.optionals stdenv.isDarwin [
     darwin.apple_sdk.frameworks.SystemConfiguration
   ];
