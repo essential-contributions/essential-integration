@@ -17,7 +17,25 @@ For those who prefer full control over the setup process, you can opt to build P
 ### Additional Setup
 
 - **Rust Installation**:  
-  To build Pint applications and the CLI, you'll need to have Rust installed. Follow the official Rust installation guide [here](https://www.rust-lang.org/tools/install).
+ 
+    If you don't have Rust and Cargo installed you can follow the instructions [here](https://www.rust-lang.org/tools/install).
+
+    <details>
+    <summary>If you are using Nix you can follow these instructions to get Rust.</summary>
+
+    If you are using `nix` you can simply run the following command to launch a dev shell with all the necessary tools installed:
+    ```bash
+    nix develop github:essential-contributions/essential-integration#dev
+    ```
+
+    Or you can create your own `flake` using:
+    ```bash
+    cd counter
+    nix flake init -t github:essential-contributions/essential-integration
+    nix develop
+    ```
+    </details>
+
   
 - **Syntax Highlighting**:  
   For better development experience, enable Pint syntax highlighting in your code editor. See the [Syntax Highlighting](#syntax-highlighting) section below for more details.
