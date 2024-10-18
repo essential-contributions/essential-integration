@@ -16,9 +16,6 @@ pint build
 cd ../
 
 # Deploy the contract
-# ANCHOR: acc
-essential-deploy-contract create-account "alice"
-# ANCHOR_END: acc
 # ANCHOR: deploy
-essential-deploy-contract deploy "https://server.essential.builders" "alice" "contract/out/debug/counter.json"
+essential-rest-client --node-address "https://bigbangblock.builders" --builder-address "https://bigbangblock.builders" deploy-contract "contract/out/debug/counter.json"
 # ANCHOR_END: deploy

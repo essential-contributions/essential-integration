@@ -1,23 +1,34 @@
-use essential_app_utils::local_server::setup_server;
-use std::path::PathBuf;
-use token::{actions::deploy_app, token::Token};
+use essential_app_utils::{self as utils, compile::compile_pint_project};
+use essential_signer::Signature;
+use essential_types::{convert::word_4_from_u8_32, Word};
+use essential_wallet::Wallet;
+use token::Query;
 
+// Constants for the test
+
+/// The private key for the test account.
 const PRIV_KEY: &str = "128A3D2146A69581FD8FC4C0A9B7A96A5755D85255D4E47F814AFA69D7726C8D";
+/// The name of the token.
 const TOKEN_NAME: &str = "alice coin";
+/// The symbol of the token.
 const TOKEN_SYMBOL: &str = "ALC";
 
 #[tokio::test]
 async fn mint_and_transfer() {
-    let (server_address, _child) = setup_server().await.unwrap();
-    // setup essential wallet
+    // Initialize tracing for better debugging
+    tracing_subscriber::fmt::init();
+
+    // Compile the token contract
+    // This requires `pint` be available on PATH
+    let transfer =
+        compile_pint_project(concat!(env!("CARGO_MANIFEST_DIR"), "/../pint/token").into())
+            .await
+            .unwrap();
+
+    // Create a temporary wallet for testing
     let mut wallet = essential_wallet::Wallet::temp().unwrap();
 
-    // setup deployer account
-    let deployer_name = "deployer".to_string();
-    wallet
-        .new_key_pair(&deployer_name, essential_wallet::Scheme::Secp256k1)
-        .ok();
-
+    // Set up Alice's account
     let alice = "alice";
     let key = hex::decode(PRIV_KEY).unwrap();
     wallet
@@ -29,97 +40,166 @@ async fn mint_and_transfer() {
         )
         .unwrap();
 
-    let alice_pub_key = wallet.get_public_key(alice).unwrap();
-
-    let alice_pub_key = to_hex(&alice_pub_key);
-    println!("alice public key: {}", alice_pub_key);
-
-    let pint_directory = PathBuf::from(concat!(env!("CARGO_MANIFEST_DIR"), "/../pint"));
-
-    deploy_app(
-        server_address.clone(),
-        &mut wallet,
-        &deployer_name,
-        &pint_directory,
-    )
-    .await
-    .unwrap();
-
-    let mut token = Token::new(server_address.clone(), wallet).unwrap();
-
-    // alice mint 800 tokens
+    // Set the initial mint amount and get Alice's hashed key
     let first_mint_amount = 1000000;
+    let alice_hashed_key = hash_key(&mut wallet, alice);
 
-    let _mint_solution_address = token
-        .mint(alice, first_mint_amount, TOKEN_NAME, TOKEN_SYMBOL)
+    // Create new databases for testing
+    let dbs = utils::db::new_dbs().await;
+
+    // Deploy the token contract
+    essential_app_utils::deploy::deploy_contract(&dbs.builder, &transfer)
         .await
         .unwrap();
-    let mut balance = None;
-    while balance.is_none() {
-        println!("{} balance {}", alice, 0);
-        tokio::time::sleep(std::time::Duration::from_secs(1)).await;
-        balance = token.balance(alice).await.unwrap();
-    }
-    println!("{} balance {}", alice, balance.unwrap());
-    assert_eq!(balance.unwrap(), first_mint_amount);
 
-    // alice transfer 500 tokens to bob
-    let bob = "bob";
-    token.create_account(bob).unwrap();
-    let transfer_amount = 500;
-    let _transfer_solution_address = token.transfer(alice, bob, transfer_amount).await.unwrap();
-    let mut alice_balance = balance;
-    while alice_balance == balance {
-        println!("{} balance {}", alice, balance.unwrap());
-        tokio::time::sleep(std::time::Duration::from_secs(1)).await;
-        alice_balance = token.balance(alice).await.unwrap();
-    }
-    println!("{} balance {}", alice, alice_balance.unwrap());
-    let mut bob_balance = None;
-    while bob_balance.is_none() {
-        println!("{} balance {}", bob, 0);
-        tokio::time::sleep(std::time::Duration::from_secs(1)).await;
-        bob_balance = token.balance(bob).await.unwrap();
-    }
-    println!("{} balance {}", bob, bob_balance.unwrap());
-    assert_eq!(alice_balance.unwrap(), first_mint_amount - transfer_amount);
-    assert_eq!(bob_balance.unwrap(), transfer_amount);
+    // Get Alice's nonce key
+    let alice_nonce_key = token::nonce_key(alice_hashed_key);
+    let nonce = utils::node::query_state_head(&dbs.node, &token::token::ADDRESS, &alice_nonce_key)
+        .await
+        .unwrap();
 
-    // alice burn 100 tokens
-    let burn_amount = 100;
-    let _burn_solution_address = token.burn(alice, burn_amount).await.unwrap();
-    let mut alice_new_balance = alice_balance;
-    while alice_new_balance == alice_balance {
-        println!("{} balance {}", alice, alice_balance.unwrap());
-        tokio::time::sleep(std::time::Duration::from_secs(1)).await;
-        alice_new_balance = token.balance(alice).await.unwrap();
-    }
-    println!("{} balance {}", alice, alice_new_balance.unwrap());
-    assert_eq!(
-        alice_new_balance.unwrap(),
-        first_mint_amount - transfer_amount - burn_amount
-    );
-}
-
-fn to_hex(k: &essential_signer::PublicKey) -> String {
-    let k = match k {
-        essential_signer::PublicKey::Secp256k1(k) => k,
-        essential_signer::PublicKey::Ed25519(_) => unreachable!(),
+    // Prepare the mint
+    let init = token::mint::Init {
+        hashed_key: alice_hashed_key,
+        amount: first_mint_amount,
+        decimals: 18,
+        nonce: Query(nonce),
     };
-    let encoded = essential_sign::encode::public_key(k);
-    hex::encode_upper(essential_hash::hash_words(&encoded))
+    let to_sign = token::mint::data_to_sign(init).unwrap();
+    let sig = wallet.sign_words(&to_sign.to_words(), alice).unwrap();
+    let Signature::Secp256k1(sig) = sig else {
+        panic!("Invalid signature")
+    };
+
+    // Get Alice's balance key
+    let alice_balance_key = token::balance_key(alice_hashed_key);
+    let balance =
+        utils::node::query_state_head(&dbs.node, &token::token::ADDRESS, &alice_balance_key)
+            .await
+            .unwrap();
+
+    // Build the mint solution
+    let build_solution = token::mint::BuildSolution {
+        new_nonce: to_sign.new_nonce,
+        current_balance: Query(balance),
+        hashed_key: alice_hashed_key,
+        amount: first_mint_amount,
+        decimals: 18,
+        signature: sig,
+        token_name: TOKEN_NAME.to_string(),
+        token_symbol: TOKEN_SYMBOL.to_string(),
+    };
+    let solution = token::mint::build_solution(build_solution).unwrap();
+
+    // Submit the mint solution
+    utils::builder::submit(&dbs.builder, solution.clone())
+        .await
+        .unwrap();
+
+    // Validate the mint solution
+    utils::node::validate_solution(&dbs.node, solution.clone())
+        .await
+        .unwrap();
+
+    // Build a block
+    let o = utils::builder::build_default(&dbs).await.unwrap();
+    assert!(o.failed.is_empty(), "{:?}", o.failed);
+
+    // Verify Alice's balance after minting
+    let balance =
+        utils::node::query_state_head(&dbs.node, &token::token::ADDRESS, &alice_balance_key)
+            .await
+            .unwrap();
+    assert_eq!(token::balance(Query(balance)).unwrap(), first_mint_amount);
+
+    // Set up Bob's account
+    let bob = "bob";
+    wallet
+        .new_key_pair(bob, essential_wallet::Scheme::Secp256k1)
+        .unwrap();
+
+    // Get Bob's hashed key
+    let bob_hashed_key = hash_key(&mut wallet, bob);
+
+    // Prepare the transfer solution
+    let nonce = utils::node::query_state_head(&dbs.node, &token::token::ADDRESS, &alice_nonce_key)
+        .await
+        .unwrap();
+    let init = token::transfer::Init {
+        hashed_from_key: alice_hashed_key,
+        hashed_to_key: bob_hashed_key,
+        amount: 500,
+        nonce: Query(nonce),
+    };
+
+    // Sign the transfer solution
+    let to_sign = token::transfer::data_to_sign(init).unwrap();
+    let sig = wallet.sign_words(&to_sign.to_words(), alice).unwrap();
+    let Signature::Secp256k1(sig) = sig else {
+        panic!("Invalid signature")
+    };
+
+    // Get current balances for Alice and Bob
+    let from_balance =
+        utils::node::query_state_head(&dbs.node, &token::token::ADDRESS, &alice_balance_key)
+            .await
+            .unwrap();
+
+    let bob_balance_key = token::balance_key(bob_hashed_key);
+    let to_balance =
+        utils::node::query_state_head(&dbs.node, &token::token::ADDRESS, &bob_balance_key)
+            .await
+            .unwrap();
+
+    // Build the transfer solution
+    let solution = token::transfer::BuildSolution {
+        hashed_from_key: alice_hashed_key,
+        hashed_to_key: bob_hashed_key,
+        new_nonce: to_sign.new_nonce,
+        amount: 500,
+        current_from_balance: Query(from_balance),
+        current_to_balance: Query(to_balance),
+        signature: sig,
+    };
+    let solution = token::transfer::build_solution(solution).unwrap();
+
+    // Submit the transfer solution
+    utils::builder::submit(&dbs.builder, solution.clone())
+        .await
+        .unwrap();
+
+    // Validate the transfer solution
+    utils::node::validate_solution(&dbs.node, solution.clone())
+        .await
+        .unwrap();
+    let o = utils::builder::build_default(&dbs).await.unwrap();
+    assert!(o.failed.is_empty(), "{:?}", o.failed);
+
+    // Verify Alice's balance after transfer
+    let balance =
+        utils::node::query_state_head(&dbs.node, &token::token::ADDRESS, &alice_balance_key)
+            .await
+            .unwrap();
+    assert_eq!(
+        token::balance(Query(balance)).unwrap(),
+        first_mint_amount - 500
+    );
+
+    // Verify Bob's balance after transfer
+    let balance =
+        utils::node::query_state_head(&dbs.node, &token::token::ADDRESS, &bob_balance_key)
+            .await
+            .unwrap();
+
+    assert_eq!(token::balance(Query(balance)).unwrap(), 500);
 }
 
-pub fn find_address(predicate: &str, num: usize) -> Option<&str> {
-    predicate
-        .split("0x")
-        .nth(num)
-        .and_then(|s| s.split(&[' ', ')', ',', ']', ';']).next())
-        .map(|s| s.trim())
-}
-
-#[test]
-fn feature() {
-    dbg!(hex::encode_upper(essential_hash::hash(&TOKEN_NAME)));
-    dbg!(hex::encode_upper(essential_hash::hash(&TOKEN_SYMBOL)));
+// Helper function to hash a public key
+fn hash_key(wallet: &mut Wallet, account_name: &str) -> [Word; 4] {
+    let public_key = wallet.get_public_key(account_name).unwrap();
+    let essential_signer::PublicKey::Secp256k1(public_key) = public_key else {
+        panic!("Invalid public key")
+    };
+    let encoded = essential_sign::encode::public_key(&public_key);
+    word_4_from_u8_32(essential_hash::hash_words(&encoded))
 }

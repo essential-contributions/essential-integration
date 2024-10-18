@@ -1,6 +1,5 @@
 # A dev shell providing the essentials for writing pint apps.
 { essential-minimal
-, essential-cli
 , jq
 , mkShell
 , xxd
@@ -23,7 +22,6 @@ mkShell {
   buildInputs = [
     cargo-readme
     essential-minimal
-    essential-cli
     jq
     xxd
     libiconv

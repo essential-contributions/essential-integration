@@ -6,4 +6,3 @@ kind = "contract"
 std = { path = "../../../std" }
 
 [contract-dependencies]
-signed = { path = "../signed" }

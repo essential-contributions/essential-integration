@@ -1,86 +1,106 @@
 
 // ANCHOR: full
 // ANCHOR: use
-use essential_app_utils::{compile::compile_pint_project, local_server::setup_server};
-use counter_app::App;
-use essential_types::{PredicateAddress, Word};
+use counter_app::*;
+use essential_app_utils as utils;
+use essential_app_utils::{
+    compile::compile_pint_project,
+    db::{new_dbs, Dbs},
+};
+use essential_node as node;
+use essential_types::{ContentAddress, PredicateAddress, Word};
 // ANCHOR_END: use
 
 // ANCHOR: test-start
 #[tokio::test]
-async fn test_counter() {
+async fn test() {
 // ANCHOR_END: test-start
-    // ANCHOR: p1
-    // ANCHOR: setup
-    let (addr, _server) = setup_server().await.unwrap();
-    // ANCHOR_END: setup
+    // ANCHOR: addr
+    let counter = compile_pint_project(concat!(env!("CARGO_MANIFEST_DIR"), "/../pint").into())
+        .await
+        .unwrap();
 
-    // ANCHOR: compile
-    let counter = compile_pint_project(
-        concat!(env!("CARGO_MANIFEST_DIR"), "/../contract").into(),
-    )
-    .await
-    .unwrap();
-    // ANCHOR_END: compile
-
-    // ANCHOR: address
     let contract_address = essential_hash::contract_addr::from_contract(&counter);
     let predicate_address = essential_hash::content_addr(&counter.predicates[0]);
     let predicate_address = PredicateAddress {
         contract: contract_address,
         predicate: predicate_address,
     };
-    // ANCHOR_END: address
+    // ANCHOR_END: addr
 
-    // ANCHOR: key
-    let mut wallet = essential_wallet::Wallet::temp().unwrap();
-    wallet
-        .new_key_pair("alice", essential_wallet::Scheme::Secp256k1)
-        .unwrap();
-    // ANCHOR_END: key
+    // ANCHOR: dep
+    let dbs = new_dbs().await;
 
-    // ANCHOR: deploy
-    essential_deploy_contract::sign_and_deploy(addr.clone(), "alice", &mut wallet, counter)
+    // Deploy the contract
+    essential_app_utils::deploy::deploy_contract(&dbs.builder, &counter)
         .await
         .unwrap();
-    // ANCHOR_END: deploy
-    // ANCHOR_END: p1
-
-    // ANCHOR: app
-    let app = App::new(addr, predicate_address).unwrap();
-    // ANCHOR_END: app
+    // ANCHOR_END: dep
 
     // ANCHOR: read
-    assert_eq!(app.read_count().await.unwrap(), 0);
+    let key = counter_key();
+    let count = read_count(&dbs.node, &predicate_address.contract, &key).await;
+    assert_eq!(count, 0);
     // ANCHOR_END: read
 
-    // ANCHOR: inc
-    app.increment().await.unwrap();
-    // ANCHOR_END: inc
+    // ANCHOR: incr
+    let new_count = increment(&dbs, predicate_address.clone()).await;
+    // ANCHOR_END: incr
 
-    // ANCHOR: wait
-    wait_for_change(&app, 1).await;
-    // ANCHOR_END: wait
-    
-    // ANCHOR: inc-again
-    app.increment().await.unwrap();
-    // ANCHOR_END: inc-again
+    // ANCHOR: build
+    let o = utils::builder::build_default(&dbs).await.unwrap();
+    assert_eq!(o.succeeded.len(), 3);
+    assert!(o.failed.is_empty());
 
-    // ANCHOR: wait-again
-    wait_for_change(&app, 2).await;
-    // ANCHOR_END: wait-again
+    let count = read_count(&dbs.node, &predicate_address.contract, &key).await;
+    assert_eq!(count, new_count);
+    // ANCHOR_END: build
+
+    // ANCHOR: comp
+    let _ = increment(&dbs, predicate_address.clone()).await;
+    let expected_new_count = increment(&dbs, predicate_address.clone()).await;
+
+    let count = read_count(&dbs.node, &predicate_address.contract, &key).await;
+    assert_eq!(count, new_count);
+
+    let o = utils::builder::build_default(&dbs).await.unwrap();
+    assert_eq!(o.succeeded.len(), 1);
+
+    let count = read_count(&dbs.node, &predicate_address.contract, &key).await;
+    assert_eq!(count, expected_new_count);
+    // ANCHOR_END: comp
 // ANCHOR: test-end
 }
 // ANCHOR_END: test-end
 
-// ANCHOR: wait-fn
-async fn wait_for_change(app: &App, expected: Word) {
-    loop {
-        if app.read_count().await.unwrap() == expected {
-            break;
-        }
-        tokio::time::sleep(std::time::Duration::from_secs(1)).await;
-    }
+// ANCHOR: read-count
+async fn read_count(
+    conn: &node::db::ConnectionPool,
+    address: &ContentAddress,
+    key: &CounterKey,
+) -> Word {
+    let r = utils::node::query_state_head(conn, address, &key.0)
+        .await
+        .unwrap();
+    extract_count(QueryCount(r)).unwrap()
 }
-// ANCHOR_END: wait-fn
+// ANCHOR_END: read-count
+
+// ANCHOR: inc
+async fn increment(dbs: &Dbs, predicate_address: PredicateAddress) -> Word {
+    let key = counter_key();
+    let current_count = dbs
+        .node
+        .query_state(predicate_address.contract.clone(), key.0)
+        .await
+        .unwrap();
+    let (solution, new_count) =
+        incremented_solution(predicate_address, QueryCount(current_count)).unwrap();
+
+    utils::builder::submit(&dbs.builder, solution)
+        .await
+        .unwrap();
+    new_count
+}
+// ANCHOR_END: inc
 // ANCHOR_END: full

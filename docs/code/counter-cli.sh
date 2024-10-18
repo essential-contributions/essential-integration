@@ -14,7 +14,7 @@ pint build
 front_end_temp_dir=$("$SCRIPT_DIR/front-end.sh" | tail -n 1)
 cd $front_end_temp_dir/counter || exit
 # ANCHOR: main
-cd counter-app || exit
+cd counter-app
 touch src/main.rs
 # ANCHOR_END: main
 cp "$SCRIPT_DIR/counter-main.rs" "$front_end_temp_dir/counter/counter-app/src/main.rs"

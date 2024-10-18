@@ -27,3 +27,8 @@ macro @check_if_predicate_owns($predicate, $key) {
 macro @is_this_predicate($auth_for) {
     constraint $auth_for == { contract: __this_contract_address(), addr: __this_address() };
 }
+
+macro @verify_key($data, $sig, $key) {
+    __sha256(__recover_secp256k1(__sha256($data), $sig)) == $key
+
+}

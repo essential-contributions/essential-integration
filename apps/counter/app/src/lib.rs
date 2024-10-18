@@ -1,64 +1,49 @@
 use anyhow::bail;
-use essential_rest_client::EssentialClient;
 use essential_types::{
     solution::{Mutation, Solution, SolutionData},
-    Key, PredicateAddress, Word,
+    PredicateAddress, Value, Word,
 };
 
+/// The location in storage where the counter is stored.
 const COUNTER_KEY: Word = 0;
 
-pub struct App {
-    client: EssentialClient,
+#[derive(Clone)]
+/// The key used to access the counter in storage.
+pub struct CounterKey(pub Vec<Word>);
+
+#[derive(Clone)]
+/// The data returned when querying the current count.
+pub struct QueryCount(pub Option<Value>);
+
+/// The key used to access the counter in storage.
+pub fn counter_key() -> CounterKey {
+    CounterKey(vec![COUNTER_KEY])
+}
+
+/// Given a query of the current count,
+/// create a new solution that increments the count by one.
+pub fn incremented_solution(
     predicate: PredicateAddress,
-    counter_key: Key,
+    count: QueryCount,
+) -> anyhow::Result<(Solution, Word)> {
+    let count = extract_count(count)?;
+    let new_count = count + 1;
+    Ok((create_solution(predicate, new_count), new_count))
 }
 
-impl App {
-    pub fn new(addr: String, predicate: PredicateAddress) -> anyhow::Result<Self> {
-        let client = EssentialClient::new(addr)?;
-        Ok(Self {
-            client,
-            predicate,
-            counter_key: vec![COUNTER_KEY],
-        })
-    }
-
-    pub fn counter_key(&self) -> &Key {
-        &self.counter_key
-    }
-
-    pub async fn read_count(&self) -> anyhow::Result<Word> {
-        let output = self
-            .client
-            .query_state(&self.predicate.contract, self.counter_key())
-            .await?;
-
-        let count = match &output[..] {
-            [] => 0,
-            [count] => *count,
-            _ => bail!("Expected one word, got: {:?}", output),
-        };
-        Ok(count)
-    }
-
-    pub async fn increment(&self) -> anyhow::Result<Word> {
-        let solution = self.incremented_solution().await?;
-        let count = solution.data[0].state_mutations[0].value[0];
-        self.submit_solution(solution).await?;
-        Ok(count)
-    }
-
-    pub async fn incremented_solution(&self) -> anyhow::Result<Solution> {
-        let count = self.read_count().await?;
-        Ok(create_solution(self.predicate.clone(), count + 1))
-    }
-
-    pub async fn submit_solution(&self, solution: Solution) -> anyhow::Result<()> {
-        self.client.submit_solution(solution).await?;
-        Ok(())
+/// Given a query of the current count, extract the count.
+pub fn extract_count(count: QueryCount) -> anyhow::Result<Word> {
+    match count.0 {
+        Some(count) => match &count[..] {
+            [] => Ok(0),
+            [count] => Ok(*count),
+            _ => bail!("Expected single word, got: {:?}", count),
+        },
+        None => Ok(0),
     }
 }
 
+/// Create a solution that sets the count to a new value.
 pub fn create_solution(predicate: PredicateAddress, new_count: Word) -> Solution {
     Solution {
         data: vec![SolutionData {
