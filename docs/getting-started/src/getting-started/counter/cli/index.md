@@ -1,4 +1,5 @@
 # Rust CLI
-Now that the counter is deployed we need a way to interact with it. \
-We could use `curl` and manually create solutions but that would be cumbersome. \
-Instead we will create a simple CLI in Rust to interact with the counter. This will reuse the functionality you have already written in the app.
+
+After deploying the counter application, you’ll need a way to interact with it. While you could use `curl` to manually create and send solutions, this approach can be inefficient and error-prone.
+
+Instead, we will create a simple Command Line Interface (CLI) in Rust to interact with the counter. This CLI will reuse much of the functionality you've already written in the app and will streamline interactions with the deployed application.
