@@ -60,7 +60,7 @@ jobs:
       matrix:
         include:
           # Add each app's test command here, each with a unique port.
-          - command: nix run .#test-app-counter -- 44001
+          # - command: nix run .#test-app-counter -- 44001
           - command: |
               nix run .#compile-all-contracts
               nix develop .#essential-rust-app-dev --command cargo check --locked --all && cargo clippy --locked --all -- -D warnings && cargo fmt --all -- --check

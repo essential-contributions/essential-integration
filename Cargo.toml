@@ -1,9 +1,9 @@
 [workspace]
 members = [
-    "crates/essential-rest-client",
+    "crates/*",
     "apps/utils",
-    "apps/counter/app",
     "apps/token/app",
+    "apps/counter/app",
 ]
 resolver = "2"
 
