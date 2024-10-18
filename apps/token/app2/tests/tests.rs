@@ -92,10 +92,7 @@ async fn mint_and_transfer() {
         utils::node::query_state_head(&dbs.node, &token::token::ADDRESS, &alice_balance_key)
             .await
             .unwrap();
-    assert_eq!(
-        token::transfer::balance(Query(balance)).unwrap(),
-        first_mint_amount
-    );
+    assert_eq!(token::balance(Query(balance)).unwrap(), first_mint_amount);
 
     let bob = "bob";
     wallet
@@ -159,7 +156,7 @@ async fn mint_and_transfer() {
             .await
             .unwrap();
     assert_eq!(
-        token::transfer::balance(Query(balance)).unwrap(),
+        token::balance(Query(balance)).unwrap(),
         first_mint_amount - 500
     );
 
@@ -168,7 +165,7 @@ async fn mint_and_transfer() {
             .await
             .unwrap();
 
-    assert_eq!(token::transfer::balance(Query(balance)).unwrap(), 500);
+    assert_eq!(token::balance(Query(balance)).unwrap(), 500);
 }
 
 fn hash_key(wallet: &mut Wallet, account_name: &str) -> [Word; 4] {

@@ -1,4 +1,3 @@
-use anyhow::bail;
 use essential_app_utils::inputs::Encode;
 use essential_sign::secp256k1::ecdsa::RecoverableSignature;
 use essential_types::{
@@ -7,7 +6,7 @@ use essential_types::{
     Word,
 };
 
-use crate::Query;
+use crate::{balance, nonce, Query};
 
 pub struct Init {
     pub hashed_key: [Word; 4],
@@ -102,30 +101,6 @@ pub fn build_solution(build: BuildSolution) -> anyhow::Result<Solution> {
     Ok(Solution {
         data: vec![solution],
     })
-}
-
-fn nonce(nonce: Query) -> anyhow::Result<Word> {
-    let r = match nonce.0 {
-        Some(nonce) => match &nonce[..] {
-            [] => 0,
-            [nonce] => *nonce,
-            _ => bail!("Expected single word, got: {:?}", nonce),
-        },
-        None => 0,
-    };
-    Ok(r)
-}
-
-fn balance(balance: Query) -> anyhow::Result<Word> {
-    let r = match balance.0 {
-        Some(balance) => match &balance[..] {
-            [] => 0,
-            [balance] => *balance,
-            _ => bail!("Expected single word, got: {:?}", balance),
-        },
-        None => 0,
-    };
-    Ok(r)
 }
 
 fn increment_nonce(nonce: Word) -> Word {
