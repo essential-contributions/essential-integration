@@ -9,7 +9,7 @@
     - [From source](./getting-started/installation/source.md)
     - [Download binaries](./getting-started/installation/binaries.md)
     - [Syntax highlighting](./getting-started/installation/syntax.md)
-- [Essential server](./getting-started/server.md)
+- [Essential Architecture](./getting-started/architecture.md)
 - [Example Application (Counter)](./getting-started/counter/index.md)
     - [New project](./getting-started/counter/new.md)
     - [Define the storage](./getting-started/counter/storage.md)
