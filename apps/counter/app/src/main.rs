@@ -1,7 +1,8 @@
 use clap::{Args, Parser, Subcommand};
-use counter_app::App;
+use counter_app::{counter_key, extract_count, incremented_solution, CounterKey, QueryCount};
 use essential_app_utils::compile::compile_pint_project;
-use essential_types::PredicateAddress;
+use essential_rest_client::node_client::EssentialNodeClient;
+use essential_types::{ContentAddress, PredicateAddress};
 use std::path::PathBuf;
 
 #[derive(Parser)]
@@ -18,6 +19,8 @@ enum Command {
         server: Shared,
     },
     IncrementCount {
+        /// The address of the builder to connect to.
+        builder_api: String,
         #[command(flatten)]
         server: Shared,
     },
@@ -25,8 +28,8 @@ enum Command {
 
 #[derive(Args)]
 pub struct Shared {
-    /// The address of the server to connect to.
-    pub server: String,
+    /// The address of the node to connect to.
+    pub node_api: String,
     /// The directory containing the pint files.
     pub pint_directory: PathBuf,
 }
@@ -44,29 +47,48 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
     match command {
         Command::ReadCount {
             server: Shared {
-                server,
+                node_api,
                 pint_directory,
             },
         } => {
-            let app = create_app(pint_directory, server).await?;
-            let count = app.read_count().await?;
-            println!("Current count is: {}", count);
+            let address = compile_address(pint_directory).await?;
+            let node = essential_rest_client::node_client::EssentialNodeClient::new(node_api)?;
+            let key = counter_key();
+            let count = query_count(node, address.contract, key).await?;
+            let count_value = extract_count(count)?;
+            println!("Current count is: {}", count_value);
         }
         Command::IncrementCount {
+            builder_api,
             server: Shared {
-                server,
+                node_api,
                 pint_directory,
             },
         } => {
-            let app = create_app(pint_directory, server).await?;
-            let new_count = app.increment().await?;
+            let address = compile_address(pint_directory).await?;
+            let node = essential_rest_client::node_client::EssentialNodeClient::new(node_api)?;
+            let key = counter_key();
+            let count = query_count(node, address.contract.clone(), key).await?;
+            let (solution, new_count) = incremented_solution(address, count)?;
+            let builder =
+                essential_rest_client::builder_client::EssentialBuilderClient::new(builder_api)?;
+            let ca = builder.submit_solution(&solution).await?;
+            println!("Submitted solution: {}", ca);
             println!("Incremented count to: {}", new_count);
         }
     }
     Ok(())
 }
 
-async fn create_app(pint_directory: PathBuf, server: String) -> Result<App, anyhow::Error> {
+async fn query_count(
+    node: EssentialNodeClient,
+    address: ContentAddress,
+    key: CounterKey,
+) -> anyhow::Result<QueryCount> {
+    Ok(QueryCount(node.query_state(address, key.0).await?))
+}
+
+async fn compile_address(pint_directory: PathBuf) -> Result<PredicateAddress, anyhow::Error> {
     let counter = compile_pint_project(pint_directory).await?;
     let contract_address = essential_hash::contract_addr::from_contract(&counter);
     let predicate_address = essential_hash::content_addr(&counter.predicates[0]);
@@ -74,6 +96,5 @@ async fn create_app(pint_directory: PathBuf, server: String) -> Result<App, anyh
         contract: contract_address,
         predicate: predicate_address,
     };
-    let app = App::new(server, predicate_address)?;
-    Ok(app)
+    Ok(predicate_address)
 }

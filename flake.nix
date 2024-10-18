@@ -7,9 +7,16 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     systems.url = "github:nix-systems/default";
 
-    # The essential server.
-    essential-server = {
-      url = "github:essential-contributions/essential-server";
+    # The essential node.
+    essential-node = {
+      url = "github:essential-contributions/essential-node";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.systems.follows = "nixpkgs";
+    };
+    
+    # The essential builder.
+    essential-builder = {
+      url = "github:essential-contributions/essential-builder";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.systems.follows = "nixpkgs";
     };
@@ -44,7 +51,8 @@
   outputs = inputs:
     let
       overlays = [
-        inputs.essential-server.overlays.default
+        inputs.essential-node.overlays.default
+        inputs.essential-builder.overlays.default
         inputs.essential-wallet.overlays.default
         inputs.essential-debugger.overlays.default
         inputs.pint.overlays.default
@@ -59,14 +67,8 @@
     {
       overlays = {
         essential-integration = final: prev: {
-          # CLI utilities.
-          essential-cli = prev.callPackage ./pkgs/essential-cli.nix { };
           # Essential REST client.
           essential-rest-client = prev.callPackage ./pkgs/essential-rest-client.nix { };
-          # Essential deploy contract.
-          essential-deploy-contract = prev.callPackage ./pkgs/essential-deploy-contract.nix { };
-          # Essential dry run.
-          essential-dry-run = prev.callPackage ./pkgs/essential-dry-run.nix { };
           # All essential applications under one package.
           essential-all = final.callPackage ./pkgs/essential-all.nix { };
           # The minimal essential applications under one package.
@@ -86,10 +88,7 @@
       };
 
       packages = perSystemPkgs (pkgs: {
-        essential-cli = pkgs.essential-cli;
         essential-rest-client = pkgs.essential-rest-client;
-        essential-deploy-contract = pkgs.essential-deploy-contract;
-        essential-dry-run = pkgs.essential-dry-run;
         essential-all = pkgs.essential-all;
         essential-minimal = pkgs.essential-minimal;
         test-app-counter = pkgs.test-app-counter;

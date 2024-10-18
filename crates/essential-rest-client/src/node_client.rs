@@ -4,6 +4,7 @@ use reqwest::{Client, ClientBuilder};
 use std::ops::Range;
 
 /// Client that binds to an Essential node address.
+#[derive(Clone)]
 pub struct EssentialNodeClient {
     /// Async reqwest client to make requests with.
     client: Client,

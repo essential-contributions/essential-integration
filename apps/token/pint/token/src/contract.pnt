@@ -4,7 +4,9 @@ use std::lib::@safe_increment;
 use std::lib::@init_once;
 use std::lib::@init_delta;
 use std::lib::@mut_keys;
-use auth::@auth;
+use std::auth::@verify_key;
+use std::lib::Secp256k1Signature;
+use std::auth::@check_if_predicate_owns;
 
 storage {
     // The balances of accounts
@@ -19,14 +21,7 @@ storage {
     decimals: int,
 }
 
-interface Auth {
-    predicate Predicate {
-        // The address that the authorization predicate is outputting.
-        // This points the authorization predicate to an predicate in this set.
-        // By setting this address the authorization can't be used with the wrong predicate.
-        pub var addr: { contract: b256, addr: b256 };
-    }
-}
+union BurnAuth = Signed(Secp256k1Signature) | Predicate(PredicateAddress);
 
 predicate Burn {
     // These are public so that the authorization can check them.
@@ -35,6 +30,9 @@ predicate Burn {
     pub var key: b256;
     // The amount being burnt.
     pub var amount: int;
+
+    // The authorization for the burn.
+    var auth: BurnAuth;
     
     // Read the balance and nonce from storage.
     state balance = mut storage::balances[key];
@@ -52,10 +50,14 @@ predicate Burn {
     // Increment the nonce.
     constraint @safe_increment(nonce);
     
-    // Check the authorization predicate.
-    var auth_addr: PredicateAddress;
-    @auth(key; auth_addr; auth::@burn());
+    // Check the authorization.
+    constraint match auth {
+        BurnAuth::Signed(sig) => @verify_key({key, amount, nonce'}; sig; key),
+        BurnAuth::Predicate(addr) => @check_if_predicate_owns(addr; key),
+    };
 }
+
+union MintAuth = Signed(Secp256k1Signature) | Predicate(PredicateAddress);
 
 predicate Mint {
     // These are public so that the authorization can check them.
@@ -69,6 +71,9 @@ predicate Mint {
     pub var amount: int;
     // The number of decimals for the token.
     pub var decimals: int;
+    
+    // The authorization for the mint.
+    var auth: MintAuth;
 
     // Read all the state that is being initialized.
     state balance = mut storage::balances[key];
@@ -90,10 +95,30 @@ predicate Mint {
     constraint @init_once(token_decimals; decimals);
     constraint @init_once(nonce; 1);
 
-    // Check the authorization predicate.
-    var auth_addr: PredicateAddress;
-    @auth(key; auth_addr; auth::@mint());
+    // Check the authorization.
+    constraint match auth {
+        MintAuth::Signed(sig) => @verify_key({key, amount, decimals, nonce'}; sig; key),
+        MintAuth::Predicate(addr) => @check_if_predicate_owns(addr; key),
+    };
 }
+
+/// The signature mode for the transfer authorization.
+union TransferSignedMode = All | Key | KeyTo | KeyAmount;
+
+/// The signed authorization for the transfer.
+type TransferSignedAuth = { sig: Secp256k1Signature, mode: TransferSignedMode };
+
+/// The authorization mode for the transfer.
+union TransferAuthMode = Signed(TransferSignedAuth) | Predicate(PredicateAddress);
+
+/// The extra constraints for the transfer.
+type Extra = { addr: PredicateAddress, path: int };
+
+/// Optional extra constraints for the transfer.
+union ExtraConstraints = Extra(Extra) | None;
+
+/// The authorization for the transfer.
+type TransferAuth = { mode: TransferAuthMode, extra: ExtraConstraints };
 
 predicate Transfer {
     // These are public so that the authorization can check them.
@@ -104,6 +129,8 @@ predicate Transfer {
     pub var to: b256;
     // The amount being transfered.
     pub var amount: int;
+
+    var auth: TransferAuth;
 
     // Read the balances and nonce from storage.
     state sender_balance = mut storage::balances[key];
@@ -127,13 +154,29 @@ predicate Transfer {
     constraint @safe_increment(nonce);
     
     // Check the authorization predicate.
-    var auth_addr: PredicateAddress;
-    @auth(key; auth_addr; auth::@transfer(); auth::@transfer_with());
+    constraint match auth.mode {
+        TransferAuthMode::Signed(auth) => match auth.mode {
+            TransferSignedMode::All => @verify_key({key, to, amount, nonce'}; auth.sig; key),
+            TransferSignedMode::Key => @verify_key({key, nonce'}; auth.sig; key),
+            TransferSignedMode::KeyTo => @verify_key({key, to, nonce'}; auth.sig; key),
+            TransferSignedMode::KeyAmount => @verify_key({key, amount, nonce'}; auth.sig; key),
+        },
+        TransferAuthMode::Predicate(addr) => @check_if_predicate_owns(addr; key),
+    };
+    constraint match auth.extra {
+        ExtraConstraints::Extra(extra) => __predicate_at(extra.path) == extra.addr,
+        ExtraConstraints::None => true,
+    };
 }
+
+union CancelAuth = Signed(Secp256k1Signature) | Predicate(PredicateAddress);
 
 predicate Cancel {
     // The account that is cancelling a transfer or burn.
     pub var key: b256;
+    
+    // The authorization for the cancel.
+    var auth: CancelAuth;
     
     state nonce = mut storage::nonce[key];
 
@@ -141,7 +184,9 @@ predicate Cancel {
     // burns are invalidated.
     constraint @safe_increment(nonce);
 
-    // Check the authorization predicate.
-    var auth_addr: PredicateAddress;
-    @auth(key; auth_addr; auth::@cancel());
+    // Check the authorization.
+    constraint match auth {
+        CancelAuth::Signed(sig) => @verify_key({key, nonce'}; sig; key),
+        CancelAuth::Predicate(addr) => @check_if_predicate_owns(addr; key),
+    };
 }

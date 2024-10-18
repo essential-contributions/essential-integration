@@ -95,20 +95,6 @@ impl WriteDecVars for Int {
     }
 }
 
-impl WriteDecVars for essential_signer::secp256k1::ecdsa::RecoverableSignature {
-    fn write_dec_var(&self, decision_variables: &mut Vec<Value>) {
-        let sig = essential_sign::encode::signature(self);
-        decision_variables.to_slot(sig);
-    }
-}
-
-impl WriteDecVars for essential_signer::secp256k1::PublicKey {
-    fn write_dec_var(&self, decision_variables: &mut Vec<Value>) {
-        let k = essential_sign::encode::public_key(self);
-        decision_variables.to_slot(k);
-    }
-}
-
 impl WriteDecVars for PredicateAddress {
     fn write_dec_var(&self, decision_variables: &mut Vec<Value>) {
         let mut slot = Vec::new();

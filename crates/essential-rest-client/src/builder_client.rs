@@ -5,6 +5,7 @@ use essential_types::{contract::Contract, solution::Solution, ContentAddress};
 use reqwest::{Client, ClientBuilder};
 
 /// Client that binds to an Essential builder address.
+#[derive(Clone)]
 pub struct EssentialBuilderClient {
     /// Async reqwest client to make requests with.
     client: Client,
