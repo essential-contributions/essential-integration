@@ -111,21 +111,39 @@ async fn main() {
 
 async fn run(cli: Cli) -> anyhow::Result<()> {
     let Cli { wallet, command } = cli;
-    let pass = rpassword::prompt_password("Enter password to unlock wallet: ")?;
-    let mut wallet = match wallet {
-        Some(path) => essential_wallet::Wallet::new(&pass, path)?,
-        None => essential_wallet::Wallet::with_default_path(&pass)?,
+    let wallet = match &command {
+        Command::ExternalBalance(_) => None,
+        _ => {
+            let pass = rpassword::prompt_password("Enter password to unlock wallet: ")?;
+            let wallet = match wallet {
+                Some(path) => essential_wallet::Wallet::new(&pass, path)?,
+                None => essential_wallet::Wallet::with_default_path(&pass)?,
+            };
+            Some(wallet)
+        }
     };
     match command {
         Command::Mint(args) => {
+            println!(
+                "minting {} for account: {}, token name: {}, token symbol: {}",
+                args.amount, args.account, args.token_name, args.token_symbol
+            );
+            let wallet = wallet.unwrap();
             let addr = mint(wallet, args).await?;
             println!("sent mint solution: {}", addr);
         }
         Command::Burn(args) => {
+            println!("burning {} for account: {}", args.amount, args.account);
+            let wallet = wallet.unwrap();
             let addr = burn(wallet, args).await?;
             println!("sent burn solution: {}", addr);
         }
         Command::Transfer(args) => {
+            println!(
+                "transferring {} from account: {} to account: {}",
+                args.amount, args.from_account, args.to_account
+            );
+            let wallet = wallet.unwrap();
             let addr = transfer(wallet, args).await?;
             println!("sent transfer solution: {}", addr);
         }
@@ -135,6 +153,8 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
                 node_api,
                 pint_directory,
             } = args;
+            println!("getting balance for account: {}", account);
+            let mut wallet = wallet.unwrap();
             let hashed_key = hash_key(&mut wallet, &account);
             let balance = get_balance(hashed_key, node_api, pint_directory).await?;
             println!("balance is {}", balance);
@@ -145,6 +165,7 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
                 node_api,
                 pint_directory,
             } = args;
+            println!("getting balance for account: {}", account);
             let hashed_key = word_4_from_u8_32(
                 hex::decode(account)?
                     .try_into()

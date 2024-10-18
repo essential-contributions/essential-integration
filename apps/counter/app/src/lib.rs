@@ -4,13 +4,18 @@ use essential_types::{
     PredicateAddress, Value, Word,
 };
 
+/// The location in storage where the counter is stored.
 const COUNTER_KEY: Word = 0;
 
 #[derive(Clone)]
+/// The key used to access the counter in storage.
 pub struct CounterKey(pub Vec<Word>);
+
 #[derive(Clone)]
+/// The data returned when querying the current count.
 pub struct QueryCount(pub Option<Value>);
 
+/// The key used to access the counter in storage.
 pub fn counter_key() -> CounterKey {
     CounterKey(vec![COUNTER_KEY])
 }

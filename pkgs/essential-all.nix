@@ -13,7 +13,6 @@ symlinkJoin {
     essential-rest-client
     essential-node
     essential-builder
-    essential-dry-run
     essential-wallet
     essential-debugger
     pint
