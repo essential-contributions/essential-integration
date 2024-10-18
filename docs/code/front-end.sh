@@ -19,7 +19,7 @@ find counter -type f -not -path "*/.git/*" -not -path "*/.gitignore"
 cd counter || exit
 
 # ANCHOR: cargo-add
-cd counter-app || exit
+cd counter-app
 cargo add essential-app-utils
 cargo add essential-app-utils --features test-utils --dev
 cargo add essential-deploy-contract

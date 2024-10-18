@@ -1,4 +1,8 @@
 # Commands
+If you have not yet created an essential wallet this will set your password for all keys stored locally in  the wallet. If you have already created a wallet you will need to enter the password you used to create it. If you have forgotten your password you delete the wallet at `~/.essential-wallet`. You will loose any keys you have already created but you can start over with a new password.
+
+> **Warning** [Essential wallet](https://github.com/essential-contributions/essential-wallet?tab=readme-ov-file#warning) is for testing purposes only. Do not use it for production. It has never been audited and should not ever be used to store real value.
+
 Add in a `main.rs` file that will be used to run the counter-app CLI:
 ```bash
 {{#include ../../../../../code/counter-cli.sh:main}}
