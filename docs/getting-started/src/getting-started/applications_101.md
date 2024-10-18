@@ -1,19 +1,46 @@
 # Essential Applications 101
 
-Essential applications at the highest level are composed of `contract`s. Although this terminology will be familiar to developers coming from imperative blockchain languages (e.g. Solidity), a _declarative_ contract is a fundamentally different thing.
+At the core, **Essential applications** are built around `contract`s. If you're familiar with imperative blockchain languages like Solidity, this terminology might sound familiar. However, a **declarative** contract in Essential is fundamentally different from its imperative counterpart.
 
-Imperative "contracts" take a set of inputs, and update state as a side-effect of the execution of a sequence of opcodes over these inputs. In particular, a set of storage opcodes exist which directly act upon state. 
+### The Difference: Imperative vs. Declarative
 
-You may have heard that Essential achieves state updates "_declaratively_"; without the need for execution. This means that from the point of view of an Essential application, things happen in reverse when compared to the imperative approach. We start with a (proposed) atomic state mutation (i.e. a set of proposed new state values), and then substitute those values into a contract to check their validity. A Pint program, then, exists to _validate a given state mutation against a set of predefined rules_. These predefined rules are what make up a Pint contract. 
+In **imperative contracts**, a set of inputs is processed through a sequence of opcodes, which updates the state as a side effect. These contracts often use storage-related opcodes that directly manipulate the state.
 
->We have said that the starting point for an Essential application is a state mutation. You may therefore be wondering where these state mutations come from. Discovery of optimal state mutations (or "solutions") is the responsibility of solvers. A solver may be a third-party entity which competes to find optimal solutions. It may also be simply a centralized program (e.g. a server, or a front-end app or wallet) which serves solutions for a specific application. The techniques solvers use to find optimal solutions (and the mechanism governing their inclusion in blocks) is beyond the scope of this guide. For now, it is sufficient to note that incentivized actors exist in the system to discover these solutions, and that this discovery occurs _off-chain_. We will see a simple solution later in this guide, when we come to test our application.
+However, **Essential applications** operate **declaratively**, meaning that state updates occur without execution. In contrast to the imperative approach, Essential applications work in reverse. We begin with a proposed atomic state mutation — a set of proposed new state values — and then check their validity against a contract. 
 
-A Pint contract _may_ declare a storage block. If it does, this state belongs to that contract. In general, state can only be updated if the new values are validated by the contract which owns it.
+Essentially, a **Pint program** exists to **validate a given state mutation** against predefined rules. These rules form the core of a **Pint contract**.
 
-> Note : a contract does not have to define a storage block. It may simply apply additional constraints to state mutations on other contracts. In this case, both the constraints of this contract _and the constraints contract which owns the state_ must be satisfied for a solution to be valid. 
+---
 
-Validation occurs through the satisfaction of one of the contract's `predicate`s. You can think of predicates as "pathways to validity" for the contract: in order for the contract to be satisfied (and therefore, its state updated), _one_ of its predicates must be satisfied. 
+### State Mutations and Solvers
 
-A predicate is a block of code comprising one or more `constraint`s. A constraint is simply a boolean expression which must evaluate to `True` for the predicate containing it to be satisfied. From a code organization point of view, a `predicate` may look a bit like a function. However, the distinction is very important. A `predicate` is in no sense "called" in the same way a function is. It is simply a target that individual solutions may seek to satisfy. 
+You may be wondering, **where do these state mutations come from?**
 
-In the rest of this guide, we will see these concepts implemented in Pint for a simple counter application.
+- **State mutations** (or "solutions") are discovered by **solvers**.
+- Solvers may be third-party entities competing to find optimal solutions, or they could be centralized programs like servers, front-end apps, or wallets, which provide solutions for specific applications.
+- The techniques used by solvers to discover these solutions, and the mechanism for including them in blocks, are outside the scope of this guide. For now, know that incentivized actors in the system discover these solutions **off-chain**.
+
+Later in this guide, we’ll explore a simple solution when we test our application.
+
+---
+
+### Storage and Contracts
+
+A **Pint contract** may declare a **storage block**. If it does, the contract owns that state, and in general, state updates can only occur if the new values are validated by the contract.
+
+> **Note**: A contract is not required to define a storage block. It may impose additional constraints on state mutations related to other contracts. In such cases, both the constraints of the current contract and the contract owning the state must be satisfied for a solution to be valid.
+
+---
+
+### Predicates and Constraints
+
+Validation of a contract’s state occurs through the satisfaction of one of the contract's **predicates**. 
+
+- Think of **predicates** as "pathways to validity." For a contract to be satisfied (and for its state to be updated), **one** of its predicates must be met.
+- A **predicate** consists of one or more **constraints**. A constraint is a boolean expression that must evaluate to `True` for the predicate to be satisfied.
+
+From a code organization perspective, predicates might look like functions, but there's a key difference: predicates are not **called** like functions. Instead, they are simply targets that individual solutions attempt to satisfy.
+
+---
+
+In the rest of this guide, we will implement these concepts in **Pint** using a simple counter application. You’ll see how contracts, predicates, and constraints come together in practice.
