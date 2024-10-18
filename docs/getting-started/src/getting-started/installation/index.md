@@ -10,9 +10,9 @@ The easiest and most convenient method is to use the [Nix package manager](nix.m
 
 If you want to avoid installing dependencies manually, you can directly download precompiled binaries for your platform. This is the fastest way to get up and running. Access the latest binaries [here](binaries.md).
 
-### 3. **Building from Source**
+### 3. **Installing from crates.io**
 
-For those who prefer full control over the setup process, you can opt to build Pint from the source. This method offers maximum flexibility but requires more setup steps. Detailed instructions for building from source can be found [here](source.md).
+You can install the Essential tools directly from crates.io using Cargo. This method allows you to easily install prebuilt tools, though they are built from source by Cargo. To use this method, ensure you have Cargo installed on your system. Detailed instructions can be found [here](source.md).
 
 ---
 
