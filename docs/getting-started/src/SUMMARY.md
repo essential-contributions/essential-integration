@@ -9,7 +9,7 @@
     - [Predicates and Constraints](./getting-started/applications/predicates_constraints.md)
 - [Installation](./getting-started/installation/index.md)
     - [Nix](./getting-started/installation/nix.md)
-    - [Build from Source](./getting-started/installation/source.md)
+    - [Install from Crates IO](./getting-started/installation/source.md)
     - [Download Binaries](./getting-started/installation/binaries.md)
 - [Essential Architecture](./getting-started/architecture.md)
 - [Example Application (Counter)](./getting-started/counter/index.md)

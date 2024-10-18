@@ -10,7 +10,7 @@ The **Essential Builder** is responsible for block construction within the netwo
 
 ### Node
 
-The **Essential Node** is the backbone of the blockchain network, handling core operations like ledger management, block validation, state synchronization, and peer-to-peer communication. The Node processes and validates transactions while maintaining the integrity and synchronization of the network.
+The **Essential Node** is the backbone of the blockchain network, handling core operations like block validation, state synchronization, and peer-to-peer communication. The Node processes and validates transactions while maintaining the integrity and synchronization of the network.
 
 ### Essential Integration
 
