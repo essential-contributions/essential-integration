@@ -3,8 +3,7 @@ members = [
     "crates/essential-rest-client",
     "apps/utils",
     "apps/counter/app",
-    # "apps/token/app",
-    "apps/token/app2",
+    "apps/token/app",
 ]
 resolver = "2"
 

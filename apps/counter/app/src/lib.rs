@@ -20,6 +20,8 @@ pub fn counter_key() -> CounterKey {
     CounterKey(vec![COUNTER_KEY])
 }
 
+/// Given a query of the current count,
+/// create a new solution that increments the count by one.
 pub fn incremented_solution(
     predicate: PredicateAddress,
     count: QueryCount,
@@ -29,6 +31,7 @@ pub fn incremented_solution(
     Ok((create_solution(predicate, new_count), new_count))
 }
 
+/// Given a query of the current count, extract the count.
 pub fn extract_count(count: QueryCount) -> anyhow::Result<Word> {
     match count.0 {
         Some(count) => match &count[..] {
@@ -40,6 +43,7 @@ pub fn extract_count(count: QueryCount) -> anyhow::Result<Word> {
     }
 }
 
+/// Create a solution that sets the count to a new value.
 pub fn create_solution(predicate: PredicateAddress, new_count: Word) -> Solution {
     Solution {
         data: vec![SolutionData {

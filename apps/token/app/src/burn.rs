@@ -1,3 +1,4 @@
+//! Contains functionality for burning tokens in the token contract.
 use essential_app_utils::inputs::Encode;
 use essential_sign::secp256k1::ecdsa::RecoverableSignature;
 use essential_types::{
@@ -7,28 +8,41 @@ use essential_types::{
 
 use crate::{balance, nonce, Query};
 
+/// Represents the initial data required for burning tokens.
 pub struct Init {
+    /// The hashed key of the account.
     pub hashed_key: [Word; 4],
+    /// The amount of tokens to burn.
+    pub amount: Word,
+    /// The current nonce of the account.
     pub nonce: Query,
-    pub amount: Word,
 }
 
+/// Represents the data to be signed for a burn solutions.
 pub struct ToSign {
+    /// The hashed key of the account.
     pub hashed_key: [Word; 4],
+    /// The amount of tokens to burn.
     pub amount: Word,
+    /// The new nonce of the account.
     pub new_nonce: Word,
 }
 
+/// Contains all necessary information to build a burn solution.
 pub struct BuildSolution {
+    /// The new nonce of the account.
     pub new_nonce: Word,
+    /// The current balance of the account.
     pub current_balance: Query,
+    /// The hashed key of the account.
     pub hashed_key: [Word; 4],
+    /// The amount of tokens to burn.
     pub amount: Word,
+    /// The signature over the data.
     pub signature: RecoverableSignature,
 }
 
-pub struct Submit(pub Solution);
-
+/// Prepares the data to be signed for a burn transaction.
 pub fn data_to_sign(account: Init) -> anyhow::Result<ToSign> {
     let Init {
         hashed_key,
@@ -43,6 +57,7 @@ pub fn data_to_sign(account: Init) -> anyhow::Result<ToSign> {
     })
 }
 
+/// Builds a burn solution based on the provided data.
 pub fn build_solution(build: BuildSolution) -> anyhow::Result<Solution> {
     let BuildSolution {
         new_nonce,
@@ -75,10 +90,12 @@ pub fn build_solution(build: BuildSolution) -> anyhow::Result<Solution> {
     })
 }
 
+/// Increments the nonce by one.
 fn increment_nonce(nonce: Word) -> Word {
     nonce + 1
 }
 
+/// Calculates the new balance after burning tokens.
 fn calculate_from_balance(from_balance: Word, amount: Word) -> anyhow::Result<Word> {
     from_balance
         .checked_sub(amount)
@@ -86,6 +103,7 @@ fn calculate_from_balance(from_balance: Word, amount: Word) -> anyhow::Result<Wo
 }
 
 impl ToSign {
+    /// Converts the ToSign struct to a vector of Words for signing.
     pub fn to_words(&self) -> Vec<Word> {
         self.hashed_key
             .iter()
