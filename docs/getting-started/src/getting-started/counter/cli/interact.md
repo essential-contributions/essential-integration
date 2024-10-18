@@ -1,4 +1,4 @@
-# Interact with server
+# Interact with Server
 Let's try it out!
 
 Simply run your cli with the `read-count` command, the server address and the path to the `contract` directory as follows:

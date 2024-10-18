@@ -12,7 +12,7 @@ pint new --name counter counter/contract
 cp "$SCRIPT_DIR/counter.pnt" "$temp_dir/counter/contract/src/contract.pnt"
 
 # ANCHOR: build
-cd counter/contract || exit
+cd counter/contract
 pint build
 # ANCHOR_END: build
 

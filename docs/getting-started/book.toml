@@ -7,3 +7,6 @@ title = "Getting Started with Essential Applications"
 
 [output.html]
 additional-js = ["theme/pint.js"]
+
+[output.html.fold]
+enable = true

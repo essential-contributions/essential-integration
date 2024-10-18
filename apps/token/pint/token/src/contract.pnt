@@ -103,8 +103,6 @@ predicate Mint {
 }
 
 /// The signature mode for the transfer authorization.
-///
-/// For instance, can use `KeyAmount` to pay the solver, whose address is unknown to the user at sign-time.
 union TransferSignedMode = All | Key | KeyTo | KeyAmount;
 
 /// The signed authorization for the transfer.
