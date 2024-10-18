@@ -16,6 +16,8 @@ Now let's increment the count:
 ```bash
 {{#include ../../../../../code/counter-cli.sh:inc}}
 ```
+The increment-count command requires the builder and nodes api address. They just happen to be the same in this case.
+
 And check the count again:
 ```bash
 {{#include ../../../../../code/counter-cli.sh:read-again}}

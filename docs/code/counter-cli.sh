@@ -20,11 +20,11 @@ touch src/main.rs
 cp "$SCRIPT_DIR/counter-main.rs" "$front_end_temp_dir/counter/counter-app/src/main.rs"
 
 # ANCHOR: read
-cargo run -- read-count "https://server.essential.builders" "../contract"
+cargo run -- read-count "https://bigbangblock.builders" "../contract"
 # ANCHOR_END: read
 # ANCHOR: inc
-cargo run -- increment-count "https://server.essential.builders" "../contract"
+cargo run -- increment-count "https://bigbangblock.builders" "https://bigbangblock.builders" "../contract"
 # ANCHOR_END: inc
 # ANCHOR: read-again
-cargo run -- read-count "https://server.essential.builders" "../contract"
+cargo run -- read-count "https://bigbangblock.builders" "../contract"
 # ANCHOR_END: read-again

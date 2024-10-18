@@ -40,9 +40,9 @@ The ABI for the counter looks like this:
 ```
 Note that yours may look slightly different depending on the version of the compiler you are using.
 
-Now that you have compiled your counter contract you could go ahead and deploy it to the test server at `https://server.essential.builders`.
+Now that you have compiled your counter contract you could go ahead and deploy it to the testnet at `https://bigbangblock.builders`.
 
-To do this you can use the `essential-deploy-contract` tool available in the [essential-integration](https://github.com/essential-contributions/essential-integration) repo.
+To do this you can use the `essential-rest-client` tool available in the [essential-integration](https://github.com/essential-contributions/essential-integration) repo.
 
 It's very possible that someone else has already deployed this contract as contracts are stored via their content hash but don't worry, deploying the same contract twice will not cause any issues.
 

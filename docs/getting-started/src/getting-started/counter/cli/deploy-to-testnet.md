@@ -9,17 +9,7 @@ enter the top level of your project:
 ```
 counter/
 ```
-Now sign and deploy the counter app:
+Now deploy the counter app:
 ```bash
-{{#include ../../../../code/deploy.sh:deploy}}
+{{#include ../../../../../code/deploy.sh:deploy}}
 ```
-You will be prompted with:
-```bash
-Enter password to unlock wallet:
-```
-This is to unlock your wallet so the contract can be signed.
-Then you should see something similar to:
-```
-Deployed contract to: B1D2E4A1CA7822903AF93E9D395ED7037A79AD8E10084BA25E75B18D6C92FAB8
-```
-*The address you see might be different.*
