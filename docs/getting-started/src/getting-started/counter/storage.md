@@ -1,4 +1,4 @@
-# Define the storage
+# Define the Storage
 Define the storage for the counter. \
 The storage is a simple integer that will be incremented by solutions that satisfy the predicate.
 

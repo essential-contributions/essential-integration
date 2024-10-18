@@ -1,4 +1,4 @@
-# Generate address
+# Generate Address
 
 ```rust
 {{#include ../../../../../../code/counter-test.rs:test-start}}

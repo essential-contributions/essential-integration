@@ -1,24 +1,39 @@
-# Create the cargo project
+# Setup Cargo Project
 
-Create a new cargo project by running following command from the root of your counter project:
+In this section, we'll create a new Cargo project to serve as the front-end application for interacting with the counter contract. Follow the steps below to set up your project and include the necessary dependencies.
+
+## Step 1: Create a New Cargo Project
+
+Run the following command from the root directory of your counter project to create a new Cargo project:
 
 ```bash
 {{#include ../../../../../code/front-end.sh:cargo-new}}
 ```
-You project should look like:
+
+Your project structure should now look like this:
+
 ```
-counter/contract/pint.toml
-counter/contract/contract.pnt
-counter/contract/src/contract.pnt
-counter/counter-app/Cargo.toml
-counter/counter-app/src/lib.rs
+counter/
+├── contract/
+│   ├── pint.toml
+│   ├── contract.pnt
+│   └── src/
+│       └── contract.pnt
+└── counter-app/
+    ├── Cargo.toml
+    └── src/
+        └── lib.rs
 ```
-## Dependencies
-Now add the following dependencies to your rust project:
+
+## Step 2: Add Dependencies
+
+Now, add the necessary dependencies to your Rust project by running the following command:
+
 ```bash
 {{#include ../../../../../code/front-end.sh:cargo-add}}
 ```
-Your cargo toml should look something like this:
+
+Your `Cargo.toml` file should now look like this:
 
 ```toml
 [package]
@@ -41,17 +56,29 @@ essential-app-utils = { version = "0.2.0", features = ["test-utils"] }
 essential-wallet = { version = "0.2.0", features = ["test-utils"] }
 ```
 
-## Add a test
-Lastly add a test to your front end application:
+## Step 3: Add a Test
+
+Lastly, add a test to your front-end application by using the following command:
+
 ```bash
 {{#include ../../../../../code/front-end.sh:add-test}}
 ```
-Your project should now look like:
+
+After adding the test, your project structure should look like this:
+
 ```
-counter/contract/pint.toml                        
-counter/contract/contract.pnt                         
-counter/contract/src/contract.pnt                             
-counter/counter-app/Cargo.toml                             
-counter/counter-app/tests/counter.rs                   
-counter/counter-app/src/lib.rs    
+counter/
+├── contract/
+│   ├── pint.toml                        
+│   ├── contract.pnt                         
+│   └── src/
+│       └── contract.pnt                             
+└── counter-app/
+    ├── Cargo.toml                             
+    ├── tests/
+    │   └── counter.rs                   
+    └── src/
+        └── lib.rs    
 ```
+
+At this point, your Rust project is set up with all the necessary dependencies, and a basic test has been added to your front-end application.

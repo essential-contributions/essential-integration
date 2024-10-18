@@ -1,4 +1,4 @@
-# Increment the count
+# Increment Count
 
 ```rust
 {{#include ../../../../../../code/counter-test.rs:test-start}}

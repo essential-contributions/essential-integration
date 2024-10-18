@@ -1,4 +1,4 @@
-# Build a block
+# Build Block
 
 ```rust
 {{#include ../../../../../../code/counter-test.rs:test-start}}

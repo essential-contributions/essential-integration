@@ -1,9 +1,10 @@
-# Create a solution
+# Create Solution
 
-Add this function that takes the predicate address and the count we are trying to set the state to. \
-The solution has a single `SolutionData` that solves this predicate (other solutions may solve multiple predicates). \
-There's no `decision variables` or `transient data` so those are set to default. \
-Add in a single state `Mutation`. The key is the `COUNTER_KEY` and the value is the new count.
+In this step, we will add a function that accepts the predicate address and the desired count for setting the state.
+
+The solution includes a single `SolutionData` that satisfies the given predicate (although other solutions may solve multiple predicates). In this case, there are no `decision variables` or `transient data`, so those fields are set to their defaults.
+
+We will also add a single state `Mutation`, where the key is `COUNTER_KEY` and the value is the new count.
+
 ```rust
 {{#include ../../../../../../code/counter.rs:solution}}
-```

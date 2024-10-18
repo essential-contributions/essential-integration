@@ -1,5 +1,13 @@
-# Counter
-This chapter will take you through the process of creating a simple counter application. \
-The aim is to include every step required to create a working application. \
-We use Rust for our front end in this example but you can use any language you like for your own applications. \
-There is currently better support for Rust due to most `essential` software being written in Rust however we plan to expand this in the future.
+# Example Application: Counter
+
+In this chapter, we will walk you step-by-step through the process of building a simple counter application. This guide is designed to cover every step required to create a fully working application.
+
+### Language Choice
+
+For this example, we will be using **Rust** for the front end. Rust is currently the most supported language for `essential` software, as much of the existing codebase is written in Rust. 
+
+However, you are free to use any programming language of your choice for your own applications. While Rust offers the best support at the moment, we are actively working to extend support for other languages in the future.
+
+---
+
+Follow along with the steps, and feel free to adapt them based on your preferred language or setup.

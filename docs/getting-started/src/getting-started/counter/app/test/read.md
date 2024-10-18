@@ -1,4 +1,4 @@
-# Read the count
+# Read Count
 
 ```rust
 {{#include ../../../../../../code/counter-test.rs:test-start}}

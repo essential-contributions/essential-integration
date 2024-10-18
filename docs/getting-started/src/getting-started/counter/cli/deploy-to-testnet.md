@@ -1,4 +1,4 @@
-# Deploy to testnet
+# Deploy to Testnet
 In this section you will learn how to deploy your counter app to the public testnet builder. The builder is running at `https://bigbangblock.builders`.
 
 Compared to the test this deploys the counter persistently to the testnet. This means that the counter will be available to anyone who knows the contract address.

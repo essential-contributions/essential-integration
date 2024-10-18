@@ -1,4 +1,4 @@
-# Extract count
+# Extract Count
 State will be read using the data from the keys page however state returns an optional vector of words. \
 This is because state can return any size of data including empty. \
 

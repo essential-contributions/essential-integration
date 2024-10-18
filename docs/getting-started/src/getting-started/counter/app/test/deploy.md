@@ -1,4 +1,4 @@
-# Deploy to test builder
+# Deploy to Test Builder
 
 ```rust
 {{#include ../../../../../../code/counter-test.rs:test-start}}
