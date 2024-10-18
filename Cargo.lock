@@ -344,7 +344,6 @@ dependencies = [
  "essential-builder-db",
  "essential-hash 0.4.0",
  "essential-node",
- "essential-node-db 0.3.0",
  "essential-rest-client",
  "essential-types 0.3.0",
  "serde_json",
