@@ -13,7 +13,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.systems.follows = "nixpkgs";
     };
-    
+
     # The essential builder.
     essential-builder = {
       url = "github:essential-contributions/essential-builder";
