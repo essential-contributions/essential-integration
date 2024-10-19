@@ -11,7 +11,7 @@ There are other alternatives [here.](https://nixos.org/download/) \
 You can lean more about Nix [here.](https://nixos.org/)
 
 ## Enter development shell
-This will enter you into a shell with `cargo`, `pint`, `essential-server` and some other things that will be useful for developing your application.
+This will enter you into a shell with `cargo`, `pint`, `essential-builder` and some other things that will be useful for developing your application.
 ```bash
 nix develop github:essential-contributions/essential-integration#dev
 ```

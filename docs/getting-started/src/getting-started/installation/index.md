@@ -6,11 +6,7 @@ To start building Pint applications, you'll need to install a few essential tool
 
 The easiest and most convenient method is to use the [Nix package manager](nix.md). Nix automatically handles dependencies, making setup hassle-free. Follow the instructions in the Nix installation guide to get started.
 
-### 2. **Download Binaries**
-
-If you want to avoid installing dependencies manually, you can directly download precompiled binaries for your platform. This is the fastest way to get up and running. Access the latest binaries [here](binaries.md).
-
-### 3. **Installing from crates.io**
+### 2. **Installing from crates.io**
 
 You can install the Essential tools directly from crates.io using Cargo. This method allows you to easily install prebuilt tools, though they are built from source by Cargo. To use this method, ensure you have Cargo installed on your system. Detailed instructions can be found [here](source.md).
 

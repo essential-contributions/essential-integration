@@ -587,7 +587,7 @@ dependencies = [
 
 [[package]]
 name = "essential-app-utils"
-version = "0.2.0"
+version = "0.4.0"
 dependencies = [
  "anyhow",
  "clap",
@@ -656,9 +656,9 @@ dependencies = [
 
 [[package]]
 name = "essential-builder"
-version = "0.5.0"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0826b3801c5cb65a11d7768af396b615d98250a1d0eeaad91274bc0c2449ccc6"
+checksum = "c768031c9f4aac3d0a0333a797cd02ae2597ca4bc615ed8d0640ff3e84f3d355"
 dependencies = [
  "essential-builder-db",
  "essential-builder-types",
@@ -679,9 +679,9 @@ dependencies = [
 
 [[package]]
 name = "essential-builder-db"
-version = "0.2.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3d2ad3436a4a41ff841bdb63eb9216804e5bae5cea90227174bf32a75bec53d9"
+checksum = "dea7d904ce33d83c4c6b3f0a9b24375999e70e3d548c7a7825e07894c9ad8c39"
 dependencies = [
  "essential-builder-types",
  "essential-hash 0.4.0",
@@ -822,9 +822,9 @@ dependencies = [
 
 [[package]]
 name = "essential-node"
-version = "0.4.0"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e591b5953c41e91fb3145bddc5dfe58107b970ba48d22535745aea002a72acd6"
+checksum = "bbced5cfe87bcf17501e2f3f334a9bf46533099e694fab6c2b6bb663137370c6"
 dependencies = [
  "essential-check",
  "essential-hash 0.4.0",
@@ -844,9 +844,9 @@ dependencies = [
 
 [[package]]
 name = "essential-node-api"
-version = "0.4.0"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7b44ce3f7d67cf94feb2297ce2ee234e39549c2fadc39b08a1c091bd0ad892d0"
+checksum = "e7827525ae3ab15a0b59b1bd7a77f805be08bf06ca819538e8892fd2d78878c1"
 dependencies = [
  "axum",
  "essential-node",
@@ -943,7 +943,7 @@ dependencies = [
 
 [[package]]
 name = "essential-rest-client"
-version = "0.2.0"
+version = "0.4.0"
 dependencies = [
  "anyhow",
  "base64",
@@ -1075,9 +1075,9 @@ dependencies = [
 
 [[package]]
 name = "essential-wallet"
-version = "0.3.0"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a6096337a7fce874d5690d4ba06415f780f4c34eeaf8e8091a67fd467c9f5b82"
+checksum = "b3e0cca18f9706b7cfd3e3cb338b84cae7ba9412ba9ea1c5a819ddfd5f8cfa1e"
 dependencies = [
  "anyhow",
  "clap",

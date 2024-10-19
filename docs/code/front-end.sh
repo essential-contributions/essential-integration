@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 temp_dir=$(mktemp -d)
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -33,7 +35,7 @@ cargo add essential-builder-db --dev
 cargo add essential-node --dev
 # ANCHOR_END: cargo-add
 
-cat Cargo.toml
+cat Cargo.toml > $SCRIPT_DIR/counter-cargo.toml
 
 # ANCHOR: add-test
 mkdir tests

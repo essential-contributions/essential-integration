@@ -36,25 +36,7 @@ Now, add the necessary dependencies to your Rust project by running the followin
 Your `Cargo.toml` file should now look like this:
 
 ```toml
-[package]
-name = "counter-app"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-anyhow = "1.0.89"
-clap = { version = "4.5.18", features = ["derive"] }
-essential-app-utils = "0.2.0"
-essential-hash = "0.4.0"
-essential-rest-client = "0.2.0"
-essential-types = "0.3.0"
-tokio = { version = "1.40.0", features = ["full"] }
-
-[dev-dependencies]
-essential-app-utils = { version = "0.2.0", features = ["test-utils"] }
-essential-builder = { version = "0.5.0" }
-essential-builder-db = { version = "0.2.0" }
-essential-node = { version = "0.4.0" }
+{{#include ../../../../../code/counter-cargo.toml}}
 ```
 
 ## Step 3: Add a Test

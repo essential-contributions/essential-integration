@@ -10,7 +10,6 @@
 - [Installation](./getting-started/installation/index.md)
     - [Nix](./getting-started/installation/nix.md)
     - [Install from Crates IO](./getting-started/installation/source.md)
-    - [Download Binaries](./getting-started/installation/binaries.md)
 - [Essential Architecture](./getting-started/architecture.md)
 - [Example Application (Counter)](./getting-started/counter/index.md)
     - [New project](./getting-started/counter/new.md)
