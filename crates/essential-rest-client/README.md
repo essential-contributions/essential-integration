@@ -18,36 +18,22 @@ This is a Rust library and CLI tool that allows you to easily make rest requests
 
 #### Essential REST Client
 ```
-Usage: essential-rest-client <COMMAND>
+Usage: essential-rest-client <ADDRESS> <COMMAND>
 
 Commands:
-  node     Commands for calling node functions
-  builder  Commands for calling builder functions
-```
-
-#### Commands for Essential Node
-```
-Usage: essential-rest-client node <ADDRESS> <COMMAND>
-
-Commands:
-  list-blocks  List blocks in the given block number range
-  query-state  Query the state of a contract
+  list-blocks                   List blocks in the given block number range
+  query-state                   Query the state of a contract
+  deploy-contract               Deploy a contract
+  submit-solution               Submit a solution
+  latest-solution-failures      Get the latest failures for solution
+  help                          Print this message or the help of the given subcommand(s)
 
 Arguments:
-  <ADDRESS>  The endpoint of node to bind to
-```
+  <ADDRESS>
 
-#### Commands for Essential Builder
-```
-Usage: essential-rest-client builder <ADDRESS> <COMMAND>
-
-Commands:
-  deploy-contract           Deploy a contract
-  submit-solution           Submit a solution
-  latest-solution-failures  Get the latest failures for solution
-
-Arguments:
-  <ADDRESS>  The endpoint of builder to bind to
+Options:
+  -h, --help     Print help
+  -V, --version  Print version
 ```
 
 ## Essential REST Client
