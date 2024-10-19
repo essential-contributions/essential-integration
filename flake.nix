@@ -75,8 +75,6 @@
           essential-minimal = final.callPackage ./pkgs/essential-minimal.nix { };
           # Build cargo readme.
           cargo-readme = final.callPackage ./pkgs/cargo-readme.nix { inherit (inputs) cargo-readme-src; };
-          # All app tests.
-          test-app-counter = final.callPackage ./pkgs/test-app-counter.nix { };
           # The book.
           book = final.callPackage ./pkgs/book.nix { };
           # Pint project compiler.
@@ -91,7 +89,6 @@
         essential-rest-client = pkgs.essential-rest-client;
         essential-all = pkgs.essential-all;
         essential-minimal = pkgs.essential-minimal;
-        test-app-counter = pkgs.test-app-counter;
         book = pkgs.book;
         cargo-readme = pkgs.cargo-readme;
         pint-proj = pkgs.pint-proj;
