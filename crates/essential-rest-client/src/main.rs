@@ -33,7 +33,6 @@ struct NodeCommand {
 #[derive(Parser, Debug)]
 struct BuilderCommand {
     /// The endpoint of builder to bind to.
-    #[arg(long)]
     address: String,
     #[command(subcommand)]
     command: BuilderCommands,
