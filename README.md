@@ -5,6 +5,31 @@
 [![license][apache-badge]][apache-url]
 [![Build Status][actions-badge]][actions-url]
 
+Integration of the Pint constraint language and the Essential protocol.
+
+To learn more about Pint and Essential, check out [the docs][essential-docs].
+
+## Overview
+
+This repo hosts a set of apps that serve as both a test-bed and demonstration
+of how to use the Pint and Essential tooling together to build, deploy and
+solve contracts.
+
+By running these app tests in CI, we ensure a compatible set of Pint and
+Essential tooling versions, while allowing both upstream projects to progress
+at their own pace.
+
+## Rust Apps and ABI-gen
+
+Several of the Rust applications make use of the `pint-abi-gen` crate, which
+generates Rust types and functions from a provided compiled
+`contract-abi.json`. To ensure these contracts are present during development,
+you can run the following command to build all `pint` apps in the repo:
+
+```
+nix run .#compile-all-contracts
+```
+
 [crates-badge]: https://img.shields.io/crates/v/essential-rest-client.svg
 [crates-url]: https://crates.io/crates/essential-rest-client
 [docs-badge]: https://docs.rs/essential-rest-client/badge.svg
@@ -13,67 +38,4 @@
 [apache-url]: LICENSE
 [actions-badge]: https://github.com/essential-contributions/essential-integration/workflows/ci/badge.svg
 [actions-url]:https://github.com/essential-contributions/essential-integration/actions
-
-Integration of the Pint constraint language and the Essential protocol.
-
-## Goals
-
-The goal for this repo is to demonstrate (and test) the process of creating
-end-to-end Essential applications via the command line.
-
-The developer experience can be broken into the following stages:
-
-1. **build**: Write and compile the contract with Pint.
-2. **run sever**: Start an [essential-rest-server](https://github.com/essential-contributions/essential-server/tree/main/crates/rest-server) instance running or use `https://server.essential.builders`.
-2. **sign and deploy**: Sign and deploy the contract to using [essential-deploy-contract](./crates/essential-deploy-contract/README.md).
-4. **solve**: Create a solution and submit it to the `essential-rest-server`,
-   updating the state as a result.
-
-## Language Agnostic Counter App Example
-
-Users should not require any knowledge beyond basic command line tooling to get
-started with Pint and Essential.
-
-In turn, we avoid letting Rust (or any other language besides Pint) leak into
-the repository in order to emulate the experience of writing apps purely using
-CLi tools.
-
-The included Rust `essential-cli` crate contains a few small commands that
-should be extracted from this repo into a more general-use essential tooling
-suite.
-
-## Example Applications
-Both these example applications use [Rust](https://www.rust-lang.org/) as their front end. They are much more in depth then the counter app example. This should give a good idea of how to build a more complex application using the Essential protocol.
-- [NFT](./apps/nft/README.md)
-- [Token](./apps/token/README.md)
-
-## Abi Gen
-When you first clone this repo or change the contracts the abi gen will not have the file it needs to run so rust will not compile the app. To fix this run the following command in the root of the repo.
-```bash
-nix run .#compile-all-contracts
-```
-Or if you are not using nix you can go to the directory of each contract and run the following command.
-```bash
-pint build
-```
-
-## Using Nix
-
-A Nix flake is included providing the `essential-all` package, providing `pint`, `pintc`,
-`pintfmt`, `essential-rest-server` and more. There is also the `essential-minimal` package which contains just the bare minimal requirements to build an application.
-
-1. Install Nix, easiest with the [Determinate Systems installer](https://github.com/DeterminateSystems/nix-installer).
-
-2. Use Nix to enter a shell with the all Essential tools:
-   ```console
-   nix shell git+ssh://git@github.com/essential-contributions/essential-integration
-   ```
-   To include these along with the `jq` and `xxd` tools required to run included
-   test scripts, use:
-   ```console
-   nix develop github:essential-contributions/essential-integration
-   ```
-   or if you have the repo cloned locally, simply `cd` in and use:
-   ```console
-   nix develop
-   ```
+[essential-docs]: https://docs.essential.builders
