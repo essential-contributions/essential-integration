@@ -11,10 +11,6 @@ pub async fn new_dbs() -> Dbs {
         source: node::db::Source::Memory(uuid::Uuid::new_v4().to_string()),
         ..Default::default()
     };
-    // let config = node::db::Config {
-    //     source: node::db::Source::Path(concat!(env!("CARGO_MANIFEST_DIR"), "/db.db").into()),
-    //     ..Default::default()
-    // };
     let node = node::db(&config).unwrap();
     init_node_db(&node).await.unwrap();
     let config = builder_db::pool::Config {
