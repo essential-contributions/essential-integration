@@ -4,4 +4,4 @@ Add the `compile_address` function that compiles the Pint project located in the
 {{#include ../../../../../../code/counter-main.rs:comp}}
 ```
 
-This is used to know which contract and predicate to interact with. We could also just pass the addresses in but generating them is done for convenience.
+This function helps identify which contract and predicate to interact with. While we could simply pass in the addresses directly, generating them here adds convenience and ensures they are correctly derived from the compiled contract.
