@@ -1,6 +1,6 @@
 pub mod addresses;
-pub mod compile;
 pub mod builder;
+pub mod compile;
 pub mod db;
 pub mod deploy;
 pub mod inputs;
