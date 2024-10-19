@@ -11,12 +11,6 @@ use std::{path::PathBuf, str::FromStr};
 #[command(version, about, long_about = None)]
 /// Essential REST Client
 struct Cli {
-    /// The endpoint of node to bind to.
-    #[arg(long)]
-    node_address: Option<String>,
-    /// The endpoint of builder to bind to.
-    #[arg(long)]
-    builder_address: Option<String>,
     #[command(subcommand)]
     commands: Commands,
 }
@@ -24,10 +18,25 @@ struct Cli {
 /// Commands for calling functions.
 #[derive(Subcommand, Debug)]
 enum Commands {
-    #[command(flatten)]
-    Node(NodeCommands),
-    #[command(flatten)]
-    Builder(BuilderCommands),
+    Node(NodeCommand),
+    Builder(BuilderCommand),
+}
+
+#[derive(Parser, Debug)]
+struct NodeCommand {
+    /// The endpoint of node to bind to.
+    address: String,
+    #[command(subcommand)]
+    command: NodeCommands,
+}
+
+#[derive(Parser, Debug)]
+struct BuilderCommand {
+    /// The endpoint of builder to bind to.
+    #[arg(long)]
+    address: String,
+    #[command(subcommand)]
+    command: BuilderCommands,
 }
 
 /// Commands for calling node functions.
@@ -78,66 +87,48 @@ async fn main() {
 }
 
 async fn run(cli: Cli) -> anyhow::Result<()> {
-    let Cli {
-        node_address,
-        builder_address,
-        commands,
-    } = cli;
-    node_address
-        .as_ref()
-        .or(builder_address.as_ref())
-        .ok_or_else(|| {
-            anyhow::anyhow!("No address provided. Please provide either a node or builder address.")
-        })?;
+    let Cli { commands } = cli;
     match commands {
-        Commands::Node(node_command) => {
-            if let Some(node_addr) = node_address {
-                let node_client = EssentialNodeClient::new(node_addr)?;
-                match node_command {
-                    NodeCommands::ListBlocks { range } => {
-                        let output = node_client.list_blocks(range.start..range.end).await?;
-                        println!("{}", serde_json::to_string(&output)?);
-                    }
-                    NodeCommands::QueryState { address, key } => {
-                        let output = node_client
-                            .query_state(address.to_owned(), key.0.to_owned())
-                            .await?;
-                        println!("{}", serde_json::to_string(&output)?);
-                    }
+        Commands::Node(NodeCommand {
+            address,
+            command: node_command,
+        }) => {
+            let node_client = EssentialNodeClient::new(address)?;
+            match node_command {
+                NodeCommands::ListBlocks { range } => {
+                    let output = node_client.list_blocks(range.start..range.end).await?;
+                    println!("{}", serde_json::to_string(&output)?);
                 }
-            } else {
-                return Err(anyhow::anyhow!(
-                    "Please provide a node address to run node commands."
-                ));
+                NodeCommands::QueryState { address, key } => {
+                    let output = node_client
+                        .query_state(address.to_owned(), key.0.to_owned())
+                        .await?;
+                    println!("{}", serde_json::to_string(&output)?);
+                }
             }
         }
-        Commands::Builder(builder_command) => {
-            if let Some(builder_addr) = builder_address {
-                let builder_client = EssentialBuilderClient::new(builder_addr)?;
-                match builder_command {
-                    BuilderCommands::DeployContract { contract } => {
-                        let contract =
-                            serde_json::from_str::<Contract>(&from_file(contract).await?)?;
-                        let output = builder_client.deploy_contract(&contract).await?;
-                        println!("{}", output);
-                    }
-                    BuilderCommands::SubmitSolution { solution } => {
-                        let solution =
-                            serde_json::from_str::<Solution>(&from_file(solution).await?)?;
-                        let output = builder_client.submit_solution(&solution).await?;
-                        println!("{}", output);
-                    }
-                    BuilderCommands::LatestSolutionFailures { address, limit } => {
-                        let output = builder_client
-                            .latest_solution_failures(&address, limit)
-                            .await?;
-                        println!("{}", serde_json::to_string(&output)?);
-                    }
+        Commands::Builder(BuilderCommand {
+            address,
+            command: builder_command,
+        }) => {
+            let builder_client = EssentialBuilderClient::new(address)?;
+            match builder_command {
+                BuilderCommands::DeployContract { contract } => {
+                    let contract = serde_json::from_str::<Contract>(&from_file(contract).await?)?;
+                    let output = builder_client.deploy_contract(&contract).await?;
+                    println!("{}", output);
                 }
-            } else {
-                return Err(anyhow::anyhow!(
-                    "Please provide a builder address to run builder commands."
-                ));
+                BuilderCommands::SubmitSolution { solution } => {
+                    let solution = serde_json::from_str::<Solution>(&from_file(solution).await?)?;
+                    let output = builder_client.submit_solution(&solution).await?;
+                    println!("{}", output);
+                }
+                BuilderCommands::LatestSolutionFailures { address, limit } => {
+                    let output = builder_client
+                        .latest_solution_failures(&address, limit)
+                        .await?;
+                    println!("{}", serde_json::to_string(&output)?);
+                }
             }
         }
     }
