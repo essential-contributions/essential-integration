@@ -37,7 +37,7 @@
             - [Summary](./getting-started/counter/app/test/sum.md)
     - [Rust CLI](./getting-started/counter/cli/index.md)
         - [Deploy to Testnet](./getting-started/counter/cli/deploy-to-testnet.md)
-        - [Cli Program](./getting-started/counter/cli/commands/index.md)
+        - [CLI Program](./getting-started/counter/cli/commands/index.md)
             - [Dependencies](./getting-started/counter/cli/commands/deps.md)
             - [Generate Address](./getting-started/counter/cli/commands/addr.md)
             - [Args](./getting-started/counter/cli/commands/args.md)
