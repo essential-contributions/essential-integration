@@ -7,9 +7,16 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     systems.url = "github:nix-systems/default";
 
-    # The essential server.
-    essential-server = {
-      url = "github:essential-contributions/essential-server";
+    # The essential node.
+    essential-node = {
+      url = "github:essential-contributions/essential-node";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.systems.follows = "nixpkgs";
+    };
+    
+    # The essential builder.
+    essential-builder = {
+      url = "github:essential-contributions/essential-builder";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.systems.follows = "nixpkgs";
     };
@@ -39,7 +46,8 @@
   outputs = inputs:
     let
       overlays = [
-        inputs.essential-server.overlays.default
+        inputs.essential-builder.overlays.default
+        inputs.essential-node.overlays.default
         inputs.essential-wallet.overlays.default
         inputs.essential-integration.overlays.default
         inputs.pint.overlays.default
@@ -60,9 +68,10 @@
       devShells = perSystemPkgs (pkgs: {
         dev = pkgs.mkShell {
           buildInputs = [
-            pkgs.essential-rest-server
+            pkgs.essential-builder
+            pkgs.essential-node
             pkgs.essential-wallet
-            pkgs.essential-deploy-contract
+            pkgs.essential-rest-client
             pkgs.pint
             pkgs.clippy
             pkgs.rqlite
