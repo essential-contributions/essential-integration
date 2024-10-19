@@ -20,16 +20,17 @@ cd counter || exit
 
 # ANCHOR: cargo-add
 cd counter-app
+cargo add anyhow
+cargo add clap --features derive
 cargo add essential-app-utils
-cargo add essential-app-utils --features test-utils --dev
-cargo add essential-deploy-contract
 cargo add essential-hash
 cargo add essential-rest-client
 cargo add essential-types
-cargo add essential-wallet --features test-utils --dev
-cargo add anyhow
 cargo add tokio --features full
-cargo add clap --features derive
+cargo add essential-app-utils --features test-utils --dev
+cargo add essential-builder --dev
+cargo add essential-builder-db --dev
+cargo add essential-node --dev
 # ANCHOR_END: cargo-add
 
 cat Cargo.toml
