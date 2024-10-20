@@ -18,18 +18,15 @@ This is a Rust library and CLI tool that allows you to easily make rest requests
 
 #### Essential REST Client
 ```
-Usage: essential-rest-client <ADDRESS> <COMMAND>
+Usage: essential-rest-client <COMMAND>
 
 Commands:
-  list-blocks                   List blocks in the given block number range
-  query-state                   Query the state of a contract
-  deploy-contract               Deploy a contract
-  submit-solution               Submit a solution
-  latest-solution-failures      Get the latest failures for solution
-  help                          Print this message or the help of the given subcommand(s)
-
-Arguments:
-  <ADDRESS>
+  list-blocks                     List blocks in the given block number range
+  query-state                     Query the state of a contract
+  deploy-contract                 Deploy a contract
+  submit-solution                 Submit a solution
+  latest-solution-failures        Get the latest failures for solution
+  help                            Print this message or the help of the given subcommand(s)
 
 Options:
   -h, --help     Print help

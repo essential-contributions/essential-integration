@@ -22,14 +22,14 @@ The **Essential Integration** includes the **Essential REST Client**, which prov
 #### Essential REST Client Usage
 
 ``` bash
-Usage: essential-rest-client <ADDRESS_OF_NODE_OR_BUILDER> <COMMAND>
+Usage: essential-rest-client <COMMAND>
 
 Commands:
-  list-blocks                   List blocks in the given block number range
-  query-state                   Query the state of a contract
-  deploy-contract               Deploy a contract
-  submit-solution               Submit a solution
-  latest-solution-failures      Get the latest failures for solution
+  list-blocks                     List blocks in the given block number range
+  query-state                     Query the state of a contract
+  deploy-contract                 Deploy a contract
+  submit-solution                 Submit a solution
+  latest-solution-failures        Get the latest failures for solution
 ```
 
 This client simplifies interactions with the blockchain, offering key functionality for querying state and managing solutions.
