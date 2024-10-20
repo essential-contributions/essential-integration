@@ -13,7 +13,6 @@ use std::{path::PathBuf, str::FromStr};
 struct Cli {
     #[command(subcommand)]
     command: Command,
-    address: String,
 }
 
 /// Commands for calling functions.
@@ -21,11 +20,15 @@ struct Cli {
 enum Command {
     /// List blocks in the given block number range.
     ListBlocks {
+        /// The endpoint of node to bind to.
+        node_address: String,
         /// Range of block number of blocks to list, end of range exclusive.
         range: BlockRange,
     },
     /// Query the state of a contract.
     QueryState {
+        /// The endpoint of node to bind to.
+        node_address: String,
         /// Address of the contract to query, encoded as hex.
         #[arg(short, long)]
         content_address: ContentAddress,
@@ -34,16 +37,22 @@ enum Command {
     },
     /// Deploy a contract.
     DeployContract {
+        /// The endpoint of builder to bind to.
+        builder_address: String,
         /// Path to the contract file as a json `Contract`.
         contract: PathBuf,
     },
     /// Submit a solution.
     SubmitSolution {
+        /// The endpoint of builder to bind to.
+        builder_address: String,
         /// Path to the solution file as a json `Solution`.
         solution: PathBuf,
     },
     /// Get the latest failures for solution.
     LatestSolutionFailures {
+        /// The endpoint of builder to bind to.
+        builder_address: String,
         /// The content address of the solution.
         #[arg(short, long)]
         content_address: ContentAddress,
@@ -61,40 +70,51 @@ async fn main() {
 }
 
 async fn run(cli: Cli) -> anyhow::Result<()> {
-    let Cli { command, address } = cli;
+    let Cli { command } = cli;
     match command {
-        Command::ListBlocks { range } => {
-            let node_client = EssentialNodeClient::new(address)?;
+        Command::ListBlocks {
+            node_address,
+            range,
+        } => {
+            let node_client = EssentialNodeClient::new(node_address)?;
             let output = node_client.list_blocks(range.start..range.end).await?;
             println!("{}", serde_json::to_string(&output)?);
         }
         Command::QueryState {
+            node_address,
             content_address,
             key,
         } => {
-            let node_client = EssentialNodeClient::new(address)?;
+            let node_client = EssentialNodeClient::new(node_address)?;
             let output = node_client
                 .query_state(content_address.to_owned(), key.0.to_owned())
                 .await?;
             println!("{}", serde_json::to_string(&output)?);
         }
-        Command::DeployContract { contract } => {
-            let builder_client = EssentialBuilderClient::new(address)?;
+        Command::DeployContract {
+            builder_address,
+            contract,
+        } => {
+            let builder_client = EssentialBuilderClient::new(builder_address)?;
             let contract = serde_json::from_str::<Contract>(&from_file(contract).await?)?;
             let output = builder_client.deploy_contract(&contract).await?;
             println!("{}", output);
         }
-        Command::SubmitSolution { solution } => {
-            let builder_client = EssentialBuilderClient::new(address)?;
+        Command::SubmitSolution {
+            builder_address,
+            solution,
+        } => {
+            let builder_client = EssentialBuilderClient::new(builder_address)?;
             let solution = serde_json::from_str::<Solution>(&from_file(solution).await?)?;
             let output = builder_client.submit_solution(&solution).await?;
             println!("{}", output);
         }
         Command::LatestSolutionFailures {
+            builder_address,
             content_address,
             limit,
         } => {
-            let builder_client = EssentialBuilderClient::new(address)?;
+            let builder_client = EssentialBuilderClient::new(builder_address)?;
             let output = builder_client
                 .latest_solution_failures(&content_address, limit)
                 .await?;
