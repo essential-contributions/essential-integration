@@ -16,6 +16,7 @@
 , sqlite
 }:
 mkShell {
+  OPENSSL_NO_VENDOR = 1;
   buildInputs = [
     essential-minimal
     libiconv

@@ -1,4 +1,5 @@
 use std::lib::PredicateAddress;
+use std::lib::Instance;
 use std::lib::@delta;
 use std::lib::@safe_increment;
 use std::lib::@init_once;
@@ -21,7 +22,7 @@ storage {
     decimals: int,
 }
 
-union BurnAuth = Signed(Secp256k1Signature) | Predicate(PredicateAddress);
+union BurnAuth = Signed(Secp256k1Signature) | Predicate(Instance);
 
 predicate Burn {
     // These are public so that the authorization can check them.
@@ -53,11 +54,11 @@ predicate Burn {
     // Check the authorization.
     constraint match auth {
         BurnAuth::Signed(sig) => @verify_key({key, amount, nonce'}; sig; key),
-        BurnAuth::Predicate(addr) => @check_if_predicate_owns(addr; key),
+        BurnAuth::Predicate(instance) => @check_if_predicate_owns(instance; key),
     };
 }
 
-union MintAuth = Signed(Secp256k1Signature) | Predicate(PredicateAddress);
+union MintAuth = Signed(Secp256k1Signature) | Predicate(Instance);
 
 predicate Mint {
     // These are public so that the authorization can check them.
@@ -98,7 +99,7 @@ predicate Mint {
     // Check the authorization.
     constraint match auth {
         MintAuth::Signed(sig) => @verify_key({key, amount, decimals, nonce'}; sig; key),
-        MintAuth::Predicate(addr) => @check_if_predicate_owns(addr; key),
+        MintAuth::Predicate(instance) => @check_if_predicate_owns(instance; key),
     };
 }
 
@@ -111,7 +112,7 @@ union TransferSignedMode = All | Key | KeyTo | KeyAmount;
 type TransferSignedAuth = { sig: Secp256k1Signature, mode: TransferSignedMode };
 
 /// The authorization mode for the transfer.
-union TransferAuthMode = Signed(TransferSignedAuth) | Predicate(PredicateAddress);
+union TransferAuthMode = Signed(TransferSignedAuth) | Predicate(Instance);
 
 /// The extra constraints for the transfer.
 type Extra = { addr: PredicateAddress, path: int };
@@ -163,7 +164,7 @@ predicate Transfer {
             TransferSignedMode::KeyTo => @verify_key({key, to, nonce'}; auth.sig; key),
             TransferSignedMode::KeyAmount => @verify_key({key, amount, nonce'}; auth.sig; key),
         },
-        TransferAuthMode::Predicate(addr) => @check_if_predicate_owns(addr; key),
+        TransferAuthMode::Predicate(instance) => @check_if_predicate_owns(instance; key),
     };
     constraint match auth.extra {
         ExtraConstraints::Extra(extra) => __predicate_at(extra.path) == extra.addr,
@@ -171,7 +172,7 @@ predicate Transfer {
     };
 }
 
-union CancelAuth = Signed(Secp256k1Signature) | Predicate(PredicateAddress);
+union CancelAuth = Signed(Secp256k1Signature) | Predicate(Instance);
 
 predicate Cancel {
     // The account that is cancelling a transfer or burn.
@@ -189,6 +190,6 @@ predicate Cancel {
     // Check the authorization.
     constraint match auth {
         CancelAuth::Signed(sig) => @verify_key({key, nonce'}; sig; key),
-        CancelAuth::Predicate(addr) => @check_if_predicate_owns(addr; key),
+        CancelAuth::Predicate(instance) => @check_if_predicate_owns(instance; key),
     };
 }

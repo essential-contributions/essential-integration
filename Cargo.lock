@@ -656,9 +656,9 @@ dependencies = [
 
 [[package]]
 name = "essential-builder"
-version = "0.7.0"
+version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c768031c9f4aac3d0a0333a797cd02ae2597ca4bc615ed8d0640ff3e84f3d355"
+checksum = "aac808c4b62c517a3dff5903adb5351b8b5f5be145401d32120af11123f737c4"
 dependencies = [
  "essential-builder-db",
  "essential-builder-types",
@@ -679,9 +679,9 @@ dependencies = [
 
 [[package]]
 name = "essential-builder-db"
-version = "0.3.0"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dea7d904ce33d83c4c6b3f0a9b24375999e70e3d548c7a7825e07894c9ad8c39"
+checksum = "d2e82ca085e1b7e19aa0285acda4a744929f0dc9d336763ac5bed4ce877d83e4"
 dependencies = [
  "essential-builder-types",
  "essential-hash 0.4.0",
@@ -822,9 +822,9 @@ dependencies = [
 
 [[package]]
 name = "essential-node"
-version = "0.6.0"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bbced5cfe87bcf17501e2f3f334a9bf46533099e694fab6c2b6bb663137370c6"
+checksum = "d1e0fb3f50c15f9c030ff43c36435e51ed54818d1c66db812c71165b90e5e500"
 dependencies = [
  "essential-check",
  "essential-hash 0.4.0",
@@ -844,9 +844,9 @@ dependencies = [
 
 [[package]]
 name = "essential-node-api"
-version = "0.6.0"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e7827525ae3ab15a0b59b1bd7a77f805be08bf06ca819538e8892fd2d78878c1"
+checksum = "b8f7dc532f35f2aece39f0405c4860e086221f2ec61b0232592f8aa637b84290"
 dependencies = [
  "axum",
  "essential-node",
