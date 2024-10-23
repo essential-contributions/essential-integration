@@ -4,7 +4,9 @@ use essential_types::{solution::Solution, ContentAddress};
 use crate::db::Dbs;
 
 pub async fn build_default(dbs: &Dbs) -> Result<SolutionsSummary, BuildBlockError> {
-    essential_builder::build_block_fifo(&dbs.builder, &dbs.node, &Default::default()).await
+    essential_builder::build_block_fifo(&dbs.builder, &dbs.node, &Default::default())
+        .await
+        .map(|(_, o)| o)
 }
 
 pub async fn submit(

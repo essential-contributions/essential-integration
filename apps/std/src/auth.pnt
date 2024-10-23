@@ -20,7 +20,7 @@ macro @check_if_predicate_in_allow_list($predicate, $allowed_predicate) {
 // Check if the hash of the predicate address is equal to the key.
 // If so then this predicate owns the key.
 macro @check_if_predicate_owns($predicate, $key) {
-    __sha256($predicate) == $key
+    __sha256($predicate.addr) == $key && __predicate_at($predicate.pathway) == $predicate.addr
 }
 
 // Check if the authorization predicate is meant for this predicate.
