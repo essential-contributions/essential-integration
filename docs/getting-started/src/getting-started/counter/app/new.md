@@ -52,16 +52,16 @@ After adding the test, your project structure should look like this:
 ```
 counter/
 ├── contract/
-│   ├── pint.toml                        
-│   ├── contract.pnt                         
+│   ├── pint.toml
+│   ├── contract.pnt
 │   └── src/
-│       └── contract.pnt                             
+│       └── contract.pnt
 └── counter-app/
-    ├── Cargo.toml                             
+    ├── Cargo.toml
     ├── tests/
-    │   └── counter.rs                   
+    │   └── counter.rs
     └── src/
-        └── lib.rs    
+        └── lib.rs
 ```
 
 At this point, your Rust project is set up with all the necessary dependencies, and a basic test has been added to your front-end application.

@@ -1,7 +1,10 @@
 # Essential Architecture
+
 ---
+
 > **Note:**  
 > While efforts are made to maintain the Builder / Node state, schema changes may require wiping the database, resulting in a reset of stored data.
+
 ---
 
 ### Builder
@@ -18,27 +21,16 @@ The **Essential Integration** includes the **Essential REST Client**, which prov
 
 #### Essential REST Client Usage
 
-```bash
-essential-rest-client [NODE_ADDRESS] [BUILDER_ADDRESS] <COMMAND>
+``` bash
+Usage: essential-rest-client <COMMAND>
+
+Commands:
+  list-blocks                     List blocks in the given block number range
+  query-state                     Query the state of a contract
+  deploy-contract                 Deploy a contract
+  submit-solution                 Submit a solution
+  latest-solution-failures        Get the latest failures for solution
 ```
-
-#### Commands:
-
-- **Node Commands**:
-    - `get-contract`: Retrieve a contract.
-    - `get-predicate`: Fetch a predicate.
-    - `list-blocks`: List blocks within a range.
-    - `list-contracts`: List contracts in a block range.
-    - `query-state`: Query the state at a contract address and key.
-  
-- **Builder Commands**:
-    - `submit-solution`: Submit a solution for validation.
-    - `latest-solution-failures`: Get the latest solution failures.
-
-#### Arguments:
-
-- `[NODE_ADDRESS]`: Optional Node address.
-- `[BUILDER_ADDRESS]`: Optional Builder address.
 
 This client simplifies interactions with the blockchain, offering key functionality for querying state and managing solutions.
 
