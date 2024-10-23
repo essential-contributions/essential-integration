@@ -14,6 +14,7 @@
 , libiconv
 , openssl
 , sqlite
+, pkg-config
 }:
 mkShell {
   OPENSSL_NO_VENDOR = 1;
@@ -30,6 +31,7 @@ mkShell {
     rustc
     cargo
     sqlite
+    pkg-config
   ] ++ lib.optionals stdenv.isDarwin [
     darwin.apple_sdk.frameworks.SystemConfiguration
   ];
