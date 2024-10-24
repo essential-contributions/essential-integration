@@ -13,6 +13,7 @@ use tokio::process::{Command as TokioCommand, Child};
 use tokio::time::{sleep, Duration};
 
 const PINT_DIRECTORY: &str = "../pint";
+const BLOCK_TIME: u64 = 5;
 
 #[tokio::test]
 async fn builder_integration() {
@@ -30,10 +31,19 @@ async fn builder_integration() {
     let returned_count = increment_count(builder_address.clone(), node_address.clone(), PINT_DIRECTORY).await;
     assert_eq!(returned_count, 1);
 
-    sleep(Duration::from_secs(5)).await;
+    sleep(Duration::from_secs(BLOCK_TIME)).await;
 
     let new_count = read_count(node_address.clone(), PINT_DIRECTORY).await;
     assert_eq!(new_count, returned_count);
+
+    let count = new_count;
+    let _ = increment_count(builder_address.clone(), node_address.clone(), PINT_DIRECTORY).await;
+
+    sleep(Duration::from_secs(BLOCK_TIME)).await;
+
+    let new_count = read_count(node_address.clone(), PINT_DIRECTORY).await;
+
+    assert_eq!(new_count, count + 1);
 
     builder_process
         .kill()
