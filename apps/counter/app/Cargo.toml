@@ -11,6 +11,7 @@ essential-app-utils.workspace = true
 essential-hash.workspace = true
 essential-rest-client.workspace = true
 essential-types.workspace = true
+regex = "1.11.1"
 tokio.workspace = true
 
 [dev-dependencies]
