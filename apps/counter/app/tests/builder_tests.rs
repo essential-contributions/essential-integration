@@ -16,16 +16,14 @@ async fn builder_integration() {
         .await
         .unwrap();
 
-    sleep(Duration::from_secs(1)).await;
-
     deploy_contract(builder_address.clone()).await;
 
     let count = read_count(node_address.clone(), PINT_DIRECTORY).await;
     assert_eq!(count, 0);
 
     let returned_count = increment_count(
-        builder_address.clone(),
         node_address.clone(),
+        builder_address.clone(),
         PINT_DIRECTORY,
     )
     .await;
@@ -36,8 +34,8 @@ async fn builder_integration() {
 
     let count = new_count;
     let _ = increment_count(
-        builder_address.clone(),
         node_address.clone(),
+        builder_address.clone(),
         PINT_DIRECTORY,
     )
     .await;
@@ -76,8 +74,8 @@ async fn read_count(node_address: String, pint_directory: &str) -> u32 {
 }
 
 async fn increment_count(
-    builder_address: String,
     node_address: String,
+    builder_address: String,
     pint_directory: &str,
 ) -> u32 {
     let increment_output = TokioCommand::new("cargo")
@@ -85,8 +83,8 @@ async fn increment_count(
             "run",
             "--",
             "increment-count",
-            &format!("http://{}", builder_address.as_str()),
             &format!("http://{}", node_address.as_str()),
+            &format!("http://{}", builder_address.as_str()),
             pint_directory,
         ])
         .output()
