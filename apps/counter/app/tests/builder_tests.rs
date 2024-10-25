@@ -17,7 +17,7 @@ const BLOCK_TIME: u64 = 5;
 
 #[tokio::test]
 async fn builder_integration() {
-    let (mut builder_process, node_address, builder_address) = start_essential_builder().await;
+    let (mut _builder_process, node_address, builder_address) = start_essential_builder().await;
 
     let _ = compile_pint_project(concat!(env!("CARGO_MANIFEST_DIR"), "/../pint").into())
         .await
@@ -45,10 +45,10 @@ async fn builder_integration() {
 
     assert_eq!(new_count, count + 1);
 
-    builder_process
-        .kill()
-        .await
-        .expect("Failed to kill builder process");
+    // builder_process
+    //     .kill()
+    //     .await
+    //     .expect("Failed to kill builder process");
 }
 
 async fn read_count(node_address: String, pint_directory: &str) -> u32 {
@@ -119,6 +119,7 @@ async fn start_essential_builder() -> (Child, String, String) {
         .arg("--state-derivation")
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
+        .kill_on_drop(true)
         .spawn()
         .expect("Failed to start essential-builder");
 
@@ -174,3 +175,5 @@ async fn deploy_contract(node_address: String, builder_address: String, pint_dir
     let stderr_str = String::from_utf8(deploy_output.stderr).expect("Failed to parse stderr");
     println!("deploy stderr: {}", stderr_str);
 }
+
+// ps aux
