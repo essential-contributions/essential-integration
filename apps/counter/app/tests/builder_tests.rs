@@ -4,7 +4,6 @@ use regex::Regex;
 use std::process::Stdio;
 use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::process::{Child, Command as TokioCommand};
-use tokio::time::{sleep, Duration};
 
 const PINT_DIRECTORY: &str = "../pint";
 
