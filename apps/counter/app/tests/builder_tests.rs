@@ -1,10 +1,4 @@
-// use counter_app::*;
-// use essential_app_utils as utils;
-use essential_app_utils::{
-    compile::compile_pint_project,
-    // db::{new_dbs, Dbs},
-};
-// use essential_types::{ContentAddress, PredicateAddress, Word};
+use essential_app_utils::compile::compile_pint_project;
 
 use regex::Regex;
 use std::process::Stdio;
@@ -13,22 +7,18 @@ use tokio::process::{Child, Command as TokioCommand};
 use tokio::time::{sleep, Duration};
 
 const PINT_DIRECTORY: &str = "../pint";
-const BLOCK_TIME: u64 = 5;
 
 #[tokio::test]
 async fn builder_integration() {
-    let (mut _builder_process, node_address, builder_address) = start_essential_builder().await;
+    let (_builder_process, node_address, builder_address) = start_essential_builder().await;
 
     let _ = compile_pint_project(concat!(env!("CARGO_MANIFEST_DIR"), "/../pint").into())
         .await
         .unwrap();
+
     sleep(Duration::from_secs(1)).await;
-    deploy_contract(
-        node_address.clone(),
-        builder_address.clone(),
-        String::from(PINT_DIRECTORY),
-    )
-    .await;
+
+    deploy_contract(builder_address.clone()).await;
 
     let count = read_count(node_address.clone(), PINT_DIRECTORY).await;
     assert_eq!(count, 0);
@@ -41,8 +31,6 @@ async fn builder_integration() {
     .await;
     assert_eq!(returned_count, 1);
 
-    sleep(Duration::from_secs(BLOCK_TIME)).await;
-
     let new_count = read_count(node_address.clone(), PINT_DIRECTORY).await;
     assert_eq!(new_count, returned_count);
 
@@ -54,16 +42,9 @@ async fn builder_integration() {
     )
     .await;
 
-    sleep(Duration::from_secs(BLOCK_TIME)).await;
-
     let new_count = read_count(node_address.clone(), PINT_DIRECTORY).await;
 
     assert_eq!(new_count, count + 1);
-
-    // builder_process
-    //     .kill()
-    //     .await
-    //     .expect("Failed to kill builder process");
 }
 
 async fn read_count(node_address: String, pint_directory: &str) -> u32 {
@@ -82,10 +63,8 @@ async fn read_count(node_address: String, pint_directory: &str) -> u32 {
     assert!(read_output.status.success(), "Command failed to run");
 
     let stdout_str = String::from_utf8(read_output.stdout).expect("Failed to parse stdout");
-    println!("stdout: {}", stdout_str);
 
-    let stderr_str = String::from_utf8(read_output.stderr).expect("Failed to parse stderr");
-    println!("read stderr: {}", stderr_str);
+    let _stderr_str = String::from_utf8(read_output.stderr).expect("Failed to parse stderr");
 
     let count = stdout_str
         .split_whitespace()
@@ -116,12 +95,10 @@ async fn increment_count(
 
     // Read stdout
     let stdout_str = String::from_utf8(increment_output.stdout).expect("Failed to parse stdout");
-    println!("stdout: {}", stdout_str);
 
-    let stderr_str = String::from_utf8(increment_output.stderr).expect("Failed to parse stderr");
-    println!("increment stderr: {}", stderr_str);
+    let _stderr_str = String::from_utf8(increment_output.stderr).expect("Failed to parse stderr");
 
-    // Regular expression to capture the number
+    // Regular expression to capture the new number
     let regx_new_count = Regex::new(r"Incremented count to: (\d+)").unwrap();
     let mut new_count = 0;
 
@@ -133,8 +110,10 @@ async fn increment_count(
 }
 
 async fn start_essential_builder() -> (Child, String, String) {
-    // Start the essential-builder process with --state-derivation flag
     let mut builder_process = TokioCommand::new("essential-builder")
+        .arg("--block-interval-ms")
+        .arg("100")
+        // @todo can we remove ?
         .arg("--state-derivation")
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -172,7 +151,7 @@ async fn start_essential_builder() -> (Child, String, String) {
     (builder_process, node_address, builder_address)
 }
 
-async fn deploy_contract(node_address: String, builder_address: String, pint_directory: String) {
+async fn deploy_contract(builder_address: String) {
     let deploy_output = TokioCommand::new("essential-rest-client")
         .args(&[
             "deploy-contract",
@@ -184,12 +163,4 @@ async fn deploy_contract(node_address: String, builder_address: String, pint_dir
         .expect("Failed to execute command");
 
     assert!(deploy_output.status.success(), "Command failed to run");
-
-    let stdout_str = String::from_utf8(deploy_output.stdout).expect("Failed to parse stdout");
-    println!("stdout: {}", stdout_str);
-
-    let stderr_str = String::from_utf8(deploy_output.stderr).expect("Failed to parse stderr");
-    println!("deploy stderr: {}", stderr_str);
 }
-
-// ps aux
