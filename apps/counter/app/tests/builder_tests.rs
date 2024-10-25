@@ -9,7 +9,7 @@ use essential_app_utils::{
 use regex::Regex;
 use std::process::Stdio;
 use tokio::io::{AsyncBufReadExt, BufReader};
-use tokio::process::{Command as TokioCommand, Child};
+use tokio::process::{Child, Command as TokioCommand};
 use tokio::time::{sleep, Duration};
 
 const PINT_DIRECTORY: &str = "../pint";
@@ -23,12 +23,22 @@ async fn builder_integration() {
         .await
         .unwrap();
     sleep(Duration::from_secs(1)).await;
-    deploy_contract(node_address.clone(), builder_address.clone(), String::from(PINT_DIRECTORY)).await;
+    deploy_contract(
+        node_address.clone(),
+        builder_address.clone(),
+        String::from(PINT_DIRECTORY),
+    )
+    .await;
 
     let count = read_count(node_address.clone(), PINT_DIRECTORY).await;
     assert_eq!(count, 0);
 
-    let returned_count = increment_count(builder_address.clone(), node_address.clone(), PINT_DIRECTORY).await;
+    let returned_count = increment_count(
+        builder_address.clone(),
+        node_address.clone(),
+        PINT_DIRECTORY,
+    )
+    .await;
     assert_eq!(returned_count, 1);
 
     sleep(Duration::from_secs(BLOCK_TIME)).await;
@@ -37,7 +47,12 @@ async fn builder_integration() {
     assert_eq!(new_count, returned_count);
 
     let count = new_count;
-    let _ = increment_count(builder_address.clone(), node_address.clone(), PINT_DIRECTORY).await;
+    let _ = increment_count(
+        builder_address.clone(),
+        node_address.clone(),
+        PINT_DIRECTORY,
+    )
+    .await;
 
     sleep(Duration::from_secs(BLOCK_TIME)).await;
 
@@ -81,7 +96,11 @@ async fn read_count(node_address: String, pint_directory: &str) -> u32 {
     count
 }
 
-async fn increment_count(builder_address: String, node_address: String, pint_directory: &str) -> u32 {
+async fn increment_count(
+    builder_address: String,
+    node_address: String,
+    pint_directory: &str,
+) -> u32 {
     let increment_output = TokioCommand::new("cargo")
         .args(&[
             "run",
@@ -156,12 +175,9 @@ async fn start_essential_builder() -> (Child, String, String) {
 async fn deploy_contract(node_address: String, builder_address: String, pint_directory: String) {
     let deploy_output = TokioCommand::new("essential-rest-client")
         .args(&[
-            "--node-address",
-            &format!("http://{}", node_address.as_str()),
-            "--builder-address",
-            &format!("http://{}", builder_address.as_str()),
             "deploy-contract",
-            &format!("{}/out/debug/pint.json", pint_directory.as_str()),
+            &format!("http://{}", builder_address.as_str()),
+            concat!(env!("CARGO_MANIFEST_DIR"), "/../pint/out/debug/pint.json").into(),
         ])
         .output()
         .await
