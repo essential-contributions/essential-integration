@@ -1,9 +1,11 @@
 use essential_app_utils::compile::compile_pint_project;
-
 use regex::Regex;
 use std::process::Stdio;
-use tokio::io::{AsyncBufReadExt, BufReader};
-use tokio::process::{Child, Command as TokioCommand};
+use tokio::{
+    io::{AsyncBufReadExt, BufReader},
+    process::{Child, Command as TokioCommand},
+    time::{sleep, Duration},
+};
 
 const PINT_DIRECTORY: &str = "../pint";
 
@@ -14,6 +16,8 @@ async fn builder_integration() {
     let _ = compile_pint_project(concat!(env!("CARGO_MANIFEST_DIR"), "/../pint").into())
         .await
         .unwrap();
+    // ensure builder has started and compilation is done
+    sleep(Duration::from_secs(1)).await;
 
     deploy_contract(builder_address.clone()).await;
 
