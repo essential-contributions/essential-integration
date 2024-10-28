@@ -4,7 +4,6 @@ use std::process::Stdio;
 use tokio::{
     io::{AsyncBufReadExt, BufReader},
     process::{Child, Command as TokioCommand},
-    time::{sleep, Duration},
 };
 
 const PINT_DIRECTORY: &str = "../pint";
@@ -16,8 +15,6 @@ async fn builder_integration() {
     let _ = compile_pint_project(concat!(env!("CARGO_MANIFEST_DIR"), "/../pint").into())
         .await
         .unwrap();
-    // ensure builder has started and compilation is done
-    sleep(Duration::from_secs(1)).await;
 
     deploy_contract(builder_address.clone()).await;
 
@@ -50,7 +47,7 @@ async fn builder_integration() {
 
 async fn read_count(node_address: String, pint_directory: &str) -> u32 {
     let read_output = TokioCommand::new("cargo")
-        .args(&[
+        .args([
             "run",
             "--",
             "read-count",
@@ -64,8 +61,6 @@ async fn read_count(node_address: String, pint_directory: &str) -> u32 {
     assert!(read_output.status.success(), "Command failed to run");
 
     let stdout_str = String::from_utf8(read_output.stdout).expect("Failed to parse stdout");
-
-    let _stderr_str = String::from_utf8(read_output.stderr).expect("Failed to parse stderr");
 
     let count = stdout_str
         .split_whitespace()
@@ -82,7 +77,7 @@ async fn increment_count(
     pint_directory: &str,
 ) -> u32 {
     let increment_output = TokioCommand::new("cargo")
-        .args(&[
+        .args([
             "run",
             "--",
             "increment-count",
@@ -97,8 +92,6 @@ async fn increment_count(
     // Read stdout
     let stdout_str = String::from_utf8(increment_output.stdout).expect("Failed to parse stdout");
 
-    let _stderr_str = String::from_utf8(increment_output.stderr).expect("Failed to parse stderr");
-
     // Regular expression to capture the new number
     let regx_new_count = Regex::new(r"Incremented count to: (\d+)").unwrap();
     let mut new_count = 0;
@@ -112,10 +105,12 @@ async fn increment_count(
 
 async fn start_essential_builder() -> (Child, String, String) {
     let mut builder_process = TokioCommand::new("essential-builder")
-        .arg("--block-interval-ms")
-        .arg("100")
-        // @todo can we remove ?
-        .arg("--state-derivation")
+        .args([
+            "--block-interval-ms",
+            "100",
+            // @todo remove once new Node & Builder published.
+            "--state-derivation",
+        ])
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .kill_on_drop(true)
@@ -154,7 +149,7 @@ async fn start_essential_builder() -> (Child, String, String) {
 
 async fn deploy_contract(builder_address: String) {
     let deploy_output = TokioCommand::new("essential-rest-client")
-        .args(&[
+        .args([
             "deploy-contract",
             &format!("http://{}", builder_address.as_str()),
             concat!(env!("CARGO_MANIFEST_DIR"), "/../pint/out/debug/pint.json").into(),
