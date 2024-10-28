@@ -18,3 +18,4 @@ essential-app-utils = { workspace = true, features = ["test-utils"] }
 essential-builder.workspace = true
 essential-builder-db.workspace = true
 essential-node.workspace = true
+regex = "1.11.1"

@@ -1,4 +1,4 @@
-use clap::{Args, Parser, Subcommand};
+use clap::{Parser, Subcommand};
 use counter_app::{counter_key, extract_count, incremented_solution, CounterKey, QueryCount};
 use essential_app_utils::compile::compile_pint_project;
 use essential_rest_client::node_client::EssentialNodeClient;
@@ -15,23 +15,19 @@ struct Cli {
 #[derive(Subcommand)]
 enum Command {
     ReadCount {
-        #[command(flatten)]
-        server: Shared,
+        /// The address of the node to connect to.
+        node_api: String,
+        /// The directory containing the pint files.
+        pint_directory: PathBuf,
     },
     IncrementCount {
+        /// The address of the node to connect to.
+        node_api: String,
         /// The address of the builder to connect to.
         builder_api: String,
-        #[command(flatten)]
-        server: Shared,
+        /// The directory containing the pint files.
+        pint_directory: PathBuf,
     },
-}
-
-#[derive(Args)]
-pub struct Shared {
-    /// The address of the node to connect to.
-    pub node_api: String,
-    /// The directory containing the pint files.
-    pub pint_directory: PathBuf,
 }
 
 #[tokio::main]
@@ -46,10 +42,8 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
     let Cli { command } = cli;
     match command {
         Command::ReadCount {
-            server: Shared {
-                node_api,
-                pint_directory,
-            },
+            node_api,
+            pint_directory,
         } => {
             let address = compile_address(pint_directory).await?;
             let node = essential_rest_client::node_client::EssentialNodeClient::new(node_api)?;
@@ -60,10 +54,8 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
         }
         Command::IncrementCount {
             builder_api,
-            server: Shared {
-                node_api,
-                pint_directory,
-            },
+            node_api,
+            pint_directory,
         } => {
             let address = compile_address(pint_directory).await?;
             let node = essential_rest_client::node_client::EssentialNodeClient::new(node_api)?;
