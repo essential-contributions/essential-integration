@@ -10,4 +10,4 @@ However, **Essential applications** operate **declaratively**, meaning that stat
 
 In short, a **Pint program** exists to **validate a given state mutation** against predefined rules. These rules form the core of a **Pint contract**.
 
-In the rest of this guide, we will implement these concepts in **Pint** using a simple counter application. You’ll see how contracts, predicates, and constraints come together in practice.
+In the rest of this guide, we will implement these concepts in **Pint** using both a simple counter application, and a more complex token application. You’ll see how contracts, predicates, and constraints come together in practice.
