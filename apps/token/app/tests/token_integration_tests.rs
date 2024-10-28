@@ -174,16 +174,18 @@ fn hash_key(wallet: &mut Wallet, account_name: &str) -> [Word; 4] {
 
 // Helper function to get the current nonce
 async fn nonce(node_address: &str, content_address: &ContentAddress, key: Vec<i64>) -> Option<Vec<i64>> {
+    let hex_key = key.iter()
+        .map(|num| format!("{:016x}", num))
+        .collect::<Vec<String>>()
+        .join("");
+
     let nonce_output = TokioCommand::new("essential-rest-client")
         .args([
             "query-state",
-            &format!("http://{}", node_address),
+            "--content-address",
             &content_address.to_string(),
-            &key.iter()
-                .map(|num| num.to_string())
-                .collect::<Vec<String>>()
-                .join(", "),
-            concat!(env!("CARGO_MANIFEST_DIR"), "/../pint/token/out/debug/token.json").into(),
+            &format!("http://{}", node_address),
+            &hex_key,
         ])
         .output()
         .await
