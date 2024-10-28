@@ -18,3 +18,4 @@ pint build
 
 ls $temp_dir/counter/contract/out/debug
 cat $temp_dir/counter/contract/out/debug/counter-abi.json
+cp $temp_dir/counter/contract/out/debug/counter-abi.json $SCRIPT_DIR/counter-abi.json
