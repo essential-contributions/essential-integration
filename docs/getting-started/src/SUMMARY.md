@@ -48,8 +48,12 @@
             - [Summary](./getting-started/counter/cli/commands/sum.md)
         - [Interact with Testnet](./getting-started/counter/cli/interact.md)
 <<<<<<< main
+<<<<<<< main
 =======
 - [Token](./getting-started/token/index.md)
+=======
+  - [Token](./getting-started/token/index.md)
+>>>>>>> wip
     - [New project](./getting-started/token/new.md)
     - [Define Storage](./getting-started/token/storage.md)
     - [Write Predicate](./getting-started/token/predicates.md)

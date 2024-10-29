@@ -8,6 +8,8 @@ Welcome to the **Getting Started** guide for building applications on `essential
 
 In this guide, you'll learn how to create your first `essential` application. We’ll start with a simple **counter application** that increments a counter — the `essential` equivalent of a "Hello World" app. While trivial, it introduces key concepts that will help you build more complex applications.
 
+Once you feel comfortable with the basics, you can move on to building something more useful; a **token application** with token minting, burning and transfer functionality. This application will introduce more advanced concepts and demonstrate the power of `essential`.
+
 `Essential` is a **declarative system** that allows for expressing powerful applications in an elegant and intuitive way.
 
 ### What You'll Learn
