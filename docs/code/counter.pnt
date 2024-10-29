@@ -18,17 +18,3 @@ predicate Increment {
 }
 // ANCHOR_END: pred_end
 // ANCHOR_END: predicate
-
-predicate Z {
-    state counter: int = storage::counter;
-// ANCHOR: constraint_simple
-    constraint counter' == counter + 1;
-// ANCHOR_END: constraint_simple
-}
-
-predicate ZZ{
-    state counter: int = storage::counter;
-// ANCHOR: constraint_init
-    constraint counter == nil && counter' == 1;
-// ANCHOR_END: constraint_init
-}

@@ -1,0 +1,15 @@
+{
+  "predicates": [
+    {
+      "name": "::Increment",
+      "vars": [],
+      "pub_vars": []
+    }
+  ],
+  "storage": [
+    {
+      "name": "counter",
+      "ty": "Int"
+    }
+  ]
+}

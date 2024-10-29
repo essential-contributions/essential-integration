@@ -7,3 +7,11 @@ In this section, we will test the functionality of the Rust front-end applicatio
 3. Confirm that state changes are processed accurately.
 
 Each test will focus on a specific aspect of interacting with the contract, ensuring that the front-end functions as expected and communicates correctly with the contract.
+
+The following section will be written in:
+```
+counter/
+└── counter-app/
+    └── tests/
+        └── test.rs
+```

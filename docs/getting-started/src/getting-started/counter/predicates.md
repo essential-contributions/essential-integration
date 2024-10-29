@@ -22,7 +22,7 @@ Let's add our first constraint:
 {{#include ../../../../code/counter.pnt:pred_start}}
 {{#include ../../../../code/counter.pnt:read_storage}}
 
-{{#include ../../../../code/counter.pnt:constraint_simple}}
+{{#include ../../../../code/counter_examples.pnt:constraint_simple}}
 {{#include ../../../../code/counter.pnt:pred_end}}
 ```
 A constraint is a boolean expression which must be true for the predicate to be satisfied. \
@@ -36,7 +36,7 @@ We can use a `nil` check to handle this case:
 {{#include ../../../../code/counter.pnt:pred_start}}
 {{#include ../../../../code/counter.pnt:read_storage}}
 
-{{#include ../../../../code/counter.pnt:constraint_init}}
+{{#include ../../../../code/counter_examples.pnt:constraint_init}}
 {{#include ../../../../code/counter.pnt:pred_end}}
 ```
 This says that if the pre-state of the counter is `nil` then the post-state must be `1`.
