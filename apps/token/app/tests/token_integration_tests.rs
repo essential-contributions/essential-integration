@@ -20,6 +20,8 @@ const TOKEN_NAME: &str = "alice coin";
 const TOKEN_SYMBOL: &str = "ALC";
 /// The path to the PINT project directory.
 const PINT_DIRECTORY: &str = "../pint";
+/// The name of Alice's test account.
+const ALICE: &str = "alice";
 
 #[tokio::test]
 async fn mint_and_transfer_integration() {
@@ -35,44 +37,72 @@ async fn mint_and_transfer_integration() {
             .unwrap();
 
     // Create a temporary wallet for testing, with password "password"
-    let mut wallet = essential_wallet::Wallet::temp().unwrap();
+    // what does this do?
+    // - creates a new wallet with password "password", using a tempdir.
+
+    // @todo add a function to create a new unlocked test wallet using the cli.
+    // let mut wallet = essential_wallet::Wallet::temp().unwrap();
+
 
     // Set up Alice's account
-    let alice = "alice";
+    // let alice = "alice";
     let key = hex::decode(PRIV_KEY).unwrap();
-    wallet
-        .insert_key(
-            alice,
-            essential_signer::Key::Secp256k1(
-                essential_signer::secp256k1::SecretKey::from_slice(&key).unwrap(),
-            ),
-        )
-        .unwrap();
+    create_test_wallet(ALICE, PRIV_KEY).await;
+    // wallet
+    //     .insert_key(
+    //         alice,
+    //         essential_signer::Key::Secp256k1(
+    //             essential_signer::secp256k1::SecretKey::from_slice(&key).unwrap(),
+    //         ),
+    //     )
+    //     .unwrap();
 
     // deploy the token contract
     deploy_contract(builder_address.clone()).await;
 
     // Set the initial mint amount and get Alice's hashed key
     let first_mint_amount = 1000000;
-    let alice_hashed_key = hash_key(&mut wallet, alice);
+    // let alice_hashed_key = hash_key(&mut wallet, ALICE);
 
-    // Get Alice's nonce key
-    let alice_nonce_key = token::nonce_key(alice_hashed_key);
-    let nonce = nonce(&node_address, &token::token::ADDRESS, alice_nonce_key).await;
+    // // Get Alice's nonce key
+    // let alice_nonce_key = token::nonce_key(alice_hashed_key);
+    // let nonce = nonce(&node_address, &token::token::ADDRESS, alice_nonce_key).await;
 
-    // Prepare the mint
-    let init = token::mint::Init {
-        hashed_key: alice_hashed_key,
-        amount: first_mint_amount,
-        decimals: 18,
-        nonce: Query(nonce),
-    };
+    // // Prepare the mint
+    // let init = token::mint::Init {
+    //     hashed_key: alice_hashed_key,
+    //     amount: first_mint_amount,
+    //     decimals: 18,
+    //     nonce: Query(nonce),
+    // };
 
-    let alice_balance_before = balance(alice, &node_address, PINT_DIRECTORY).await;
+    // let alice_balance_before = balance(ALICE, &node_address, PINT_DIRECTORY).await;
 
-    mint(&node_address, PINT_DIRECTORY, first_mint_amount, alice, TOKEN_NAME, TOKEN_SYMBOL, &mut wallet).await;
+    // mint(&node_address, PINT_DIRECTORY, first_mint_amount, ALICE, TOKEN_NAME, TOKEN_SYMBOL, &mut wallet).await;
 
-    let alice_balance_after = balance(alice, &node_address, PINT_DIRECTORY).await;
+    // let alice_balance_after = balance(ALICE, &node_address, PINT_DIRECTORY).await;
+
+}
+
+async fn create_test_wallet(name: &str, key: &str) {
+    // let key_string = key.iter()
+    //     .map(|num| num.to_string())
+    //     .collect::<Vec<String>>()
+    //     .join(",");
+
+    let wallet_output = TokioCommand::new("essential-wallet")
+        .args([
+            "--password",
+            "password",
+            "temp",
+            name,
+            "--private-key",
+            key,
+        ])
+        .output()
+        .await
+        .expect("Failed to execute command");
+    dbg!(&wallet_output);
 
 }
 
