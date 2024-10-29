@@ -62,9 +62,9 @@ jobs:
           # Add each app's test command here, each with a unique port.
           - command: |
               nix run .#compile-all-contracts
-              nix develop .#essential-rust-app-dev --command cargo check --locked --all && cargo clippy --locked --all -- -D warnings && cargo fmt --all -- --check
-              nix develop .#essential-rust-app-dev --command cargo test
-              cd docs/code && nix develop .#essential-rust-app-dev --command ./front-end.sh
+              nix develop .#dev --command cargo check --locked --all && cargo clippy --locked --all -- -D warnings && cargo fmt --all -- --check
+              nix develop .#dev --command cargo test
+              cd docs/code && nix develop .#dev --command ./front-end.sh
     runs-on: ubuntu-latest
     permissions:
       id-token: "write"

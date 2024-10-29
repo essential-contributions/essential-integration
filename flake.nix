@@ -70,9 +70,7 @@
           # Essential REST client.
           essential-rest-client = prev.callPackage ./pkgs/essential-rest-client.nix { };
           # All essential applications under one package.
-          essential-all = final.callPackage ./pkgs/essential-all.nix { };
-          # The minimal essential applications under one package.
-          essential-minimal = final.callPackage ./pkgs/essential-minimal.nix { };
+          essential = final.callPackage ./pkgs/essential.nix { };
           # Build cargo readme.
           cargo-readme = final.callPackage ./pkgs/cargo-readme.nix { inherit (inputs) cargo-readme-src; };
           # The book.
@@ -87,20 +85,17 @@
 
       packages = perSystemPkgs (pkgs: {
         essential-rest-client = pkgs.essential-rest-client;
-        essential-all = pkgs.essential-all;
-        essential-minimal = pkgs.essential-minimal;
+        essential = pkgs.essential;
         book = pkgs.book;
         cargo-readme = pkgs.cargo-readme;
         pint-proj = pkgs.pint-proj;
         compile-all-contracts = pkgs.compile-all-contracts;
-        default = inputs.self.packages.${pkgs.system}.essential-minimal;
+        default = inputs.self.packages.${pkgs.system}.essential;
       });
 
       devShells = perSystemPkgs (pkgs: {
-        dev = pkgs.callPackage ./shells/dev.nix { };
-        essential-rust-app-dev = pkgs.callPackage ./shells/essential-rust-app-dev.nix { };
-        essential-integration-dev = pkgs.callPackage ./shells/shell.nix { };
-        default = inputs.self.devShells.${pkgs.system}.essential-integration-dev;
+        dev = pkgs.callPackage ./shells/shell.nix { };
+        default = inputs.self.devShells.${pkgs.system}.dev;
       });
 
       templates = {

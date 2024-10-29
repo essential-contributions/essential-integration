@@ -1,11 +1,8 @@
-# A dev shell providing the essentials for writing pint apps.
-{ essential-minimal
-, jq
+# Shell for building pint apps with al the tools
+{ essential
 , mkShell
-, xxd
 , darwin
 , cargo-toml-lint
-, cargo-readme
 , clippy
 , rqlite
 , rust-analyzer
@@ -14,17 +11,13 @@
 , stdenv
 , libiconv
 , openssl
-, mdbook
 , rustc
 , cargo
 , sqlite
 }:
 mkShell {
   buildInputs = [
-    cargo-readme
-    essential-minimal
-    jq
-    xxd
+    essential
     libiconv
     cargo-toml-lint
     clippy
@@ -33,7 +26,6 @@ mkShell {
     rustfmt
     openssl
     openssl.dev
-    mdbook
     rustc
     cargo
     sqlite
