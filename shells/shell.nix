@@ -1,4 +1,4 @@
-# Shell for building pint apps with al the tools
+# Shell for building pint apps with all the tools
 { essential
 , mkShell
 , darwin
