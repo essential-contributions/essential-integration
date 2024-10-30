@@ -8,7 +8,7 @@
 , symlinkJoin
 }:
 symlinkJoin {
-  name = "essential-all";
+  name = "essential";
   paths = [
     essential-rest-client
     essential-node
