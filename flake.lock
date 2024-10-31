@@ -121,11 +121,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1729041944,
-        "narHash": "sha256-u2xwdz4xaoF2qxPonybJcaaxAqhyyNSRhb4v1JfW1Zg=",
+        "lastModified": 1730329937,
+        "narHash": "sha256-rMboDSbsgYBr1u+bR0R+VfFtqY1VbrLZREtZJQYhaWo=",
         "owner": "essential-contributions",
         "repo": "essential-wallet",
-        "rev": "ee19ac675b664a69cb35dcee20a0a51dc8d82682",
+        "rev": "ff9a35042012a42b5c3f0640738d32d9ea51a1e6",
         "type": "github"
       },
       "original": {
