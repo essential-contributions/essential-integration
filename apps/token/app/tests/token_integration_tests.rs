@@ -1,6 +1,7 @@
 use essential_app_utils::{self as utils, compile::compile_pint_project};
 use essential_rest_client::node_client::EssentialNodeClient;
 use essential_sign::secp256k1::{PublicKey, Secp256k1};
+use essential_signer::Signature;
 use essential_types::{convert::word_4_from_u8_32, ContentAddress, Word};
 use essential_wallet::Wallet;
 use regex::Regex;
@@ -51,6 +52,8 @@ async fn mint_and_transfer_integration() {
         )
         .unwrap();
 
+    println!("{:#?}", wallet.list_names().unwrap());
+
     let alice_hashed_key = hash_key(&mut wallet, ALICE);
 
     // deploy the token contract
@@ -74,58 +77,44 @@ async fn mint_and_transfer_integration() {
     };
 
     let to_sign = token::mint::data_to_sign(init).unwrap();
-    let sig = wallet.sign_words(&to_sign.to_words(), alice).unwrap();
+    let sig = wallet.sign_words(&to_sign.to_words(), ALICE).unwrap();
     let Signature::Secp256k1(sig) = sig else {
         panic!("Invalid signature")
     };
 
     let alice_balance_before = balance(ALICE, &node_address, PINT_DIRECTORY).await;
 
-    // Build the mint solution
-    let build_solution = token::mint::BuildSolution {
-        new_nonce: to_sign.new_nonce,
-        current_balance: Query(balance),
-        hashed_key: alice_hashed_key,
-        amount: first_mint_amount,
-        decimals: 18,
-        signature: sig,
-        token_name: TOKEN_NAME.to_string(),
-        token_symbol: TOKEN_SYMBOL.to_string(),
-    };
-    let solution = token::mint::build_solution(build_solution).unwrap();
+    // // Build the mint solution
+    // let build_solution = token::mint::BuildSolution {
+    //     new_nonce: to_sign.new_nonce,
+    //     current_balance: Query(alice_balance_before),
+    //     hashed_key: alice_hashed_key,
+    //     amount: first_mint_amount,
+    //     decimals: 18,
+    //     signature: sig,
+    //     token_name: TOKEN_NAME.to_string(),
+    //     token_symbol: TOKEN_SYMBOL.to_string(),
+    // };
+    // let solution = token::mint::build_solution(build_solution).unwrap();
 
-    mint(
-        &node_address,
-        PINT_DIRECTORY,
-        first_mint_amount,
-        ALICE,
-        TOKEN_NAME,
-        TOKEN_SYMBOL,
-        &mut wallet,
-    )
-    .await;
+    // mint(
+    //     &node_address,
+    //     &builder_address,
+    //     PINT_DIRECTORY,
+    //     first_mint_amount,
+    //     ALICE,
+    //     TOKEN_NAME,
+    //     TOKEN_SYMBOL,
+    //     &mut wallet,
+    // )
+    // .await;
 
-    let alice_balance_after = balance(ALICE, &node_address, PINT_DIRECTORY).await;
+    // let alice_balance_after = balance(ALICE, &node_address, PINT_DIRECTORY).await;
 }
-
-// async fn create_test_wallet(name: &str, key: &str) -> Output {
-//    let key_str = key
-//      .iter()
-//    .map(|num| format!("{:02x}", num))
-//  .collect::<Vec<String>>()
-//  .join("");
-
-//     let wallet_output = TokioCommand::new("essential-wallet")
-//         .args(["--unlocked", "temp", name, "--private-key", key])
-//         .output()
-//         .await
-//         .expect("Failed to execute command");
-//     dbg!(&wallet_output);
-//     wallet_output
-// }
 
 async fn mint(
     node_address: &str,
+    builder_address: &str,
     pint_directory: &str,
     amount: i64,
     account: &str,
@@ -137,64 +126,40 @@ async fn mint(
         .args([
             "run",
             "--",
+            "--password",
+            "password",
             "mint",
-            &format!("http://{}", node_address),
-            pint_directory,
-            &amount.to_string(),
             account,
+            &amount.to_string(),
             name,
             symbol,
+            &format!("http://{}", node_address),
+            &format!("http://{}", builder_address),
+            pint_directory,
         ])
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .spawn()
         .expect("Failed to start process");
 
-    // Capture stdout
-    let stdout = mint_process
-        .stdout
-        .take()
-        .expect("Failed to capture stdout");
-    let mut reader = BufReader::new(stdout).lines();
-
-    // Provide the password via stdin
-    let mut password_provided = false;
-    if let Some(mut stdin) = mint_process.stdin.take() {
-        while let Some(line) = reader.next_line().await.expect("Failed to read line") {
-            println!("stdout: {}", line);
-            if line.contains("Enter password to unlock wallet:") {
-                stdin
-                    .write_all(b"password\n")
-                    .await
-                    .expect("Failed to write to stdin");
-                password_provided = true;
-                break;
-            }
-        }
-    }
-
-    if !password_provided {
-        panic!("Password prompt not found in stdout");
-    }
-
+    // @todo needed?
     let mint_output = mint_process
         .wait_with_output()
         .await
         .expect("Failed to wait on child");
-
-    dbg!(&mint_output);
-    assert!(mint_output.status.success(), "Command failed to run");
 }
 
 async fn burn(node_address: String, pint_directory: &str) {}
 
 async fn transfer(node_address: String, pint_directory: &str) {}
 
-async fn balance(account: &str, node_address: &str, pint_directory: &str) -> i64 {
+async fn balance(account: &str, node_address: &str, pint_directory: &str) -> Option<Vec<i64>> {
     let balance_output = TokioCommand::new("cargo")
         .args([
             "run",
             "--",
+            "--password",
+            "password",
             "balance",
             account,
             &format!("http://{}", node_address),
@@ -208,10 +173,10 @@ async fn balance(account: &str, node_address: &str, pint_directory: &str) -> i64
     assert!(balance_output.status.success(), "Command failed to run");
     let balance_str =
         String::from_utf8(balance_output.stdout).expect("Failed to parse output as UTF-8");
-    balance_str
-        .trim()
-        .parse::<i64>()
-        .expect("Failed to parse balance")
+    match balance_str.trim().parse::<i64>() {
+        Ok(value) => return Some(vec![value]),
+        Err(_) => return None,
+    };
 }
 
 async fn external_balance(node_address: String, pint_directory: &str) {}

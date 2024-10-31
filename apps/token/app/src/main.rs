@@ -21,6 +21,9 @@ struct Cli {
     wallet: Option<PathBuf>,
     #[command(subcommand)]
     command: Command,
+    /// Optionlly supply password for convenience.
+    #[arg(short, long)]
+    password: Option<String>,
 }
 
 #[derive(Args)]
@@ -111,11 +114,18 @@ async fn main() {
 }
 
 async fn run(cli: Cli) -> anyhow::Result<()> {
-    let Cli { wallet, command } = cli;
+    let Cli {
+        wallet,
+        command,
+        password,
+    } = cli;
     let wallet = match &command {
         Command::ExternalBalance(_) => None,
         _ => {
-            let pass = rpassword::prompt_password("Enter password to unlock wallet: ")?;
+            let pass = match password {
+                Some(pw) => pw,
+                None => rpassword::prompt_password("Enter password to unlock wallet: ")?,
+            };
             let wallet = match wallet {
                 Some(path) => essential_wallet::Wallet::new(&pass, path)?,
                 None => essential_wallet::Wallet::with_default_path(&pass)?,
