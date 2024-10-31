@@ -3,6 +3,7 @@
 , essential-node
 , essential-builder
 , essential-wallet
+, essential-wallet-test
 , essential-debugger
 , pint
 , symlinkJoin
@@ -14,6 +15,7 @@ symlinkJoin {
     essential-node
     essential-builder
     essential-wallet
+    essential-wallet-test
     essential-debugger
     pint
   ];
