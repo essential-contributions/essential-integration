@@ -1,14 +1,16 @@
 use essential_app_utils::{self as utils, compile::compile_pint_project};
-use essential_wallet::Wallet;
 use essential_rest_client::node_client::EssentialNodeClient;
-use essential_types::{convert::word_4_from_u8_32, Word, ContentAddress};
+use essential_sign::secp256k1::{PublicKey, Secp256k1};
+use essential_types::{convert::word_4_from_u8_32, ContentAddress, Word};
+use essential_wallet::Wallet;
 use regex::Regex;
-use std::process::Stdio;
+use std::process::{Output, Stdio};
+use std::str::FromStr;
+use token::Query;
 use tokio::{
     io::{AsyncBufReadExt, AsyncWriteExt, BufReader},
     process::{Child, Command as TokioCommand},
 };
-use token::Query;
 
 // Constants for the test
 
@@ -31,82 +33,106 @@ async fn mint_and_transfer_integration() {
     let (_builder_process, node_address, builder_address) = start_essential_builder().await;
 
     // Ensure the token contract is compiled
-    let _ =
-        compile_pint_project(concat!(env!("CARGO_MANIFEST_DIR"), "/../pint/token").into())
-            .await
-            .unwrap();
-
-    // Create a temporary wallet for testing, with password "password"
-    // what does this do?
-    // - creates a new wallet with password "password", using a tempdir.
-
-    // @todo add a function to create a new unlocked test wallet using the cli.
-    // let mut wallet = essential_wallet::Wallet::temp().unwrap();
-
+    let _ = compile_pint_project(concat!(env!("CARGO_MANIFEST_DIR"), "/../pint/token").into())
+        .await
+        .unwrap();
 
     // Set up Alice's account
-    // let alice = "alice";
     let key = hex::decode(PRIV_KEY).unwrap();
-    create_test_wallet(ALICE, PRIV_KEY).await;
-    // wallet
-    //     .insert_key(
-    //         alice,
-    //         essential_signer::Key::Secp256k1(
-    //             essential_signer::secp256k1::SecretKey::from_slice(&key).unwrap(),
-    //         ),
-    //     )
-    //     .unwrap();
+
+    // Create a temporary wallet for testing
+    let mut wallet = essential_wallet::Wallet::temp().unwrap();
+    wallet
+        .insert_key(
+            ALICE,
+            essential_signer::Key::Secp256k1(
+                essential_signer::secp256k1::SecretKey::from_slice(&key).unwrap(),
+            ),
+        )
+        .unwrap();
+
+    let alice_hashed_key = hash_key(&mut wallet, ALICE);
 
     // deploy the token contract
     deploy_contract(builder_address.clone()).await;
 
     // Set the initial mint amount and get Alice's hashed key
     let first_mint_amount = 1000000;
-    // let alice_hashed_key = hash_key(&mut wallet, ALICE);
+    // let pub_key = public_key(ALICE).await;
+    // let alice_hashed_key = hash_key(pub_key);
 
     // // Get Alice's nonce key
-    // let alice_nonce_key = token::nonce_key(alice_hashed_key);
-    // let nonce = nonce(&node_address, &token::token::ADDRESS, alice_nonce_key).await;
+    let alice_nonce_key = token::nonce_key(alice_hashed_key);
+    let nonce = nonce(&node_address, &token::token::ADDRESS, alice_nonce_key).await;
 
-    // // Prepare the mint
-    // let init = token::mint::Init {
-    //     hashed_key: alice_hashed_key,
-    //     amount: first_mint_amount,
-    //     decimals: 18,
-    //     nonce: Query(nonce),
-    // };
+    // Prepare the mint
+    let init = token::mint::Init {
+        hashed_key: alice_hashed_key,
+        amount: first_mint_amount,
+        decimals: 18,
+        nonce: Query(nonce),
+    };
 
-    // let alice_balance_before = balance(ALICE, &node_address, PINT_DIRECTORY).await;
+    let to_sign = token::mint::data_to_sign(init).unwrap();
+    let sig = wallet.sign_words(&to_sign.to_words(), alice).unwrap();
+    let Signature::Secp256k1(sig) = sig else {
+        panic!("Invalid signature")
+    };
 
-    // mint(&node_address, PINT_DIRECTORY, first_mint_amount, ALICE, TOKEN_NAME, TOKEN_SYMBOL, &mut wallet).await;
+    let alice_balance_before = balance(ALICE, &node_address, PINT_DIRECTORY).await;
 
-    // let alice_balance_after = balance(ALICE, &node_address, PINT_DIRECTORY).await;
+    // Build the mint solution
+    let build_solution = token::mint::BuildSolution {
+        new_nonce: to_sign.new_nonce,
+        current_balance: Query(balance),
+        hashed_key: alice_hashed_key,
+        amount: first_mint_amount,
+        decimals: 18,
+        signature: sig,
+        token_name: TOKEN_NAME.to_string(),
+        token_symbol: TOKEN_SYMBOL.to_string(),
+    };
+    let solution = token::mint::build_solution(build_solution).unwrap();
 
+    mint(
+        &node_address,
+        PINT_DIRECTORY,
+        first_mint_amount,
+        ALICE,
+        TOKEN_NAME,
+        TOKEN_SYMBOL,
+        &mut wallet,
+    )
+    .await;
+
+    let alice_balance_after = balance(ALICE, &node_address, PINT_DIRECTORY).await;
 }
 
-async fn create_test_wallet(name: &str, key: &str) {
-    // let key_string = key.iter()
-    //     .map(|num| num.to_string())
-    //     .collect::<Vec<String>>()
-    //     .join(",");
+// async fn create_test_wallet(name: &str, key: &str) -> Output {
+//    let key_str = key
+//      .iter()
+//    .map(|num| format!("{:02x}", num))
+//  .collect::<Vec<String>>()
+//  .join("");
 
-    let wallet_output = TokioCommand::new("essential-wallet")
-        .args([
-            "--password",
-            "password",
-            "temp",
-            name,
-            "--private-key",
-            key,
-        ])
-        .output()
-        .await
-        .expect("Failed to execute command");
-    dbg!(&wallet_output);
+//     let wallet_output = TokioCommand::new("essential-wallet")
+//         .args(["--unlocked", "temp", name, "--private-key", key])
+//         .output()
+//         .await
+//         .expect("Failed to execute command");
+//     dbg!(&wallet_output);
+//     wallet_output
+// }
 
-}
-
-async fn mint(node_address: &str, pint_directory: &str, amount: i64, account: &str, name: &str, symbol: &str, wallet: &mut Wallet) {
+async fn mint(
+    node_address: &str,
+    pint_directory: &str,
+    amount: i64,
+    account: &str,
+    name: &str,
+    symbol: &str,
+    wallet: &mut Wallet,
+) {
     let mut mint_process = TokioCommand::new("cargo")
         .args([
             "run",
@@ -125,7 +151,10 @@ async fn mint(node_address: &str, pint_directory: &str, amount: i64, account: &s
         .expect("Failed to start process");
 
     // Capture stdout
-    let stdout = mint_process.stdout.take().expect("Failed to capture stdout");
+    let stdout = mint_process
+        .stdout
+        .take()
+        .expect("Failed to capture stdout");
     let mut reader = BufReader::new(stdout).lines();
 
     // Provide the password via stdin
@@ -134,7 +163,10 @@ async fn mint(node_address: &str, pint_directory: &str, amount: i64, account: &s
         while let Some(line) = reader.next_line().await.expect("Failed to read line") {
             println!("stdout: {}", line);
             if line.contains("Enter password to unlock wallet:") {
-                stdin.write_all(b"password\n").await.expect("Failed to write to stdin");
+                stdin
+                    .write_all(b"password\n")
+                    .await
+                    .expect("Failed to write to stdin");
                 password_provided = true;
                 break;
             }
@@ -174,12 +206,12 @@ async fn balance(account: &str, node_address: &str, pint_directory: &str) -> i64
 
     dbg!(&balance_output);
     assert!(balance_output.status.success(), "Command failed to run");
-    let balance_str = String::from_utf8(balance_output.stdout).expect("Failed to parse output as UTF-8");
+    let balance_str =
+        String::from_utf8(balance_output.stdout).expect("Failed to parse output as UTF-8");
     balance_str
         .trim()
         .parse::<i64>()
         .expect("Failed to parse balance")
-
 }
 
 async fn external_balance(node_address: String, pint_directory: &str) {}
@@ -189,7 +221,11 @@ async fn deploy_contract(builder_address: String) {
         .args([
             "deploy-contract",
             &format!("http://{}", builder_address.as_str()),
-            concat!(env!("CARGO_MANIFEST_DIR"), "/../pint/token/out/debug/token.json").into(),
+            concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/../pint/token/out/debug/token.json"
+            )
+            .into(),
         ])
         .output()
         .await
@@ -251,10 +287,41 @@ fn hash_key(wallet: &mut Wallet, account_name: &str) -> [Word; 4] {
     let encoded = essential_sign::encode::public_key(&public_key);
     word_4_from_u8_32(essential_hash::hash_words(&encoded))
 }
+// fn hash_key(public_key: PublicKey) -> [Word; 4] {
+//     let encoded = essential_sign::encode::public_key(&public_key);
+//     word_4_from_u8_32(essential_hash::hash_words(&encoded))
+// }
+
+// async fn public_key(name: &str) -> PublicKey {
+//     let public_key_output = TokioCommand::new("essential-wallet")
+//         .args([
+//             "--unlocked",
+//             "print-pub-key",
+//             "--hashed",
+//             name,
+//             "--password",
+//             "password",
+//         ])
+//         .output()
+//         .await
+//         .expect("Failed to execute command");
+
+//     assert!(public_key_output.status.success(), "Command failed to run");
+
+//     let output_str =
+//         String::from_utf8(public_key_output.stdout).expect("Failed to parse output as UTF-8");
+//     let public_key_str = output_str.trim();
+//     PublicKey::from_str(public_key_str).expect("Failed to parse public key")
+// }
 
 // Helper function to get the current nonce
-async fn nonce(node_address: &str, content_address: &ContentAddress, key: Vec<i64>) -> Option<Vec<i64>> {
-    let hex_key = key.iter()
+async fn nonce(
+    node_address: &str,
+    content_address: &ContentAddress,
+    key: Vec<i64>,
+) -> Option<Vec<i64>> {
+    let hex_key = key
+        .iter()
         .map(|num| format!("{:016x}", num))
         .collect::<Vec<String>>()
         .join("");
@@ -273,7 +340,8 @@ async fn nonce(node_address: &str, content_address: &ContentAddress, key: Vec<i6
 
     assert!(nonce_output.status.success(), "Command failed to run");
 
-    let output_str = String::from_utf8(nonce_output.stdout).expect("Failed to parse output as UTF-8");
+    let output_str =
+        String::from_utf8(nonce_output.stdout).expect("Failed to parse output as UTF-8");
     let parsed_result: Result<Vec<i64>, _> = output_str
         .trim()
         .split(',')
