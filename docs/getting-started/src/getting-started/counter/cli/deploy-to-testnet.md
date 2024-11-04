@@ -1,5 +1,5 @@
 # Deploy to Testnet
-In this section you will learn how to deploy your counter app to the public testnet builder. The builder is running at `https://bigbangblock.builders`.
+In this section you will learn how to deploy your counter app to the public testnet builder. The builder is running at `https://node.essential.builders`.
 
 
 To do this you can use the `essential-rest-client` tool available in the [essential-integration](https://github.com/essential-contributions/essential-integration) repo.
