@@ -58,6 +58,7 @@
     - [Define Storage](./getting-started/token/storage.md)
     - [Write Predicate](./getting-started/token/predicates.md)
     - [Compile](./getting-started/token/compile.md)
+<<<<<<< main
     - [Rust Front End](./getting-started/token/app/index.md)
         - [Setup Cargo Project](./getting-started/token/app/new.md)
         - [App](./getting-started/token/app/fe/index.md)
@@ -87,3 +88,5 @@
             - [Summary](./getting-started/token/cli/commands/sum.md)
         - [Interact with Testnet](./getting-started/token/cli/interact.md)
 >>>>>>> initial commit: add outline for Token app in book
+=======
+>>>>>>> cleanup: only focus on contract for now
