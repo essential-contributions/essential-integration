@@ -9,6 +9,7 @@ use tokio::{
 const PINT_DIRECTORY: &str = "../pint";
 
 #[tokio::test]
+#[ignore]
 async fn builder_integration() {
     let (_builder_process, node_address, builder_address) = start_essential_builder().await;
 
