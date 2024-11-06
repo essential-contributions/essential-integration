@@ -379,6 +379,7 @@ dependencies = [
  "essential-types 0.5.0",
  "regex",
  "tokio",
+ "tracing-subscriber",
 ]
 
 [[package]]

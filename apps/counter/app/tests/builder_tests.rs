@@ -105,12 +105,7 @@ async fn increment_count(
 
 async fn start_essential_builder() -> (Child, String, String) {
     let mut builder_process = TokioCommand::new("essential-builder")
-        .args([
-            "--block-interval-ms",
-            "100",
-            // @todo remove once new Node & Builder published.
-            "--state-derivation",
-        ])
+        .args(["--block-interval-ms", "100"])
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .kill_on_drop(true)
