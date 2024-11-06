@@ -7,11 +7,11 @@ pub struct Dbs {
 }
 
 pub async fn new_dbs() -> Dbs {
-    let config = node::db::Config {
-        source: node::db::Source::Memory(uuid::Uuid::new_v4().to_string()),
+    let config = node::db::pool::Config {
+        source: node::db::pool::Source::Memory(uuid::Uuid::new_v4().to_string()),
         ..Default::default()
     };
-    let node = node::db(&config).unwrap();
+    let node = node::db::ConnectionPool::with_tables(&config).unwrap();
     init_node_db(&node).await.unwrap();
     let config = builder_db::pool::Config {
         source: builder_db::pool::Source::Memory(uuid::Uuid::new_v4().to_string()),

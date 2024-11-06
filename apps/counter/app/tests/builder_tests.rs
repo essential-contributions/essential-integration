@@ -152,7 +152,7 @@ async fn deploy_contract(builder_address: String) {
         .args([
             "deploy-contract",
             &format!("http://{}", builder_address.as_str()),
-            concat!(env!("CARGO_MANIFEST_DIR"), "/../pint/out/debug/pint.json").into(),
+            concat!(env!("CARGO_MANIFEST_DIR"), "/../pint/out/debug/pint.json"),
         ])
         .output()
         .await

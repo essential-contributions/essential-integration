@@ -49,7 +49,6 @@ pub fn create_solution(predicate: PredicateAddress, new_count: Word) -> Solution
         data: vec![SolutionData {
             predicate_to_solve: predicate,
             decision_variables: Default::default(),
-            transient_data: Default::default(),
             state_mutations: vec![Mutation {
                 key: vec![COUNTER_KEY],
                 value: vec![new_count],

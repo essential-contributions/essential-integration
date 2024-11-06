@@ -1,7 +1,5 @@
 type PredicateAddress = { contract: b256, addr: b256 };
 
-type Instance = { pathway: int, addr: PredicateAddress };
-
 type Secp256k1Signature = { b256, b256, int };
 
 type Secp256k1PublicKey = { b256, int };
