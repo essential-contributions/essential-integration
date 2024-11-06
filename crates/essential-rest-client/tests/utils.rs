@@ -7,11 +7,11 @@ async fn test_listener() -> tokio::net::TcpListener {
 }
 
 pub async fn setup_node_as_server() -> anyhow::Result<String> {
-    let conf = essential_node::db::Config {
-        source: essential_node::db::Source::Memory(uuid::Uuid::new_v4().into()),
+    let conf = essential_node::db::pool::Config {
+        source: essential_node::db::pool::Source::Memory(uuid::Uuid::new_v4().into()),
         ..Default::default()
     };
-    let db = essential_node::db(&conf).unwrap();
+    let db = essential_node::db::ConnectionPool::with_tables(&conf).unwrap();
     let state = essential_node_api::State {
         conn_pool: db,
         new_block: None,

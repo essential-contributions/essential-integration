@@ -9,6 +9,7 @@ use essential_types::{ContentAddress, PredicateAddress, Word};
 
 #[tokio::test]
 async fn number_go_up() {
+    tracing_subscriber::fmt::init();
     let counter = compile_pint_project(concat!(env!("CARGO_MANIFEST_DIR"), "/../pint").into())
         .await
         .unwrap();
@@ -35,29 +36,28 @@ async fn number_go_up() {
 
     // TODO: Demonstrate validating block on node.
 
-    let new_count = increment(&dbs, predicate_address.clone()).await;
+    increment(&dbs, predicate_address.clone()).await;
 
     let o = utils::builder::build_default(&dbs).await.unwrap();
     assert_eq!(o.succeeded.len(), 3);
     assert!(o.failed.is_empty());
 
     let count = read_count(&dbs.node, &predicate_address.contract, &key).await;
-    assert_eq!(count, new_count);
+    assert_eq!(count, 1);
 
     let _ = increment(&dbs, predicate_address.clone()).await;
-    let expected_new_count = increment(&dbs, predicate_address.clone()).await;
+    increment(&dbs, predicate_address.clone()).await;
 
     let count = read_count(&dbs.node, &predicate_address.contract, &key).await;
-    assert_eq!(count, new_count);
+    assert_eq!(count, 1);
 
     let o = utils::builder::build_default(&dbs).await.unwrap();
-    assert_eq!(o.succeeded.len(), 1);
+    assert_eq!(o.succeeded.len(), 2);
 
-    // FIXME: Shouldn't this be 1?
-    assert_eq!(o.failed.len(), 2);
+    assert_eq!(o.failed.len(), 1);
 
     let count = read_count(&dbs.node, &predicate_address.contract, &key).await;
-    assert_eq!(count, expected_new_count);
+    assert_eq!(count, 2);
 
     // Demonstrate syncing node with deployed node and reading count.
 }
@@ -75,11 +75,10 @@ async fn read_count(
 
 async fn increment(dbs: &Dbs, predicate_address: PredicateAddress) -> Word {
     let key = counter_key();
-    let current_count = dbs
-        .node
-        .query_state(predicate_address.contract.clone(), key.0)
-        .await
-        .unwrap();
+    let current_count =
+        utils::node::query_state_head(&dbs.node, &predicate_address.contract, &key.0)
+            .await
+            .unwrap();
     let (solution, new_count) =
         incremented_solution(predicate_address, QueryCount(current_count)).unwrap();
 

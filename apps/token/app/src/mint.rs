@@ -100,13 +100,11 @@ pub fn build_solution(build: BuildSolution) -> anyhow::Result<Solution> {
         token_symbol,
     } = build;
     let balance = calculate_new_balance(balance(current_balance)?, amount)?;
-    let pub_vars = super::token::Mint::PubVars {
+    let signature = signature.encode();
+    let vars = super::token::Mint::Vars {
         key: hashed_key,
         amount,
         decimals,
-    };
-    let signature = signature.encode();
-    let vars = super::token::Mint::Vars {
         auth: super::token::MintAuth::Signed(signature),
     };
     let mutations = super::token::storage::mutations()
@@ -118,7 +116,6 @@ pub fn build_solution(build: BuildSolution) -> anyhow::Result<Solution> {
     let solution = SolutionData {
         predicate_to_solve: super::token::Mint::ADDRESS,
         decision_variables: vars.into(),
-        transient_data: pub_vars.into(),
         state_mutations: mutations.into(),
     };
     Ok(Solution {

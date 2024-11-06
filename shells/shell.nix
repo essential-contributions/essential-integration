@@ -14,6 +14,7 @@
 , rustc
 , cargo
 , sqlite
+, pkg-config
 }:
 mkShell {
   buildInputs = [
@@ -29,6 +30,7 @@ mkShell {
     rustc
     cargo
     sqlite
+    pkg-config
   ] ++ lib.optionals stdenv.isDarwin [
     darwin.apple_sdk.frameworks.SystemConfiguration
   ];

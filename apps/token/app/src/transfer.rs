@@ -100,15 +100,13 @@ pub fn build_solution(build: BuildSolution) -> anyhow::Result<Solution> {
     } = build;
     let from_balance = calculate_from_balance(balance(current_from_balance)?, amount)?;
     let to_balance = calculate_to_balance(balance(current_to_balance)?, amount)?;
-    let pub_vars = super::token::Transfer::PubVars {
-        key: hashed_from_key,
-        to: hashed_to_key,
-        amount,
-    };
     let signature = signature.encode();
     let auth =
         super::token::TransferAuthMode::Signed((signature, super::token::TransferSignedMode::All));
     let vars = super::token::Transfer::Vars {
+        key: hashed_from_key,
+        to: hashed_to_key,
+        amount,
         auth: (auth, super::token::ExtraConstraints::None),
     };
     let mutations = super::token::storage::mutations()
@@ -118,7 +116,6 @@ pub fn build_solution(build: BuildSolution) -> anyhow::Result<Solution> {
     let solution = SolutionData {
         predicate_to_solve: super::token::Transfer::ADDRESS,
         decision_variables: vars.into(),
-        transient_data: pub_vars.into(),
         state_mutations: mutations.into(),
     };
     Ok(Solution {

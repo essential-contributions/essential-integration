@@ -68,12 +68,10 @@ pub fn build_solution(build: BuildSolution) -> anyhow::Result<Solution> {
     } = build;
     let from_balance = balance(current_balance)?;
     let new_from_balance = calculate_from_balance(from_balance, amount)?;
-    let pub_vars = super::token::Burn::PubVars {
-        key: hashed_key,
-        amount,
-    };
     let signature = signature.encode();
     let vars = super::token::Burn::Vars {
+        key: hashed_key,
+        amount,
         auth: super::token::BurnAuth::Signed(signature),
     };
     let mutations = super::token::storage::mutations()
@@ -82,7 +80,6 @@ pub fn build_solution(build: BuildSolution) -> anyhow::Result<Solution> {
     let solution = SolutionData {
         predicate_to_solve: super::token::Burn::ADDRESS,
         decision_variables: vars.into(),
-        transient_data: pub_vars.into(),
         state_mutations: mutations.into(),
     };
     Ok(Solution {

@@ -9,7 +9,9 @@ pub async fn query_state_head(
     let tx = c.transaction()?;
     let ca = essential_node_db::get_latest_finalized_block_address(&tx)?;
     let num = match ca {
-        Some(ca) => essential_node_db::get_block_number(&tx, &ca)?.unwrap_or_default(),
+        Some(ca) => essential_node_db::get_block_header(&tx, &ca)?
+            .map(|h| h.0)
+            .unwrap_or_default(),
         None => 0,
     };
     let r = essential_node_db::finalized::query_state_inclusive_block(&tx, address, key, num)?;
@@ -21,6 +23,6 @@ pub async fn validate_solution(
     solution: essential_types::solution::Solution,
 ) -> anyhow::Result<()> {
     let registry_predicate = essential_node_types::BigBang::default().contract_registry;
-    essential_node::validate_solution(conn, &registry_predicate.contract, solution).await?;
+    essential_node::validate_solution_dry_run(conn, &registry_predicate.contract, solution).await?;
     Ok(())
 }

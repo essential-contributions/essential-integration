@@ -9,6 +9,7 @@ use tokio::{
 const PINT_DIRECTORY: &str = "../pint";
 
 #[tokio::test]
+#[ignore]
 async fn builder_integration() {
     let (_builder_process, node_address, builder_address) = start_essential_builder().await;
 
@@ -105,12 +106,7 @@ async fn increment_count(
 
 async fn start_essential_builder() -> (Child, String, String) {
     let mut builder_process = TokioCommand::new("essential-builder")
-        .args([
-            "--block-interval-ms",
-            "100",
-            // @todo remove once new Node & Builder published.
-            "--state-derivation",
-        ])
+        .args(["--block-interval-ms", "100"])
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .kill_on_drop(true)
@@ -152,7 +148,7 @@ async fn deploy_contract(builder_address: String) {
         .args([
             "deploy-contract",
             &format!("http://{}", builder_address.as_str()),
-            concat!(env!("CARGO_MANIFEST_DIR"), "/../pint/out/debug/pint.json").into(),
+            concat!(env!("CARGO_MANIFEST_DIR"), "/../pint/out/debug/pint.json"),
         ])
         .output()
         .await

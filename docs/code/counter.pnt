@@ -6,10 +6,10 @@ storage {
 
 // ANCHOR: predicate
 // ANCHOR: pred_start
-predicate Increment {
+predicate Increment() {
 // ANCHOR_END: pred_start
 // ANCHOR: read_storage
-    state counter: int = mut storage::counter;
+    let counter: int = mut storage::counter;
 // ANCHOR_END: read_storage
 // ANCHOR: constraint
     constraint (counter == nil && counter' == 1) || counter' == counter + 1;
