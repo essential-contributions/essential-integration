@@ -1,10 +1,10 @@
 // ANCHOR: full
 // ANCHOR: use
 use clap::{Args, Parser, Subcommand};
-use counter_app::{counter_key, extract_count, incremented_solution, CounterKey, QueryCount};
+use counter_app::{counter_key, extract_count, incremented_solution, CounterKey};
 use essential_app_utils::compile::compile_pint_project;
 use essential_rest_client::node_client::EssentialNodeClient;
-use essential_types::{ContentAddress, PredicateAddress};
+use essential_types::{ContentAddress, PredicateAddress, Value};
 use std::path::PathBuf;
 // ANCHOR_END: use
 
@@ -60,7 +60,7 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
             },
         } => {
             let address = compile_address(pint_directory).await?;
-            let node = essential_rest_client::node_client::EssentialNodeClient::new(node_api)?;
+            let node = EssentialNodeClient::new(node_api)?;
             let key = counter_key();
             let count = query_count(node, address.contract, key).await?;
             let count_value = extract_count(count)?;
@@ -74,10 +74,10 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
             },
         } => {
             let address = compile_address(pint_directory).await?;
-            let node = essential_rest_client::node_client::EssentialNodeClient::new(node_api)?;
+            let node = EssentialNodeClient::new(node_api)?;
             let key = counter_key();
             let count = query_count(node, address.contract.clone(), key).await?;
-            let (solution, new_count) = incremented_solution(address, count)?;
+            let (solution, new_count) = incremented_solution(count)?; // Pass only count
             let builder =
                 essential_rest_client::builder_client::EssentialBuilderClient::new(builder_api)?;
             let ca = builder.submit_solution(&solution).await?;
@@ -94,8 +94,8 @@ async fn query_count(
     node: EssentialNodeClient,
     address: ContentAddress,
     key: CounterKey,
-) -> anyhow::Result<QueryCount> {
-    Ok(QueryCount(node.query_state(address, key.0).await?))
+) -> anyhow::Result<Option<Value>> {
+    Ok(node.query_state(address, key.0).await?)
 }
 // ANCHOR_END: qry
 
