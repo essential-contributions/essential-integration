@@ -13,9 +13,6 @@ The first thing we want to do within this predicate is to read the `counter` sto
 {{#include ../../../../code/counter.pnt:read_storage}}
 {{#include ../../../../code/counter.pnt:pred_end}}
 ```
-When a storage value is read like this there are actually two values read:
-- The pre-state value of the storage, denoted by `counter`.
-- The post-state value of the storage, denoted by `counter'`. (Notice the apostrophe `'`).
 ### Constraint
 Let's add our first constraint:
 ```pint
@@ -27,6 +24,8 @@ Let's add our first constraint:
 ```
 A constraint is a boolean expression which must be true for the predicate to be satisfied. \
 This constraint says that the post-state of the counter must be equal to the pre-state plus one.
+
+**Note:** The post-state value of the counter storage variable is denoted by `counter'`. The trailing apostrophe `'` is the syntax for accessing the post-state value of a storage variable.
 
 But there is a problem with this constraint. \
 What if the pre-state of the counter is not yet set to anything?
