@@ -84,10 +84,13 @@
       };
 
       packages = perSystemPkgs (pkgs: {
+        essential-builder = pkgs.essential-builder;
+        essential-node = pkgs.essential-node;
         essential-rest-client = pkgs.essential-rest-client;
         essential = pkgs.essential;
         book = pkgs.book;
         cargo-readme = pkgs.cargo-readme;
+        pint = pkgs.pint;
         pint-proj = pkgs.pint-proj;
         compile-all-contracts = pkgs.compile-all-contracts;
         default = inputs.self.packages.${pkgs.system}.essential;
