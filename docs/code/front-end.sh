@@ -11,8 +11,10 @@ cd $temp_dir || exit
 mkdir counter
 pint new --name counter counter/contract
 cp "$SCRIPT_DIR/counter.pnt" "$temp_dir/counter/contract/src/contract.pnt"
+cd counter/contract || exist
+pint build
 
-cd counter || exit
+cd ..
 # ANCHOR: cargo-new
 cargo new --lib counter-app
 # ANCHOR_END: cargo-new
@@ -28,11 +30,13 @@ cargo add essential-app-utils
 cargo add essential-hash
 cargo add essential-rest-client
 cargo add essential-types
+cargo add pint-abi
 cargo add tokio --features full
 cargo add essential-app-utils --features test-utils --dev
 cargo add essential-builder --dev
 cargo add essential-builder-db --dev
 cargo add essential-node --dev
+cargo add serde_json --dev
 # ANCHOR_END: cargo-add
 
 cat Cargo.toml > $SCRIPT_DIR/counter-cargo.toml

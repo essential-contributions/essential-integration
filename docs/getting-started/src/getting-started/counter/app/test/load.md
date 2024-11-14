@@ -4,9 +4,11 @@ Define an asynchronous test function using the `#[tokio::test]` attribute. This 
 {{#include ../../../../../../code/counter-test.rs:test-start}}
 {{#include ../../../../../../code/counter-test.rs:test-end}}
 ```
-Then add a section to generate the address. We're compiling our Pint project, which contains the counter contract. We then generate the contract address and predicate address from the compiled contract. These addresses will be used to interact with our counter in the builder / node.
+Then add a section to read the "counter" contract from its bytecode which was generated earlier and
+can be found under the `out/debug` directory.
+
 ```rust
 {{#include ../../../../../../code/counter-test.rs:test-start}}
-{{#include ../../../../../../code/counter-test.rs:addr}}
+{{#include ../../../../../../code/counter-test.rs:counter}}
 {{#include ../../../../../../code/counter-test.rs:test-end}}
 ```

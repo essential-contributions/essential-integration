@@ -19,7 +19,7 @@ You can install the Essential tools directly from crates.io using Cargo. This me
 If you are using `nix`, you can simply run the following command to launch a dev shell with all the necessary tools installed:
 
 ```bash
-nix develop github:essential-contributions/essential-integration#dev
+nix develop github:essential-contributions/essential-integration
 ```
 
 If you don't have Rust and Cargo installed, follow the official installation instructions [here](https://www.rust-lang.org/tools/install).
