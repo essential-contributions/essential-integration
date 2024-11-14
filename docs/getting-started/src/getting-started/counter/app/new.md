@@ -14,14 +14,17 @@ Your project structure should now look like this:
 
 ```
 counter/
-├── contract/
-│   ├── pint.toml
-│   ├── contract.pnt
-│   └── src/
-│       └── contract.pnt
-└── counter-app/
+├── contract
+│   ├── out
+│   │   └── debug
+│   │       ├── counter-abi.json
+│   │       └── counter.json
+│   ├── pint.toml
+│   └── src
+│       └── contract.pnt
+└── counter-app
     ├── Cargo.toml
-    └── src/
+    └── src
         └── lib.rs
 ```
 
@@ -50,18 +53,22 @@ Lastly, add a test to your front-end application by using the following command:
 After adding the test, your project structure should look like this:
 
 ```
-counter/
-├── contract/
-│   ├── pint.toml
-│   ├── contract.pnt
-│   └── src/
-│       └── contract.pnt
-└── counter-app/
+counter
+├── contract
+│   ├── out
+│   │   └── debug
+│   │       ├── counter-abi.json
+│   │       └── counter.json
+│   ├── pint.toml
+│   └── src
+│       └── contract.pnt
+└── counter-app
+    ├── Cargo.lock
     ├── Cargo.toml
-    ├── tests/
-    │   └── counter.rs
-    └── src/
-        └── lib.rs
+    ├── src
+    │   └── lib.rs
+    └── tests
+        └── counter.rs
 ```
 
 At this point, your Rust project is set up with all the necessary dependencies, and a basic test has been added to your front-end application.

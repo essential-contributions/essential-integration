@@ -2,8 +2,7 @@
   "predicates": [
     {
       "name": "::Increment",
-      "vars": [],
-      "pub_vars": []
+      "params": []
     }
   ],
   "storage": [
