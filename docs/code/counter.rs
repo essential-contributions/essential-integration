@@ -52,7 +52,7 @@ pub fn create_solution(new_count: Word) -> Solution {
     Solution {
         data: vec![SolutionData {
             predicate_to_solve: Increment::ADDRESS,
-            decision_variables: Default::default(),
+            predicate_params: Default::default(),
             state_mutations,
         }],
     }
