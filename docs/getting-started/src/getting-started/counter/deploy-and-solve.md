@@ -14,10 +14,14 @@ nix shell github:essential-contributions/essential-integration#essential
 ## Running a Test Builder
 
 Before we can deploy our contract, we need somewhere to deploy it to. Let's run
-a local, in-memory test instance of the `essential-builder` tool:
+a local, in-memory test instance of the `essential-builder` tool.
+
+The builder will run forever so let's run it in a seperate terminal. Open a
+new terminal, run the nix shell command above to make the builder tool
+available, and run it like so:
 
 ```console
-essential-builder
+essential-builder --node-api-bind-address "0.0.0.0:3553" --builder-api-bind-address "0.0.0.0:3554"
 ```
 
 Now we're running a local instance of the builder. We should see some output
@@ -25,18 +29,22 @@ like the following:
 
 ```console
 2024-11-14T11:58:14.359260Z  INFO essential_builder_cli: Initializing node DB
-2024-11-14T11:58:14.364424Z  INFO essential_builder_cli: Starting node API server at 0.0.0.0:57967
+2024-11-14T11:58:14.364424Z  INFO essential_builder_cli: Starting node API server at 0.0.0.0:3553
 2024-11-14T11:58:14.364439Z  INFO essential_builder_cli: Initializing builder DB
-2024-11-14T11:58:14.365863Z  INFO essential_builder_cli: Starting builder API server at 0.0.0.0:57968
+2024-11-14T11:58:14.365863Z  INFO essential_builder_cli: Starting builder API server at 0.0.0.0:3554
 2024-11-14T11:58:14.365887Z  INFO essential_builder_cli: Running the block builder
 ```
 
 We can see that the builder exposes 2 APIs:
 
-1. **A node API** at **localhost** on **port 57967**. This allows for querying
+1. **A node API** at **localhost** on **port 3553**. This allows for querying
    the state of our local single-node blockchain.
-2. **A builder API** at **localhost** on **port 57968**. This allows for
+2. **A builder API** at **localhost** on **port 3554**. This allows for
    submitting solutions to have them included in a block.
+
+> **Note:** If we do not specify the `--node-api-bind-address` or
+> `--builder-api-bind-address` options, the builder will randomly select
+> available ports for the node and builder APIs respectively.
 
 
 ## Contract Deployment
@@ -45,7 +53,7 @@ Using the `essential-rest-client` tool, we can deploy our built counter
 contract to the local test builder:
 
 ```console
-essential-rest-client deploy-contract "http://127.0.0.1:57968" ./out/debug/counter.json
+essential-rest-client deploy-contract "http://127.0.0.1:3554" ./out/debug/counter.json
 ```
 
 Upon success, the builder will send us the content address of the solution used
@@ -117,7 +125,7 @@ Lets put the above JSON in a `solution.json` file.
 To submit our solution to the local builder, we can now use the following command:
 
 ```
-essential-rest-client submit-solution "http://127.0.0.1:57968" ./solution.json
+essential-rest-client submit-solution "http://127.0.0.1:3554" ./solution.json
 ```
 
 As confirmation that the builder received our solution, it responds with its
@@ -130,13 +138,19 @@ To check whether or not our solution was successful, we can query the state of
 our contract's `counter` storage variable using the builder's node API:
 
 ```console
-$ essential-rest-client query-state --content-address "1899743AA94972DDD137D039C2E670ADA63969ABF93191FA1A4506304D4033A2" "http://127.0.0.1:59438" "0000000000000000"
+essential-rest-client query-state --content-address "1899743AA94972DDD137D039C2E670ADA63969ABF93191FA1A4506304D4033A2" "http://127.0.0.1:3553" "0000000000000000"
 ```
 
 Here, we're providing the counter's contract address:
 
 ```
 --content-address "1899743AA94972DDD137D039C2E670ADA63969ABF93191FA1A4506304D4033A2"
+```
+
+the address of the node API:
+
+```
+"http://127.0.0.1:3553"
 ```
 
 and the 8-byte hex-formatted key which we want to query:
