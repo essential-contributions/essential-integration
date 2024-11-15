@@ -16,6 +16,7 @@
     - [Define Storage](./getting-started/counter/storage.md)
     - [Write Predicate](./getting-started/counter/predicates.md)
     - [Compile](./getting-started/counter/compile.md)
+    - [Deploy & Solve](./getting-started/counter/deploy-and-solve.md)
     - [Rust Front End](./getting-started/counter/app/index.md)
         - [Setup Cargo Project](./getting-started/counter/app/new.md)
         - [App](./getting-started/counter/app/fe/index.md)
@@ -45,5 +46,3 @@
             - [Run](./getting-started/counter/cli/commands/run.md)
             - [Summary](./getting-started/counter/cli/commands/sum.md)
         - [Interact with Testnet](./getting-started/counter/cli/interact.md)
-            
-    
