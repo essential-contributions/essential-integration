@@ -46,6 +46,12 @@ We can see that the builder exposes 2 APIs:
 > `--builder-api-bind-address` options, the builder will randomly select
 > available ports for the node and builder APIs respectively.
 
+> **Tip:** To see more detailed logs from the builder, we can run it with the
+> `RUST_LOG` environment variable set to `debug` or `trace`, e.g.
+> ```console
+> RUST_LOG=trace essential-builder
+> ```
+
 
 ## Contract Deployment
 
@@ -175,7 +181,7 @@ manner - as long as our solutions satisfy the contract's predicates.
 ## Constructing Solutions for Apps
 
 Rather than manually writing JSON files to construct solutions and interact
-with constracts, it will be more common to automatically create solutions from
+with contracts, it will be more common to automatically create solutions from
 application code.
 
 In the following chapter, we will demonstrate how to do so with the
