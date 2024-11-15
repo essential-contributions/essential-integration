@@ -10,17 +10,18 @@ tools available to our current shell:
 nix shell github:essential-contributions/essential-integration#essential
 ```
 
+
 ## Running a Test Builder
 
 Before we can deploy our contract, we need somewhere to deploy it to. Let's run
 a local, in-memory test instance of the `essential-builder` tool:
 
 ```console
-essential-builder --validation
+essential-builder
 ```
 
-Here we're running a local instance of the builder with node validation
-enabled. We should see some output like the following:
+Now we're running a local instance of the builder. We should see some output
+like the following:
 
 ```console
 2024-11-14T11:58:14.359260Z  INFO essential_builder_cli: Initializing node DB
