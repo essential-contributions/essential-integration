@@ -58,15 +58,15 @@ predicate Burn(key: b256, amount: int, auth: BurnAuth) {
 }
 
 macro @check_if_predicate_is_owner($c, $p, $address, $arg0) {
-    $c[[$address.contract]]::$p[[$address.addr]]($arg0, { contract: __this_contract_address(), addr: __this_address() })
+    $c@[$address.contract]::$p@[$address.addr]($arg0, { contract: __this_contract_address(), addr: __this_address() })
 }
 
 macro @check_if_predicate_is_owner($c, $p, $address, $arg0, $arg1) {
-    $c[[$address.contract]]::$p[[$address.addr]]($arg0, $arg1, { contract: __this_contract_address(), addr: __this_address() })
+    $c@[$address.contract]::$p@[$address.addr]($arg0, $arg1, { contract: __this_contract_address(), addr: __this_address() })
 }
 
 macro @check_if_predicate_is_owner($c, $p, $address, $arg0, $arg1, $arg2) {
-    $c[[$address.contract]]::$p[[$address.addr]]($arg0, $arg1, $arg2, { contract: __this_contract_address(), addr: __this_address() })
+    $c@[$address.contract]::$p@[$address.addr]($arg0, $arg1, $arg2, { contract: __this_contract_address(), addr: __this_address() })
 }
 
 union MintAuth = Signed(Secp256k1Signature) | Predicate(PredicateAddress);
@@ -188,7 +188,7 @@ predicate Transfer(key: b256, to: b256, amount: int, auth: TransferAuth) {
         TransferAuthMode::Predicate(addr) => @check_if_predicate_is_owner(TransferAccount; Owner; addr; key; to; amount),
     };
     constraint match auth.extra {
-        ExtraConstraints::Extra(extra) => ExtraConstraintsI[[extra.addr.contract]]::Check[[extra.addr.addr]]({ contract: __this_contract_address(), addr: __this_address() }),
+        ExtraConstraints::Extra(extra) => ExtraConstraintsI@[extra.addr.contract]::Check@[extra.addr.addr]({ contract: __this_contract_address(), addr: __this_address() }),
         ExtraConstraints::None => true,
     };
 }
