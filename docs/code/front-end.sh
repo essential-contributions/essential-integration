@@ -31,6 +31,8 @@ cargo add essential-hash
 cargo add essential-rest-client
 cargo add essential-types
 cargo add pint-abi
+cargo add pint-deploy
+cargo add pint-submit
 cargo add tokio --features full
 cargo add essential-app-utils --features test-utils --dev
 cargo add essential-builder --dev
