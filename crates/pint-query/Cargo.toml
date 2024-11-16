@@ -1,6 +1,6 @@
 [package]
-name = "pint-submit"
-description = "Pint package for submitting solutions to a node"
+name = "pint-query"
+description = "Pint package for querying state from a node"
 version = "0.1.0"
 edition.workspace = true
 authors.workspace = true
