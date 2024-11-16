@@ -14,5 +14,7 @@ clap = { workspace = true }
 essential-rest-client = { workspace = true }
 essential-types = { workspace = true }
 hex = { workspace = true }
+pint-abi = { workspace = true }
+pint-manifest = { workspace = true }
 serde_json = { workspace = true }
 tokio = { workspace = true }

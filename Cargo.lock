@@ -2287,6 +2287,8 @@ dependencies = [
  "essential-rest-client",
  "essential-types 0.5.0",
  "hex",
+ "pint-abi",
+ "pint-manifest",
  "serde_json",
  "tokio",
 ]

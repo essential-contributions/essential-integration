@@ -153,7 +153,7 @@ impl FromStr for BlockRange {
     }
 }
 
-// Should be made obsolete by https://github.com/essential-contributions/essential-base/issues/228
+// FIXME: Should be made obsolete by https://github.com/essential-contributions/essential-base/issues/228
 #[derive(Clone, Debug)]
 struct Key(essential_types::Key);
 
