@@ -33,7 +33,8 @@ struct Args {
 async fn main() {
     let args = Args::parse();
     if let Err(err) = run(args).await {
-        eprintln!("Command failed because: {}", err);
+        let bold = Style::new().bold();
+        eprintln!("{}Error:{} {err:?}", bold.render(), bold.render_reset());
     }
 }
 
