@@ -62,8 +62,8 @@ async fn run(args: Args) -> anyhow::Result<()> {
                 },
             };
             let manifest = ManifestFile::from_path(&manifest_path)?;
-            let contract_abi = get_contract_abi(manifest)?;
-            get_key_from_abi(contract_abi, key_name)?
+            let contract_abi = get_contract_abi(&manifest)?;
+            get_key_from_abi(&contract_abi, key_name)?
         }
         (None, Some(key_hex)) => key_hex.0,
         (None, None) => anyhow::bail!("At least one of key name or key hex should be provided."),
@@ -108,7 +108,7 @@ fn find_file(mut dir: PathBuf, file_name: &str) -> Option<PathBuf> {
 }
 
 /// Given a `ManifestFile`, return the `ContractABI` of the already compiled contract.
-fn get_contract_abi(manifest: ManifestFile) -> anyhow::Result<ContractABI> {
+fn get_contract_abi(manifest: &ManifestFile) -> anyhow::Result<ContractABI> {
     let out_dir = manifest.out_dir();
     for entry in read_dir(out_dir.clone())? {
         let entry = entry?;
@@ -127,7 +127,7 @@ fn get_contract_abi(manifest: ManifestFile) -> anyhow::Result<ContractABI> {
 }
 
 /// Given a `ContractABI` and a key name, return the `Key`.
-fn get_key_from_abi(abi: ContractABI, key_name: String) -> anyhow::Result<essential_types::Key> {
+fn get_key_from_abi(abi: &ContractABI, key_name: String) -> anyhow::Result<essential_types::Key> {
     abi.storage
         .iter()
         .enumerate()
