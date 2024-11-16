@@ -15,9 +15,6 @@ struct Args {
     /// The contract address to query, encoded as hex.
     #[arg(long)]
     contract_address: ContentAddress,
-    /// The key name to query.
-    #[arg(long)]
-    key: Option<String>,
     /// The path to the package manifest.
     ///
     /// If not provided, the current directory is checked and then each parent
@@ -26,7 +23,9 @@ struct Args {
     manifest_path: Option<PathBuf>,
     /// The key to query, encoded as hex.
     #[arg(long)]
-    key_hex: Option<Key>,
+    key: Option<Key>,
+    /// The storage access to query.
+    storage_access: Option<String>,
 }
 
 #[tokio::main]
@@ -42,16 +41,16 @@ async fn run(args: Args) -> anyhow::Result<()> {
     let Args {
         node_address,
         contract_address,
-        key,
         manifest_path,
-        key_hex,
+        key,
+        storage_access,
     } = args;
 
-    let query_key = match (key, key_hex) {
+    let query_key = match (key, storage_access) {
         (Some(_), Some(_)) => {
-            anyhow::bail!("Only one of key name or key hex should be provided.")
+            anyhow::bail!("Only one of storage access name and key hex should be provided.")
         }
-        (Some(key_name), None) => {
+        (None, Some(storage_access_name)) => {
             let manifest_path = match manifest_path {
                 Some(path) => path,
                 None => match find_file(std::env::current_dir()?, ManifestFile::FILE_NAME) {
@@ -63,9 +62,9 @@ async fn run(args: Args) -> anyhow::Result<()> {
             };
             let manifest = ManifestFile::from_path(&manifest_path)?;
             let contract_abi = get_contract_abi(&manifest)?;
-            get_key_from_abi(&contract_abi, key_name)?
+            get_key_from_abi(&contract_abi, storage_access_name)?
         }
-        (None, Some(key_hex)) => key_hex.0,
+        (Some(key_hex), None) => key_hex.0,
         (None, None) => anyhow::bail!("At least one of key name or key hex should be provided."),
     };
 
@@ -150,9 +149,5 @@ fn get_key_from_abi(abi: &ContractABI, key_name: String) -> anyhow::Result<essen
                 ))
             }
         })
-        .unwrap_or_else(|| {
-            Err(anyhow::anyhow!(
-                "Could not find key \"{key_name}\" in ABI"
-            ))
-        })
+        .unwrap_or_else(|| Err(anyhow::anyhow!("Could not find key \"{key_name}\" in ABI")))
 }
