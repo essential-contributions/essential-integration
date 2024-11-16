@@ -77,6 +77,9 @@
           book = final.callPackage ./pkgs/book.nix { };
           # Pint project compiler.
           pint-proj = prev.callPackage ./pkgs/pint-proj/compile-pint-project.nix { };
+          # Pint plugins.
+          pint-deploy = prev.callPackage ./pkgs/pint-deploy.nix { };
+          pint-submit = prev.callPackage ./pkgs/pint-submit.nix { };
           # Compile all pint projects in this repo under apps
           compile-all-contracts = final.callPackage ./pkgs/pint-proj/compile-all-apps.nix { };
         };
@@ -91,7 +94,9 @@
         book = pkgs.book;
         cargo-readme = pkgs.cargo-readme;
         pint = pkgs.pint;
+        pint-deploy = pkgs.pint-deploy;
         pint-proj = pkgs.pint-proj;
+        pint-submit = pkgs.pint-submit;
         compile-all-contracts = pkgs.compile-all-contracts;
         default = inputs.self.packages.${pkgs.system}.essential;
       });
