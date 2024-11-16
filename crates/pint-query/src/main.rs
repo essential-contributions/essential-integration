@@ -127,26 +127,28 @@ fn get_contract_abi(manifest: ManifestFile) -> anyhow::Result<ContractABI> {
 
 /// Given a `ContractABI` and a key name, return the `Key`.
 fn get_key_from_abi(abi: ContractABI, key_name: String) -> anyhow::Result<essential_types::Key> {
-    for (index, storage) in abi.storage.iter().enumerate() {
-        if storage.name == key_name {
-            if storage.ty == TypeABI::Bool
-                || storage.ty == TypeABI::Int
-                || storage.ty == TypeABI::Real
-                || storage.ty == TypeABI::String
-                || storage.ty == TypeABI::B256
-            {
+    abi.storage
+        .iter()
+        .enumerate()
+        .find(|(_, storage)| storage.name == key_name)
+        .map(|(index, storage)| {
+            if matches!(
+                storage.ty,
+                TypeABI::Bool | TypeABI::Int | TypeABI::Real | TypeABI::String | TypeABI::B256
+            ) {
                 let key = vec![index.try_into()?];
-                return Ok(key);
+                Ok(key)
             } else {
                 // FIXME: support complex types
-                return Err(anyhow::anyhow!(
-                    "Querying key of type {:?} with name is not supported. Try providing a key_hex.",
+                Err(anyhow::anyhow!(
+            "Querying key of type {:?} with name is not supported. Try providing a key_hex.",
                     storage.ty
-                ));
+                ))
             }
-        }
-    }
-    Err(anyhow::anyhow!(
-        "Could not find key {key_name} in given ABI"
-    ))
+        })
+        .unwrap_or_else(|| {
+            Err(anyhow::anyhow!(
+                "Could not find key {key_name} in given ABI"
+            ))
+        })
 }
