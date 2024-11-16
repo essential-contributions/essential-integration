@@ -1,4 +1,4 @@
-use clap::Parser;
+use clap::{builder::styling::Style, Parser};
 use essential_rest_client::node_client::EssentialNodeClient;
 use essential_types::{convert::word_from_bytes, ContentAddress};
 use pint_abi::types::{ContractABI, TypeABI};
@@ -110,7 +110,10 @@ fn find_file(mut dir: PathBuf, file_name: &str) -> Option<PathBuf> {
 /// Given a `ManifestFile`, return the `ContractABI` of the already compiled contract.
 fn get_contract_abi(manifest: &ManifestFile) -> anyhow::Result<ContractABI> {
     let out_dir = manifest.out_dir();
-    for entry in read_dir(out_dir.clone())? {
+    // FIXME: Remove hardcoding when Pint has different profiles.
+    let profile = "debug";
+    let profile_dir = out_dir.join(profile);
+    for entry in read_dir(profile_dir.clone())? {
         let entry = entry?;
         let entry_file_name = entry.file_name();
         let name = entry_file_name
@@ -122,7 +125,7 @@ fn get_contract_abi(manifest: &ManifestFile) -> anyhow::Result<ContractABI> {
     }
     Err(anyhow::anyhow!(
         "Could not find *-abi.json file in {:?}",
-        out_dir
+        profile_dir
     ))
 }
 
