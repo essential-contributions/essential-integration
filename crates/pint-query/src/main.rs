@@ -152,7 +152,7 @@ fn get_key_from_abi(abi: &ContractABI, key_name: String) -> anyhow::Result<essen
         })
         .unwrap_or_else(|| {
             Err(anyhow::anyhow!(
-                "Could not find key {key_name} in given ABI"
+                "Could not find key \"{key_name}\" in ABI"
             ))
         })
 }
