@@ -1968,9 +1968,9 @@ checksum = "8b870d8c151b6f2fb93e84a13146138f05d02ed11c7e7c54f8826aaaf7c9f184"
 
 [[package]]
 name = "pint-abi"
-version = "0.7.0"
+version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0895b2d28b906999f32eb32117f13d808980acf0c13fba78e7c3883efae77be7"
+checksum = "535996c1050511cbbd5b3e504084f02ba39123c611a72756a919b127dfacb3e6"
 dependencies = [
  "essential-types 0.5.0",
  "pint-abi-gen",
@@ -1981,9 +1981,9 @@ dependencies = [
 
 [[package]]
 name = "pint-abi-gen"
-version = "0.7.0"
+version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "077bdf71d11dec5896ddbb297c0421a77a0808f0af4579ee76ce45397ad4d831"
+checksum = "407124c61c1b46bf1e910c681cb30ecb3052d1b6be72abe968b94fa52e35135e"
 dependencies = [
  "essential-hash 0.7.0",
  "essential-types 0.5.0",
@@ -2018,7 +2018,7 @@ dependencies = [
 
 [[package]]
 name = "pint-deploy"
-version = "0.0.0"
+version = "0.1.0"
 dependencies = [
  "anyhow",
  "clap",
@@ -2030,7 +2030,7 @@ dependencies = [
 
 [[package]]
 name = "pint-submit"
-version = "0.0.0"
+version = "0.1.0"
 dependencies = [
  "anyhow",
  "clap",
