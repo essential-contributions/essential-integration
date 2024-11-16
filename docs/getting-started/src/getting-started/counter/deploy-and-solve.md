@@ -143,25 +143,25 @@ To check whether or not our solution was successful, we can query the state of
 our contract's `counter` storage variable using the builder's node API:
 
 ```console
-essential-rest-client query-state --content-address "1899743AA94972DDD137D039C2E670ADA63969ABF93191FA1A4506304D4033A2" "http://127.0.0.1:3553" "0000000000000000"
+pint query --node-address "http://127.0.0.1:3553" --contract-address "1899743AA94972DDD137D039C2E670ADA63969ABF93191FA1A4506304D4033A2" --key "0000000000000000"
 ```
 
-Here, we're providing the counter's contract address:
+Here, we're providing the address of the node API:
 
 ```
---content-address "1899743AA94972DDD137D039C2E670ADA63969ABF93191FA1A4506304D4033A2"
+--node-address "http://127.0.0.1:3553"
 ```
 
-the address of the node API:
+the counter's contract address:
 
 ```
-"http://127.0.0.1:3553"
+--contract-address "1899743AA94972DDD137D039C2E670ADA63969ABF93191FA1A4506304D4033A2"
 ```
 
 and the 8-byte hex-formatted key which we want to query:
 
 ```
-"0000000000000000"
+--key "0000000000000000"
 ```
 
 Upon success, the node responds with:
