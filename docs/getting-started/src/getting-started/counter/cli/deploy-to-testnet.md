@@ -1,8 +1,7 @@
 # Deploy to Testnet
 In this section you will learn how to deploy your counter app to the public testnet builder. The builder is running at `https://node.essential.builders`.
 
-
-To do this you can use the `essential-rest-client` tool available in the [essential-integration](https://github.com/essential-contributions/essential-integration) repo.
+To do this you can use the `pint-deploy` tool available in the [essential-integration](https://github.com/essential-contributions/essential-integration) repo.
 
 Compared to the test this deploys the counter persistently to the testnet. This means that the counter will be available to anyone who knows the contract address.
 

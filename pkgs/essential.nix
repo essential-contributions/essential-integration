@@ -6,6 +6,8 @@
 , essential-wallet-test
 , essential-debugger
 , pint
+, pint-deploy
+, pint-submit
 , symlinkJoin
 }:
 symlinkJoin {
@@ -18,5 +20,7 @@ symlinkJoin {
     essential-wallet-test
     essential-debugger
     pint
+    pint-deploy
+    pint-submit
   ];
 }

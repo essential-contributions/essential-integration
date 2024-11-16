@@ -3,13 +3,12 @@
 Now that we've built our simple counter contract, let's deploy it to a local
 test network, and update the counter by solving our `Increment` predicate.
 
-Before we begin, we'll make the `essential-builder` and `essential-rest-client`
-tools available to our current shell:
+Before we begin, we'll make the `essential-builder`, `pint`, and
+`essential-rest-client` tools available to our current shell:
 
 ```
 nix shell github:essential-contributions/essential-integration#essential
 ```
-
 
 ## Running a Test Builder
 
@@ -55,11 +54,11 @@ We can see that the builder exposes 2 APIs:
 
 ## Contract Deployment
 
-Using the `essential-rest-client` tool, we can deploy our built counter
+Using the `pint deploy` plugin, we can deploy our built counter
 contract to the local test builder:
 
 ```console
-essential-rest-client deploy-contract "http://127.0.0.1:3554" ./out/debug/counter.json
+pint deploy --builder-address "http://127.0.0.1:3554" --contract "./out/debug/counter.json"
 ```
 
 Upon success, the builder will send us the content address of the solution used
@@ -131,7 +130,7 @@ Lets put the above JSON in a `solution.json` file.
 To submit our solution to the local builder, we can now use the following command:
 
 ```
-essential-rest-client submit-solution "http://127.0.0.1:3554" ./solution.json
+pint submit --builder-address "http://127.0.0.1:3554" --solution "./solution.json"
 ```
 
 As confirmation that the builder received our solution, it responds with its
