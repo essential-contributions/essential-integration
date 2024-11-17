@@ -18,7 +18,7 @@ struct Args {
     builder_address: String,
     /// Path to a specific `Contract` encoded as JSON.
     ///
-    /// If a specific contract is specified in this manner, all arguments related to building a
+    /// If a contract is specified in this manner, all arguments related to building a
     /// pint project are ignored.
     #[arg(long)]
     contract: Option<PathBuf>,
