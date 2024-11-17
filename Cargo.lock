@@ -2178,7 +2178,7 @@ checksum = "535996c1050511cbbd5b3e504084f02ba39123c611a72756a919b127dfacb3e6"
 dependencies = [
  "essential-types 0.5.0",
  "pint-abi-gen",
- "pint-abi-types 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "pint-abi-types",
  "serde_json",
  "thiserror",
 ]
@@ -2191,20 +2191,13 @@ checksum = "407124c61c1b46bf1e910c681cb30ecb3052d1b6be72abe968b94fa52e35135e"
 dependencies = [
  "essential-hash 0.7.0",
  "essential-types 0.5.0",
- "pint-abi-types 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "pint-abi-types",
  "pint-abi-visit",
  "proc-macro2",
  "quote",
  "serde",
  "serde_json",
  "syn",
-]
-
-[[package]]
-name = "pint-abi-types"
-version = "0.4.0"
-dependencies = [
- "serde",
 ]
 
 [[package]]
@@ -2224,12 +2217,14 @@ checksum = "e5b6ab14a9532c3ec9a06cad94febd0e8f2d387804f922ffcc4ba5bc51f91122"
 dependencies = [
  "essential-types 0.5.0",
  "petgraph",
- "pint-abi-types 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "pint-abi-types",
 ]
 
 [[package]]
 name = "pint-cli"
 version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d9225e57148d13e0bba7a201df7f46fcbe3b6153f39aa2af454adfc3a4293eaf"
 dependencies = [
  "anyhow",
  "clap",
@@ -2256,6 +2251,8 @@ dependencies = [
 [[package]]
 name = "pint-manifest"
 version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "032538c7dc7a70b3c7d8a7e0bbc84c33cfbc819c035afadfd7a0e7591876ba66"
 dependencies = [
  "serde",
  "serde_ignored",
@@ -2266,12 +2263,14 @@ dependencies = [
 [[package]]
 name = "pint-pkg"
 version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ecd45856b5a1d39414ec77063f87f3c3e48216f10f76351db1d1d328f8facdfc"
 dependencies = [
  "clap",
  "essential-hash 0.7.0",
  "essential-types 0.5.0",
  "petgraph",
- "pint-abi-types 0.4.0",
+ "pint-abi-types",
  "pint-manifest",
  "pintc",
  "serde",
@@ -2282,6 +2281,8 @@ dependencies = [
 [[package]]
 name = "pint-solve"
 version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1e4e3825a2c3ec748324a9554f9376c3b94759ae0a11f323042f7ed6d2ffa163"
 dependencies = [
  "expect-test",
  "fxhash",
@@ -2306,6 +2307,8 @@ dependencies = [
 [[package]]
 name = "pintc"
 version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0b379b85a5677dd31b1509a5f27129526e7c0d24ee058ee5d4948a7d5992b8bb"
 dependencies = [
  "anyhow",
  "ariadne",
@@ -2321,7 +2324,7 @@ dependencies = [
  "lalrpop-util",
  "logos",
  "petgraph",
- "pint-abi-types 0.4.0",
+ "pint-abi-types",
  "pint-solve",
  "regex",
  "serde",
