@@ -28,6 +28,7 @@ async fn run(args: Args) -> anyhow::Result<()> {
         builder_address,
         solution,
     } = args;
+
     let builder_client = EssentialBuilderClient::new(builder_address)?;
     let solution = serde_json::from_str::<Solution>(&from_file(solution).await?)?;
     let output = builder_client.submit_solution(&solution).await?;

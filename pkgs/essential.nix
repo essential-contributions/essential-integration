@@ -7,6 +7,7 @@
 , essential-debugger
 , pint
 , pint-deploy
+, pint-query
 , pint-submit
 , symlinkJoin
 }:
@@ -21,6 +22,7 @@ symlinkJoin {
     essential-debugger
     pint
     pint-deploy
+    pint-query
     pint-submit
   ];
 }
