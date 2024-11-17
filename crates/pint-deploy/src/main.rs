@@ -10,7 +10,7 @@ use std::path::{Path, PathBuf};
 #[group(skip)]
 /// Tool to deploy a contract to a Essential builder endpoint.
 struct Args {
-    // `pint deploy` builds too, so accepts all args that
+    // `pint deploy` builds too, so accepts all args that `pint build` does.
     #[command(flatten)]
     build_args: pint_cli::build::Args,
     /// The builder to which the contract deployment solution will be submitted.
