@@ -1,43 +1,129 @@
-use clap::Parser;
+use anyhow::{anyhow, bail, Context};
+use clap::{builder::styling::Style, Parser};
 use essential_rest_client::builder_client::EssentialBuilderClient;
-use essential_types::contract::Contract;
-use std::path::PathBuf;
+use essential_types::{contract::Contract, ContentAddress};
+use pint_pkg::build::BuiltPkg;
+use std::path::{Path, PathBuf};
 
 #[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
+#[command(name = "deploy", version, about, long_about = None)]
+#[group(skip)]
 /// Tool to deploy a contract to a Essential builder endpoint.
 struct Args {
-    /// The endpoint of builder to bind to.
+    // `pint deploy` builds too, so accepts all args that `pint build` does.
+    #[command(flatten)]
+    build_args: pint_cli::build::Args,
+    /// The builder to which the contract deployment solution will be submitted.
     #[arg(long)]
     builder_address: String,
-    /// Path to the contract file as a json `Contract`.
+    /// Path to a specific `Contract` encoded as JSON.
+    ///
+    /// If a contract is specified in this manner, all arguments related to building a
+    /// pint project are ignored.
     #[arg(long)]
-    contract: PathBuf,
+    contract: Option<PathBuf>,
 }
 
 #[tokio::main]
 async fn main() {
     let args = Args::parse();
     if let Err(err) = run(args).await {
-        eprintln!("Command failed because: {}", err);
+        let bold = Style::new().bold();
+        eprintln!("{}Error:{} {err:?}", bold.render(), bold.render_reset());
+        std::process::exit(1);
     }
 }
 
 async fn run(args: Args) -> anyhow::Result<()> {
     let Args {
+        build_args,
         builder_address,
         contract,
     } = args;
 
     let builder_client = EssentialBuilderClient::new(builder_address)?;
-    let contract = serde_json::from_str::<Contract>(&from_file(contract).await?)?;
-    let output = builder_client.deploy_contract(&contract).await?;
-    println!("{}", output);
+
+    // If a contract was specified directly, there's no need to do the build or inspect any of the
+    // `build_args` - we can deploy this directly.
+    if let Some(contract_path) = contract {
+        let contract = contract_from_path(&contract_path).await?;
+        let name = format!(
+            "{}",
+            contract_path
+                .canonicalize()
+                .unwrap_or_else(|_| contract_path.to_path_buf())
+                .display()
+        );
+        print_deploying(&name, &contract);
+        let output = builder_client.deploy_contract(&contract).await?;
+        print_received(&output);
+        return Ok(());
+    }
+
+    // Otherwise, we should find and build the project.
+    let (plan, built_pkgs) = pint_cli::build::cmd(build_args)?;
+
+    // FIXME: We assume the package containing the output artifact is the last one in the
+    // compilation order. When supporting workspaces, we should deploy all (non-deployed) member
+    // "output" nodes in order of dependency.
+    let &n = plan
+        .compilation_order()
+        .last()
+        .ok_or_else(|| anyhow!("No built packages to deploy"))?;
+    let built = &built_pkgs[&n];
+    let pinned = &plan.graph()[n];
+    let manifest = &plan.manifests()[&pinned.id()];
+
+    // Now that the project is built, find the contract output.
+    // FIXME: Right now assume the `debug` profile just like the `build` command does.
+    let out_dir = manifest.out_dir();
+    let profile = "debug";
+    let profile_dir = out_dir.join(profile);
+    match built {
+        BuiltPkg::Library(_) => {
+            bail!("Expected a contract to deploy, but the pint package is a library")
+        }
+        BuiltPkg::Contract(_built) => {
+            let contract_path = profile_dir.join(&pinned.name).with_extension("json");
+            let contract = contract_from_path(&contract_path).await?;
+            print_deploying(&pinned.name, &contract);
+            let output = builder_client.deploy_contract(&contract).await?;
+            print_received(&output);
+        }
+    }
+
     Ok(())
 }
 
-/// Read file contents to a string.
-async fn from_file(path: PathBuf) -> anyhow::Result<String> {
-    let content = tokio::fs::read_to_string(path).await?;
-    Ok(content)
+/// Print the "Deploying ..." output with nice, aligned formatting.
+fn print_deploying(name: &str, contract: &Contract) {
+    let bold = Style::new().bold();
+    println!(
+        "   {}Deploying{} {} {}",
+        bold.render(),
+        bold.render_reset(),
+        name,
+        essential_hash::content_addr(contract),
+    );
+}
+
+/// Print the "Received ..." output.
+fn print_received(ca: &ContentAddress) {
+    let bold = Style::new().bold();
+    println!(
+        "    {}Received{} solution address {}",
+        bold.render(),
+        bold.render_reset(),
+        ca
+    );
+}
+
+/// Read a [`Contract`] from a JSON file at the given path.
+async fn contract_from_path(contract_path: &Path) -> anyhow::Result<Contract> {
+    let contract_string = tokio::fs::read_to_string(&contract_path)
+        .await
+        .with_context(|| format!("failed to read contract from file {contract_path:?}"))?;
+    let contract = serde_json::from_str::<Contract>(&contract_string)
+        .with_context(|| format!("failed to parse `Contract` from JSON {contract_path:?}"))?;
+    Ok(contract)
 }
