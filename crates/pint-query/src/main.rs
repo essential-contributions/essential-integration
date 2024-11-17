@@ -21,10 +21,16 @@ struct Args {
     /// recursively until a manifest is found.
     #[arg(long)]
     manifest_path: Option<PathBuf>,
-    /// The key to query, encoded as hex.
+    /// The exact key to query in state, encoded as hex.
+    ///
+    /// One and only one of `key` or `<STORAGE_ACCESS>` is expected.
     #[arg(long)]
     key: Option<Key>,
     /// The storage access to query.
+    ///
+    /// This is the name of the storage variable in the contract's storage.
+    ///
+    /// One and only one of `key` or `<STORAGE_ACCESS>` is expected.
     storage_access: Option<String>,
 }
 
