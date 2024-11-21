@@ -11,6 +11,7 @@ repository.workspace = true
 [dependencies]
 anyhow = { workspace = true }
 clap = { workspace = true }
+essential-hash = { workspace = true }
 essential-rest-client = { workspace = true }
 essential-types = { workspace = true }
 hex = { workspace = true }

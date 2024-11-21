@@ -2313,6 +2313,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "clap",
+ "essential-hash 0.7.0",
  "essential-rest-client",
  "essential-types 0.5.0",
  "hex",
