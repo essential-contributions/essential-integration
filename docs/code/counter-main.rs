@@ -95,7 +95,7 @@ async fn query_count(
     address: ContentAddress,
     key: CounterKey,
 ) -> anyhow::Result<Option<Value>> {
-    Ok(node.query_state(address, key.0).await?)
+    Ok(node.query_state(address, key).await?)
 }
 // ANCHOR_END: qry
 

@@ -1,7 +1,7 @@
 use anyhow::bail;
 use essential_types::{
     solution::{Mutation, Solution},
-    PredicateAddress, Value, Word,
+    Key, PredicateAddress, Value, Word,
 };
 
 /// The location in storage where the counter is stored.
@@ -9,7 +9,7 @@ const COUNTER_KEY: Word = 0;
 
 #[derive(Clone)]
 /// The key used to access the counter in storage.
-pub struct CounterKey(pub Vec<Word>);
+pub struct CounterKey(pub Key);
 
 #[derive(Clone)]
 /// The data returned when querying the current count.
