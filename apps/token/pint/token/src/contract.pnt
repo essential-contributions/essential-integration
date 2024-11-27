@@ -20,6 +20,15 @@ storage {
     decimals: int,
 }
 
+interface MintAccount {
+    predicate Owner(
+        key: b256,
+        amount: int,
+        decimals: int,
+        token_address: PredicateAddress,
+    );
+}
+
 interface BurnAccount {
     predicate Owner(
         key: b256,
@@ -28,7 +37,89 @@ interface BurnAccount {
     );
 }
 
+interface TransferAccount {
+    predicate Owner(
+        key: b256,
+        to: b256,
+        amount: int,
+        token_address: PredicateAddress,
+    );
+}
+
+interface CancelAccount {
+    predicate Owner(
+        key: b256,
+        token_address: PredicateAddress,
+    );
+}
+
+interface ExtraConstraintsI {
+    predicate Check(
+        token_address: PredicateAddress,
+    );
+}
+
+/// The authorization mode for the mint.
+union MintAuth = Signed(Secp256k1Signature) | Predicate(PredicateAddress);
+
+/// The authorization mode for the burn.
 union BurnAuth = Signed(Secp256k1Signature) | Predicate(PredicateAddress);
+
+/// The signature mode for the transfer authorization.
+///
+/// For instance, can use `KeyAmount` to pay the solver, whose address is unknown to the user at sign-time.
+union TransferSignedMode = All | Key | KeyTo | KeyAmount;
+
+/// The authorization mode for the transfer.
+union TransferAuthMode = Signed(TransferSignedAuth) | Predicate(PredicateAddress);
+
+/// Optional extra constraints for the transfer.
+union ExtraConstraints = Extra(Extra) | None;
+
+/// The authorization for the transfer.
+type TransferAuth = { mode: TransferAuthMode, extra: ExtraConstraints };
+/// The extra constraints for the transfer.
+type Extra = { addr: PredicateAddress };
+/// The signed authorization for the transfer.
+type TransferSignedAuth = { sig: Secp256k1Signature, mode: TransferSignedMode };
+
+/// The authorization mode for the cancelation.
+union CancelAuth = Signed(Secp256k1Signature) | Predicate(PredicateAddress);
+
+
+// key: The key that is being minted to.
+// Note this is hard coded so that only one entity can mint.
+// amount: The amount being minted.
+// This is also the total supply.
+// decimals: The number of decimals for the token.
+// auth: The authorization for the mint.
+predicate Mint(key: b256, amount: int, decimals: int, auth: MintAuth) {
+    // Read all the let that is being initialized.
+    let balance = mut storage::balances[key];
+    let nonce = mut storage::nonce[key];
+    let token_name = mut storage::token_name;
+    let token_symbol = mut storage::token_symbol;
+    let token_decimals = mut storage::decimals;
+
+    // The only authorized minting address.
+    // Note that changing this also creates a new token.
+    constraint key == config::MINT_KEY;
+
+    // Initialize all state.
+    // This enforces the pre let must be null
+    // and the post let must be set to the provided value.
+    constraint @init_once(balance; amount);
+    constraint @init_once(token_name; config::NAME);
+    constraint @init_once(token_symbol; config::SYMBOL);
+    constraint @init_once(token_decimals; decimals);
+    constraint @init_once(nonce; 1);
+
+    // Check the authorization.
+    constraint match auth {
+        MintAuth::Signed(sig) => @verify_key({key, amount, decimals, nonce'}; sig; key),
+        MintAuth::Predicate(addr) => @check_if_predicate_is_owner(MintAccount; Owner; addr; key; decimals; amount),
+    };
+}
 
 // key: The address of the account that is burning tokens.
 // amount: The amount being burnt.
@@ -49,104 +140,12 @@ predicate Burn(key: b256, amount: int, auth: BurnAuth) {
 
     // Increment the nonce.
     constraint @safe_increment(nonce);
-    
+
     // Check the authorization.
     constraint match auth {
         BurnAuth::Signed(sig) => @verify_key({key, amount, nonce'}; sig; key),
         BurnAuth::Predicate(addr) => @check_if_predicate_is_owner(BurnAccount; Owner; addr; key; amount),
     };
-}
-
-macro @check_if_predicate_is_owner($c, $p, $address, $arg0) {
-    $c@[$address.contract]::$p@[$address.addr]($arg0, { contract: __this_contract_address(), addr: __this_address() })
-}
-
-macro @check_if_predicate_is_owner($c, $p, $address, $arg0, $arg1) {
-    $c@[$address.contract]::$p@[$address.addr]($arg0, $arg1, { contract: __this_contract_address(), addr: __this_address() })
-}
-
-macro @check_if_predicate_is_owner($c, $p, $address, $arg0, $arg1, $arg2) {
-    $c@[$address.contract]::$p@[$address.addr]($arg0, $arg1, $arg2, { contract: __this_contract_address(), addr: __this_address() })
-}
-
-union MintAuth = Signed(Secp256k1Signature) | Predicate(PredicateAddress);
-
-interface MintAccount {
-    predicate Owner(
-        key: b256,
-        amount: int,
-        decimals: int,
-        token_address: PredicateAddress,
-    );
-}
-
-// key: The key that is being minted to.
-// Note this is hard coded so that only one entity can mint.
-// amount: The amount being minted.
-// This is also the total supply.
-// decimals: The number of decimals for the token.
-// auth: The authorization for the mint.
-predicate Mint(key: b256, amount: int, decimals: int, auth: MintAuth) {
-    // Read all the let that is being initialized.
-    let balance = mut storage::balances[key];
-    let nonce = mut storage::nonce[key];
-    let token_name = mut storage::token_name;
-    let token_symbol = mut storage::token_symbol;
-    let token_decimals = mut storage::decimals;
-
-    // The only authorized minting address.
-    // Note that changing this also creates a new token.
-    constraint key == config::MINT_KEY;
-    
-    // Initialize all state.
-    // This enforces the pre let must be null 
-    // and the post let must be set to the provided value.
-    constraint @init_once(balance; amount);
-    constraint @init_once(token_name; config::NAME);
-    constraint @init_once(token_symbol; config::SYMBOL);
-    constraint @init_once(token_decimals; decimals);
-    constraint @init_once(nonce; 1);
-
-    // Check the authorization.
-    constraint match auth {
-        MintAuth::Signed(sig) => @verify_key({key, amount, decimals, nonce'}; sig; key),
-        MintAuth::Predicate(addr) => @check_if_predicate_is_owner(MintAccount; Owner; addr; key; decimals; amount),
-    };
-}
-
-/// The signature mode for the transfer authorization.
-///
-/// For instance, can use `KeyAmount` to pay the solver, whose address is unknown to the user at sign-time.
-union TransferSignedMode = All | Key | KeyTo | KeyAmount;
-
-/// The signed authorization for the transfer.
-type TransferSignedAuth = { sig: Secp256k1Signature, mode: TransferSignedMode };
-
-/// The authorization mode for the transfer.
-union TransferAuthMode = Signed(TransferSignedAuth) | Predicate(PredicateAddress);
-
-/// The extra constraints for the transfer.
-type Extra = { addr: PredicateAddress };
-
-/// Optional extra constraints for the transfer.
-union ExtraConstraints = Extra(Extra) | None;
-
-/// The authorization for the transfer.
-type TransferAuth = { mode: TransferAuthMode, extra: ExtraConstraints };
-
-interface TransferAccount {
-    predicate Owner(
-        key: b256,
-        to: b256,
-        amount: int,
-        token_address: PredicateAddress,
-    );
-}
-
-interface ExtraConstraintsI {
-    predicate Check(
-        token_address: PredicateAddress,
-    );
 }
 
 // key: The address that the amount is being sent from.
@@ -176,7 +175,7 @@ predicate Transfer(key: b256, to: b256, amount: int, auth: TransferAuth) {
 
     // Increment the nonce.
     constraint @safe_increment(nonce);
-    
+
     // Check the authorization predicate.
     constraint match auth.mode {
         TransferAuthMode::Signed(auth) => match auth.mode {
@@ -193,21 +192,12 @@ predicate Transfer(key: b256, to: b256, amount: int, auth: TransferAuth) {
     };
 }
 
-interface CancelAccount {
-    predicate Owner(
-        key: b256,
-        token_address: PredicateAddress,
-    );
-}
-
-union CancelAuth = Signed(Secp256k1Signature) | Predicate(PredicateAddress);
-
 // key: The address that the transfer or burn is being cancelled for.
 // auth: The authorization for the cancel.
 predicate Cancel(key: b256, auth: CancelAuth) {
     let nonce = mut storage::nonce[key];
 
-    // Increment the nonce so that any pending transfers or 
+    // Increment the nonce so that any pending transfers or
     // burns are invalidated.
     constraint @safe_increment(nonce);
 
@@ -216,4 +206,16 @@ predicate Cancel(key: b256, auth: CancelAuth) {
         CancelAuth::Signed(sig) => @verify_key({key, nonce'}; sig; key),
         CancelAuth::Predicate(addr) => @check_if_predicate_is_owner(CancelAccount; Owner; addr; key),
     };
+}
+
+macro @check_if_predicate_is_owner($c, $p, $address, $arg0) {
+    $c@[$address.contract]::$p@[$address.addr]($arg0, { contract: __this_contract_address(), addr: __this_address() })
+}
+
+macro @check_if_predicate_is_owner($c, $p, $address, $arg0, $arg1) {
+    $c@[$address.contract]::$p@[$address.addr]($arg0, $arg1, { contract: __this_contract_address(), addr: __this_address() })
+}
+
+macro @check_if_predicate_is_owner($c, $p, $address, $arg0, $arg1, $arg2) {
+    $c@[$address.contract]::$p@[$address.addr]($arg0, $arg1, $arg2, { contract: __this_contract_address(), addr: __this_address() })
 }
