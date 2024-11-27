@@ -51,6 +51,8 @@
     - [New project](./getting-started/token/new.md)
     - [Define Imports](./getting-started/token/imports.md)
     - [Define Storage](./getting-started/token/storage.md)
+    - [Define Types](./getting-started/token/types.md)
+    - [Define Interfaces](./getting-started/token/interfaces.md)
     - [Write Predicates](./getting-started/token/predicates.md)
     - [Compile](./getting-started/token/compile.md)
     - [Deploy & Solve](./getting-started/token/deploy-and-solve.md)
