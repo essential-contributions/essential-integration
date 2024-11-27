@@ -3,7 +3,7 @@ use essential_rest_client::{
     builder_client::EssentialBuilderClient, node_client::EssentialNodeClient,
 };
 use essential_types::{
-    contract::Contract, convert::word_from_bytes, solution::Solution, ContentAddress, Word,
+    contract::Contract, convert::words_from_hex_str, solution::Solution, ContentAddress, Key, Word,
 };
 use std::{path::PathBuf, str::FromStr};
 
@@ -33,6 +33,7 @@ enum Command {
         #[arg(short, long)]
         content_address: ContentAddress,
         /// Key to query, encoded as hex.
+        #[arg(value_parser = words_from_hex_str)]
         key: Key,
     },
     /// Deploy a contract.
@@ -150,22 +151,5 @@ impl FromStr for BlockRange {
             start: start.parse()?,
             end: end.parse()?,
         })
-    }
-}
-
-// FIXME: Should be made obsolete by https://github.com/essential-contributions/essential-base/issues/228
-#[derive(Clone, Debug)]
-struct Key(essential_types::Key);
-
-impl FromStr for Key {
-    type Err = anyhow::Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Self(
-            hex::decode(s)?
-                .chunks_exact(8)
-                .map(|chunk| word_from_bytes(chunk.try_into().expect("Always 8 bytes")))
-                .collect(),
-        ))
     }
 }
