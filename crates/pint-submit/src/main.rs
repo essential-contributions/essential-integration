@@ -1,7 +1,6 @@
-use clap::{builder::styling::Style, Parser};
+use clap::Parser;
 use essential_rest_client::builder_client::EssentialBuilderClient;
-use essential_types::ContentAddress;
-use pint_submit::{solution_from_input, SolutionInputType};
+use pint_submit::{print_submitted, print_submitting, solution_from_input, SolutionInputType};
 use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
@@ -41,25 +40,4 @@ async fn run(args: Args) -> anyhow::Result<()> {
     }
     print_submitted();
     Ok(())
-}
-
-/// Print the "Submitting ..." output.
-fn print_submitting(ca: &ContentAddress) {
-    let bold = Style::new().bold();
-    println!(
-        "  {}Submitting{} solution {}",
-        bold.render(),
-        bold.render_reset(),
-        ca,
-    );
-}
-
-/// Print the "Submitted" output.
-fn print_submitted() {
-    let bold = Style::new().bold();
-    println!(
-        "   {}Submitted{} successfully",
-        bold.render(),
-        bold.render_reset(),
-    );
 }
