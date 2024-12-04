@@ -4,7 +4,8 @@ use essential_node_types::BigBang;
 use essential_rest_client::{builder_client::EssentialBuilderClient, contract_from_path};
 use essential_types::{contract::Contract, ContentAddress};
 use pint_pkg::build::BuiltPkg;
-use std::path::PathBuf;
+use pint_submit::SolutionInputType;
+use std::path::{Path, PathBuf};
 
 #[derive(Parser, Debug)]
 #[command(name = "deploy", version, about, long_about = None)]

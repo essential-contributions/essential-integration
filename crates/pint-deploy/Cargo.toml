@@ -17,5 +17,6 @@ essential-rest-client = { workspace = true }
 essential-types = { workspace = true }
 pint-cli = { workspace = true }
 pint-pkg = { workspace = true }
+pint-submit = { path = "../pint-submit" }
 serde_json = { workspace = true }
 tokio = { workspace = true }
