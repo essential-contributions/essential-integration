@@ -16,7 +16,10 @@ pub async fn solution_from_input(solution: SolutionInputType) -> Result<Solution
     Ok(serde_json::from_str(&solution)?)
 }
 
-pub async fn submit_solution(builder_address: String, solution_input: SolutionInputType) -> anyhow::Result<ContentAddress> {
+pub async fn submit_solution(
+    builder_address: String,
+    solution_input: SolutionInputType,
+) -> anyhow::Result<ContentAddress> {
     let builder_client = EssentialBuilderClient::new(builder_address)?;
     let solution = solution_from_input(solution_input).await?;
     let solution_ca = essential_hash::content_addr(&solution);
