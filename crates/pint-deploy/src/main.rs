@@ -1,9 +1,9 @@
 use anyhow::{anyhow, bail, Context};
 use clap::{builder::styling::Style, Parser};
-use essential_rest_client::builder_client::EssentialBuilderClient;
+use essential_node_types::register_contract_solution;
 use essential_types::{contract::Contract, ContentAddress};
 use pint_pkg::build::BuiltPkg;
-use pint_submit::SolutionInputType;
+use pint_submit::{submit_solution, SolutionInputType};
 use std::path::{Path, PathBuf};
 
 #[derive(Parser, Debug)]
@@ -42,8 +42,6 @@ async fn run(args: Args) -> anyhow::Result<()> {
         contract,
     } = args;
 
-    let builder_client = EssentialBuilderClient::new(builder_address)?;
-
     // If a contract was specified directly, there's no need to do the build or inspect any of the
     // `build_args` - we can deploy this directly.
     if let Some(contract_path) = contract {
@@ -56,8 +54,7 @@ async fn run(args: Args) -> anyhow::Result<()> {
                 .display()
         );
         print_deploying(&name, &contract);
-        let output = builder_client.deploy_contract(&contract).await?;
-        print_received(&output);
+        submit(contract, &builder_address.clone()).await?;
         return Ok(());
     }
 
@@ -88,11 +85,19 @@ async fn run(args: Args) -> anyhow::Result<()> {
             let contract_path = profile_dir.join(&pinned.name).with_extension("json");
             let contract = contract_from_path(&contract_path).await?;
             print_deploying(&pinned.name, &contract);
-            let output = builder_client.deploy_contract(&contract).await?;
-            print_received(&output);
+            submit(contract, &builder_address).await?;
         }
     }
 
+    Ok(())
+}
+
+async fn submit(contract: Contract, builder_address: &String) -> Result<(), anyhow::Error> {
+    let registry_predicate = essential_node_types::BigBang::default().contract_registry;
+    let solution = register_contract_solution(registry_predicate, &contract)?;
+    let solution_input = SolutionInputType::Json(serde_json::to_string(&solution)?);
+    let output = submit_solution(builder_address.clone().to_string(), solution_input).await?;
+    print_received(&output);
     Ok(())
 }
 
