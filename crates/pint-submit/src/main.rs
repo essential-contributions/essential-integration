@@ -1,6 +1,7 @@
 use clap::{builder::styling::Style, Parser};
 use essential_rest_client::builder_client::EssentialBuilderClient;
 use essential_types::{solution::SolutionSet, ContentAddress};
+use pint_submit::{solution_from_input, SolutionInputType};
 use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
@@ -42,19 +43,6 @@ async fn run(args: Args) -> anyhow::Result<()> {
     Ok(())
 }
 
-pub enum SolutionInputType {
-    Path(PathBuf),
-    Json(String),
-}
-
-async fn solution_from_input(solution: SolutionInputType) -> Result<Solution, anyhow::Error> {
-    let solution = match solution {
-        SolutionInputType::Path(path) => from_file(path).await?,
-        SolutionInputType::Json(json) => json,
-    };
-    Ok(serde_json::from_str(&solution)?)
-}
-
 /// Print the "Submitting ..." output.
 fn print_submitting(ca: &ContentAddress) {
     let bold = Style::new().bold();
@@ -74,9 +62,4 @@ fn print_submitted() {
         bold.render(),
         bold.render_reset(),
     );
-}
-
-async fn from_file(path: PathBuf) -> anyhow::Result<String> {
-    let content = tokio::fs::read_to_string(path).await?;
-    Ok(content)
 }
