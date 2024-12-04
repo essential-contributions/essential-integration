@@ -30,7 +30,8 @@ async fn run(args: Args) -> anyhow::Result<()> {
     } = args;
 
     let builder_client = EssentialBuilderClient::new(builder_address)?;
-    let solution = serde_json::from_str::<Solution>(&from_file(solution).await?)?;
+    let solution_input = SolutionInputType::Path(solution);
+    let solution = solution_from_input(solution_input).await?;
     let solution_ca = essential_hash::content_addr(&solution);
     print_submitting(&solution_ca);
     let output = builder_client.submit_solution(&solution).await?;
@@ -39,6 +40,19 @@ async fn run(args: Args) -> anyhow::Result<()> {
     }
     print_submitted();
     Ok(())
+}
+
+pub enum SolutionInputType {
+    Path(PathBuf),
+    Json(String),
+}
+
+async fn solution_from_input(solution: SolutionInputType) -> Result<Solution, anyhow::Error> {
+    let solution = match solution {
+        SolutionInputType::Path(path) => from_file(path).await?,
+        SolutionInputType::Json(json) => json,
+    };
+    Ok(serde_json::from_str(&solution)?)
 }
 
 /// Print the "Submitting ..." output.
