@@ -3,6 +3,7 @@ use clap::{builder::styling::Style, Parser};
 use essential_rest_client::builder_client::EssentialBuilderClient;
 use essential_types::{contract::Contract, ContentAddress};
 use pint_pkg::build::BuiltPkg;
+use pint_submit::SolutionInputType;
 use std::path::{Path, PathBuf};
 
 #[derive(Parser, Debug)]
