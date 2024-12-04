@@ -8,6 +8,14 @@ homepage.workspace = true
 license.workspace = true
 repository.workspace = true
 
+[[bin]]
+name = "submit"
+path = "src/main.rs"
+
+[lib]
+path = "src/lib.rs"
+
+
 [dependencies]
 anyhow = { workspace = true }
 clap = { workspace = true }
