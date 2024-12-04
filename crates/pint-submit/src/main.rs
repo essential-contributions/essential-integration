@@ -1,6 +1,5 @@
 use clap::Parser;
-use essential_rest_client::builder_client::EssentialBuilderClient;
-use pint_submit::{print_submitted, print_submitting, solution_from_input, SolutionInputType};
+use pint_submit::{submit_solution, SolutionInputType};
 use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
@@ -29,15 +28,7 @@ async fn run(args: Args) -> anyhow::Result<()> {
         solution,
     } = args;
 
-    let builder_client = EssentialBuilderClient::new(builder_address)?;
     let solution_input = SolutionInputType::Path(solution);
-    let solution = solution_from_input(solution_input).await?;
-    let solution_ca = essential_hash::content_addr(&solution);
-    print_submitting(&solution_ca);
-    let output = builder_client.submit_solution(&solution).await?;
-    if solution_ca != output {
-        anyhow::bail!("The content address of the submitted solution differs from expected. May be a serialization error.");
-    }
-    print_submitted();
+    submit_solution(builder_address, solution_input).await?;
     Ok(())
 }
