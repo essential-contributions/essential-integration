@@ -1,9 +1,8 @@
 use anyhow::{anyhow, bail, Context};
 use clap::{builder::styling::Style, Parser};
-use essential_node_types::register_contract_solution;
 use essential_types::{contract::Contract, ContentAddress};
 use pint_pkg::build::BuiltPkg;
-use pint_submit::{submit_solution, SolutionInputType};
+use pint_submit::submit_solution;
 use std::path::{Path, PathBuf};
 
 #[derive(Parser, Debug)]
@@ -54,7 +53,7 @@ async fn run(args: Args) -> anyhow::Result<()> {
                 .display()
         );
         print_deploying(&name, &contract);
-        submit(contract, &builder_address.clone()).await?;
+        submit(&contract, &builder_address.clone()).await?;
         return Ok(());
     }
 
@@ -85,18 +84,15 @@ async fn run(args: Args) -> anyhow::Result<()> {
             let contract_path = profile_dir.join(&pinned.name).with_extension("json");
             let contract = contract_from_path(&contract_path).await?;
             print_deploying(&pinned.name, &contract);
-            submit(contract, &builder_address).await?;
+            submit(&contract, &builder_address).await?;
         }
     }
 
     Ok(())
 }
 
-async fn submit(contract: Contract, builder_address: &String) -> Result<(), anyhow::Error> {
-    let registry_predicate = essential_node_types::BigBang::default().contract_registry;
-    let solution = register_contract_solution(registry_predicate, &contract)?;
-    let solution_input = SolutionInputType::Json(serde_json::to_string(&solution)?);
-    let output = submit_solution(builder_address.clone().to_string(), solution_input).await?;
+async fn submit(contract: &Contract, builder_address: &str) -> Result<(), anyhow::Error> {
+    let output = submit_solution(None, builder_address.clone().to_string(), Some(contract)).await?;
     print_received(&output);
     Ok(())
 }
