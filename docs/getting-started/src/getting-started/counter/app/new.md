@@ -7,7 +7,7 @@ In this section, we'll create a new Cargo project to serve as the front-end appl
 Run the following command from the root directory of your counter project to create a new Cargo project:
 
 ```bash
-{{#include ../../../../../code/front-end.sh:cargo-new}}
+{{#include ../../../../../code/counter/front-end.sh:cargo-new}}
 ```
 
 Your project structure should now look like this:
@@ -33,13 +33,13 @@ counter/
 Now, add the necessary dependencies to your Rust project by running the following command:
 
 ```bash
-{{#include ../../../../../code/front-end.sh:cargo-add}}
+{{#include ../../../../../code/counter/front-end.sh:cargo-add}}
 ```
 
 Your `Cargo.toml` file should now look like this:
 
 ```toml
-{{#include ../../../../../code/counter-cargo.toml}}
+{{#include ../../../../../code/counter/counter-cargo.toml}}
 ```
 
 ## Step 3: Add a Test
@@ -47,7 +47,7 @@ Your `Cargo.toml` file should now look like this:
 Lastly, add a test to your front-end application by using the following command:
 
 ```bash
-{{#include ../../../../../code/front-end.sh:add-test}}
+{{#include ../../../../../code/counter/front-end.sh:add-test}}
 ```
 
 After adding the test, your project structure should look like this:

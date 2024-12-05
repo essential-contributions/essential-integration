@@ -3,7 +3,7 @@ Let's try it out!
 
 Simply run your cli with the `read-count` command, the server address and the path to the `contract` directory as follows:
 ```bash
-{{#include ../../../../../code/counter-cli.sh:read}}
+{{#include ../../../../../code/counter/counter-cli.sh:read}}
 ```
 You should see something like:
 ```
@@ -14,13 +14,13 @@ Are you one of the first people to do this tutorial or is the count already much
 
 Now let's increment the count:
 ```bash
-{{#include ../../../../../code/counter-cli.sh:inc}}
+{{#include ../../../../../code/counter/counter-cli.sh:inc}}
 ```
 The increment-count command requires the builder and nodes api address. They just happen to be the same in this case.
 
 And check the count again:
 ```bash
-{{#include ../../../../../code/counter-cli.sh:read-again}}
+{{#include ../../../../../code/counter/counter-cli.sh:read-again}}
 ```
 If you don't see the count go up then it's probably because the solution hasn't been included in a block yet. \
 Just wait a few seconds and try reading again.

@@ -11,5 +11,5 @@ Add this `match` expression that maps:
 
 Then return the count.
 ```rust
-{{#include ../../../../../../code/counter.rs:extract}}
+{{#include ../../../../../../code/counter/counter.rs:extract}}
 ```

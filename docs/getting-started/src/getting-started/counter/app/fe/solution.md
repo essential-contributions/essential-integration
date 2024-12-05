@@ -7,7 +7,7 @@ The solution includes a single `SolutionData` that satisfies the given predicate
 We will also add a single state mutation where the counter is updated to some `new_count`.
 
 ```rust
-{{#include ../../../../../../code/counter.rs:solution}}
+{{#include ../../../../../../code/counter/counter.rs:solution}}
 ```
 
 Here, we're using method `counter(..)` to provide the new value for the counter. Note that
