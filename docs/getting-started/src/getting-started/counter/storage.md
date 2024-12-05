@@ -5,5 +5,5 @@ The storage is a simple integer that will be incremented by solutions that satis
 Add the following to the `contract/src/contract.pnt` file:
 
 ```pint
-{{#include ../../../../code/counter.pnt:counter_storage}}
+{{#include ../../../../code/counter/counter.pnt:counter_storage}}
 ```

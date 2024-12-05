@@ -2,16 +2,16 @@
 Now that we have our predicate written, we can compile the code using the `pint` tool.
 
 ```bash
-{{#include ../../../../code/counter/pint.sh:build}}
+{{#include ../../../../code/token/pint.sh:build}}
 ```
 This will create a new directory inside the `contract` directory called `out`. \
-Because this is a debug build, you can find the compiled contract at `counter/contract/out/debug/counter.json`.
+Because this is a debug build, you can find the compiled contract at `token/contract/out/debug/counter.json`.
 
-There is also a `counter-abi.json` file in the same directory that contains the counter contract's ABI.
+There is also a `token-abi.json` file in the same directory that contains the token contract's ABI.
 
-The ABI for the counter looks like this:
+The ABI for the token looks like this:
 ```json
-{{#include ../../../../code/counter/counter-abi.json}}
+{{#include ../../../../code/token/token-abi.json}}
 ```
 > Note that yours may look slightly different depending on the version of the compiler you are using.
 

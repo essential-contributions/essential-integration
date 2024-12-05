@@ -2,5 +2,5 @@
 Check your `lib.rs` matches this.
 
 ```rust
-{{#include ../../../../../../code/counter.rs:full}}
+{{#include ../../../../../../code/counter/counter.rs:full}}
 ```

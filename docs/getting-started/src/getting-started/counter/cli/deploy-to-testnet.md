@@ -13,7 +13,7 @@ counter/
 ```
 Now deploy the counter app:
 ```bash
-{{#include ../../../../../code/deploy.sh:deploy}}
+{{#include ../../../../../code/counter/deploy.sh:deploy}}
 ```
 
 > It's very possible that someone else has already deployed this contract as contracts are stored via their content hash but don't worry, deploying the same contract twice will not cause any issues.
