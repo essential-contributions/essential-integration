@@ -17,5 +17,5 @@ cd ../
 
 # Deploy the contract
 # ANCHOR: deploy
-essential-rest-client deploy-contract "https://bigbangblock.builders" "contract/out/debug/counter.json"
+pint deploy --builder-address "https://node.essential.builders" --contract "contract/out/debug/counter.json"
 # ANCHOR_END: deploy
