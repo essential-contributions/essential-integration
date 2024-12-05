@@ -1,0 +1,344 @@
+{
+  "predicates": [
+    {
+      "name": "::Mint",
+      "params": [
+        {
+          "name": "::key",
+          "ty": "B256"
+        },
+        {
+          "name": "::amount",
+          "ty": "Int"
+        },
+        {
+          "name": "::decimals",
+          "ty": "Int"
+        },
+        {
+          "name": "::auth",
+          "ty": {
+            "Union": {
+              "name": "::MintAuth",
+              "variants": [
+                {
+                  "name": "MintAuth::Signed",
+                  "ty": {
+                    "Tuple": [
+                      {
+                        "name": null,
+                        "ty": "B256"
+                      },
+                      {
+                        "name": null,
+                        "ty": "B256"
+                      },
+                      {
+                        "name": null,
+                        "ty": "Int"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "MintAuth::Predicate",
+                  "ty": {
+                    "Tuple": [
+                      {
+                        "name": "contract",
+                        "ty": "B256"
+                      },
+                      {
+                        "name": "addr",
+                        "ty": "B256"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "::Burn",
+      "params": [
+        {
+          "name": "::key",
+          "ty": "B256"
+        },
+        {
+          "name": "::amount",
+          "ty": "Int"
+        },
+        {
+          "name": "::auth",
+          "ty": {
+            "Union": {
+              "name": "::BurnAuth",
+              "variants": [
+                {
+                  "name": "BurnAuth::Signed",
+                  "ty": {
+                    "Tuple": [
+                      {
+                        "name": null,
+                        "ty": "B256"
+                      },
+                      {
+                        "name": null,
+                        "ty": "B256"
+                      },
+                      {
+                        "name": null,
+                        "ty": "Int"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "BurnAuth::Predicate",
+                  "ty": {
+                    "Tuple": [
+                      {
+                        "name": "contract",
+                        "ty": "B256"
+                      },
+                      {
+                        "name": "addr",
+                        "ty": "B256"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "::Transfer",
+      "params": [
+        {
+          "name": "::key",
+          "ty": "B256"
+        },
+        {
+          "name": "::to",
+          "ty": "B256"
+        },
+        {
+          "name": "::amount",
+          "ty": "Int"
+        },
+        {
+          "name": "::auth",
+          "ty": {
+            "Tuple": [
+              {
+                "name": "mode",
+                "ty": {
+                  "Union": {
+                    "name": "::TransferAuthMode",
+                    "variants": [
+                      {
+                        "name": "TransferAuthMode::Signed",
+                        "ty": {
+                          "Tuple": [
+                            {
+                              "name": "sig",
+                              "ty": {
+                                "Tuple": [
+                                  {
+                                    "name": null,
+                                    "ty": "B256"
+                                  },
+                                  {
+                                    "name": null,
+                                    "ty": "B256"
+                                  },
+                                  {
+                                    "name": null,
+                                    "ty": "Int"
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "name": "mode",
+                              "ty": {
+                                "Union": {
+                                  "name": "::TransferSignedMode",
+                                  "variants": [
+                                    {
+                                      "name": "TransferSignedMode::All",
+                                      "ty": null
+                                    },
+                                    {
+                                      "name": "TransferSignedMode::Key",
+                                      "ty": null
+                                    },
+                                    {
+                                      "name": "TransferSignedMode::KeyTo",
+                                      "ty": null
+                                    },
+                                    {
+                                      "name": "TransferSignedMode::KeyAmount",
+                                      "ty": null
+                                    }
+                                  ]
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "name": "TransferAuthMode::Predicate",
+                        "ty": {
+                          "Tuple": [
+                            {
+                              "name": "contract",
+                              "ty": "B256"
+                            },
+                            {
+                              "name": "addr",
+                              "ty": "B256"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "name": "extra",
+                "ty": {
+                  "Union": {
+                    "name": "::ExtraConstraints",
+                    "variants": [
+                      {
+                        "name": "ExtraConstraints::Extra",
+                        "ty": {
+                          "Tuple": [
+                            {
+                              "name": "addr",
+                              "ty": {
+                                "Tuple": [
+                                  {
+                                    "name": "contract",
+                                    "ty": "B256"
+                                  },
+                                  {
+                                    "name": "addr",
+                                    "ty": "B256"
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "name": "ExtraConstraints::None",
+                        "ty": null
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "::Cancel",
+      "params": [
+        {
+          "name": "::key",
+          "ty": "B256"
+        },
+        {
+          "name": "::auth",
+          "ty": {
+            "Union": {
+              "name": "::CancelAuth",
+              "variants": [
+                {
+                  "name": "CancelAuth::Signed",
+                  "ty": {
+                    "Tuple": [
+                      {
+                        "name": null,
+                        "ty": "B256"
+                      },
+                      {
+                        "name": null,
+                        "ty": "B256"
+                      },
+                      {
+                        "name": null,
+                        "ty": "Int"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "CancelAuth::Predicate",
+                  "ty": {
+                    "Tuple": [
+                      {
+                        "name": "contract",
+                        "ty": "B256"
+                      },
+                      {
+                        "name": "addr",
+                        "ty": "B256"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "storage": [
+    {
+      "name": "balances",
+      "ty": {
+        "Map": {
+          "ty_from": "B256",
+          "ty_to": "Int"
+        }
+      }
+    },
+    {
+      "name": "nonce",
+      "ty": {
+        "Map": {
+          "ty_from": "B256",
+          "ty_to": "Int"
+        }
+      }
+    },
+    {
+      "name": "token_name",
+      "ty": "B256"
+    },
+    {
+      "name": "token_symbol",
+      "ty": "B256"
+    },
+    {
+      "name": "decimals",
+      "ty": "Int"
+    }
+  ]
+}
