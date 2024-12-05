@@ -1,27 +1,27 @@
 use clap::builder::styling::Style;
+use essential_node_types::register_contract_solution;
 use essential_rest_client::builder_client::EssentialBuilderClient;
-use essential_types::{solution::Solution, ContentAddress};
+use essential_types::{contract::Contract, solution::Solution, ContentAddress};
 use std::path::PathBuf;
 
-pub enum SolutionInputType {
-    Path(PathBuf),
-    Json(String),
-}
-
-pub async fn solution_from_input(solution: SolutionInputType) -> Result<Solution, anyhow::Error> {
-    let solution = match solution {
-        SolutionInputType::Path(path) => from_file(path).await?,
-        SolutionInputType::Json(json) => json,
-    };
-    Ok(serde_json::from_str(&solution)?)
-}
-
 pub async fn submit_solution(
+    solution_opt: Option<PathBuf>,
     builder_address: String,
-    solution_input: SolutionInputType,
+    contract_opt: Option<&Contract>,
 ) -> anyhow::Result<ContentAddress> {
+    let solution: Solution = match (solution_opt, contract_opt) {
+        (Some(s), None) => serde_json::from_str::<Solution>(&from_file(s).await?)?,
+        (None, Some(contract)) => {
+            let registry_predicate = essential_node_types::BigBang::default().contract_registry;
+            register_contract_solution(registry_predicate, contract)
+                ?
+        }
+        (None, None) | (Some(_), Some(_)) => {
+            anyhow::bail!("Either a solution or a contract must be provided, but not both.");
+        }
+    };
+
     let builder_client = EssentialBuilderClient::new(builder_address)?;
-    let solution = solution_from_input(solution_input).await?;
     let solution_ca = essential_hash::content_addr(&solution);
     print_submitting(&solution_ca);
     let output = builder_client.submit_solution(&solution).await?;

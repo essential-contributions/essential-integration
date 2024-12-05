@@ -30,7 +30,6 @@ async fn run(args: Args) -> anyhow::Result<()> {
         solutions,
     } = args;
 
-<<<<<<< HEAD
     let builder_client = EssentialBuilderClient::new(builder_address)?;
     let solution_set = serde_json::from_str::<SolutionSet>(&from_file(solutions).await?)?;
     let solution_ca = essential_hash::content_addr(&solution_set);
@@ -41,9 +40,8 @@ async fn run(args: Args) -> anyhow::Result<()> {
         anyhow::bail!("The content address of the submitted solution set differs from expected. May be a serialization error.");
     }
     print_submitted();
-=======
+
     let solution_input = SolutionInputType::Path(solution);
-    submit_solution(builder_address, solution_input).await?;
->>>>>>> c4b0835 (refactor: extract fn submit_solution() from main to lib)
+    submit_solution(Some(solution), builder_address, None).await?;
     Ok(())
 }
