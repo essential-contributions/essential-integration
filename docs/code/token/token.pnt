@@ -1,0 +1,259 @@
+// ANCHOR: token_complete
+
+// ANCHOR: imports
+use std::lib::PredicateAddress;
+use std::lib::@delta;
+use std::lib::@safe_increment;
+use std::lib::@init_once;
+use std::lib::@init_delta;
+use std::lib::@mut_keys;
+use std::auth::@verify_key;
+use std::lib::Secp256k1Signature;
+// ANCHOR_END: imports
+
+// ANCHOR: storage
+storage {
+    // The balances of accounts
+    balances: (b256 => int),
+    // The nonce for each account
+    nonce: (b256 => int),
+    // The name of the token hashed
+    token_name: b256,
+    // The symbol of the token hashed
+    token_symbol: b256,
+    // The decimals of the token
+    decimals: int,
+}
+// ANCHOR_END: storage
+
+// ANCHOR: interfaces
+interface MintAccount {
+    predicate Owner(
+        key: b256,
+        amount: int,
+        decimals: int,
+        token_address: PredicateAddress,
+    );
+}
+
+interface BurnAccount {
+    predicate Owner(
+        key: b256,
+        amount: int,
+        token_address: PredicateAddress,
+    );
+}
+
+interface TransferAccount {
+    predicate Owner(
+        key: b256,
+        to: b256,
+        amount: int,
+        token_address: PredicateAddress,
+    );
+}
+
+interface CancelAccount {
+    predicate Owner(
+        key: b256,
+        token_address: PredicateAddress,
+    );
+}
+
+interface ExtraConstraintsI {
+    predicate Check(
+        token_address: PredicateAddress,
+    );
+}
+// ANCHOR_END: interfaces
+
+// ANCHOR: types
+/// The authorization mode for the mint.
+union MintAuth = Signed(Secp256k1Signature) | Predicate(PredicateAddress);
+
+/// The authorization mode for the burn.
+union BurnAuth = Signed(Secp256k1Signature) | Predicate(PredicateAddress);
+
+/// The signature mode for the transfer authorization.
+///
+/// For instance, can use `KeyAmount` to pay the solver, whose address is unknown to the user at sign-time.
+union TransferSignedMode = All | Key | KeyTo | KeyAmount;
+
+/// The authorization mode for the transfer.
+union TransferAuthMode = Signed(TransferSignedAuth) | Predicate(PredicateAddress);
+
+/// Optional extra constraints for the transfer.
+union ExtraConstraints = Extra(Extra) | None;
+
+/// The authorization for the transfer.
+type TransferAuth = { mode: TransferAuthMode, extra: ExtraConstraints };
+/// The extra constraints for the transfer.
+type Extra = { addr: PredicateAddress };
+/// The signed authorization for the transfer.
+type TransferSignedAuth = { sig: Secp256k1Signature, mode: TransferSignedMode };
+
+/// The authorization mode for the cancelation.
+union CancelAuth = Signed(Secp256k1Signature) | Predicate(PredicateAddress);
+// ANCHOR_END: types
+
+
+// key: The key that is being minted to.
+// Note this is hard coded so that only one entity can mint.
+// amount: The amount being minted.
+// This is also the total supply.
+// decimals: The number of decimals for the token.
+// auth: The authorization for the mint.
+// ANCHOR: predicate_mint
+// ANCHOR: mint_start
+predicate Mint(key: b256, amount: int, decimals: int, auth: MintAuth) {
+// ANCHOR_END: mint_start
+// ANCHOR: read_storage_mint
+    // Read all the let that is being initialized.
+    let balance = mut storage::balances[key];
+    let nonce = mut storage::nonce[key];
+    let token_name = mut storage::token_name;
+    let token_symbol = mut storage::token_symbol;
+    let token_decimals = mut storage::decimals;
+// ANCHOR_END: read_storage_mint
+
+// ANCHOR: mint_constraints
+    // The only authorized minting address.
+    // Note that changing this also creates a new token.
+    constraint key == config::MINT_KEY;
+
+    // Initialize all state.
+    // This enforces the pre let must be null
+    // and the post let must be set to the provided value.
+    constraint @init_once(balance; amount);
+    constraint @init_once(token_name; config::NAME);
+    constraint @init_once(token_symbol; config::SYMBOL);
+    constraint @init_once(token_decimals; decimals);
+    constraint @init_once(nonce; 1);
+
+    // Check the authorization.
+    constraint match auth {
+        MintAuth::Signed(sig) => @verify_key({key, amount, decimals, nonce'}; sig; key),
+        MintAuth::Predicate(addr) => @check_if_predicate_is_owner(MintAccount; Owner; addr; key; decimals; amount),
+    };
+// ANCHOR_END: mint_constraints
+// ANCHOR: mint_end
+}
+// ANCHOR_END: mint_end
+// ANCHOR_END: predicate_mint
+
+
+// key: The address of the account that is burning tokens.
+// amount: The amount being burnt.
+// auth: The authorization for the burn.
+// ANCHOR: predicate_burn
+// ANCHOR: burn_start
+predicate Burn(key: b256, amount: int, auth: BurnAuth) {
+// ANCHOR_END: burn_start
+// ANCHOR: read_storage_burn
+    // Read the balance and nonce from storage.
+    let balance = mut storage::balances[key];
+    let nonce = mut storage::nonce[key];
+// ANCHOR_END: read_storage_burn
+// ANCHOR: burn_constraints
+    // Don't allow empty burns.
+    constraint amount > 0;
+
+    // The change in balance should be the negative of the amount.
+    constraint @delta(balance) == 0 - amount;
+
+    // Make sure the balance after the burn is not negative.
+    constraint balance' >= 0;
+
+    // Increment the nonce.
+    constraint @safe_increment(nonce);
+
+    // Check the authorization.
+    constraint match auth {
+        BurnAuth::Signed(sig) => @verify_key({key, amount, nonce'}; sig; key),
+        BurnAuth::Predicate(addr) => @check_if_predicate_is_owner(BurnAccount; Owner; addr; key; amount),
+    };
+// ANCHOR_END: burn_constraints
+// ANCHOR: burn_end
+}
+// ANCHOR_END: burn_end
+// ANCHOR_END: predicate_burn
+
+// ANCHOR: predicate_transfer
+// key: The address that the amount is being sent from.
+// to: The address that the amount is being sent to.
+// amount: The amount being transfered.
+// auth: The authorization for the transfer.
+predicate Transfer(key: b256, to: b256, amount: int, auth: TransferAuth) {
+    // These are public so that the authorization can check them.
+
+    // Read the balances and nonce from storage.
+    let sender_balance = mut storage::balances[key];
+    let receiver_balance = mut storage::balances[to];
+    let nonce = mut storage::nonce[key];
+
+    // Don't allow empty transfers.
+    constraint amount > 0;
+
+    // Make sure the sender has enough balance.
+    constraint sender_balance' >= 0;
+
+    // The change in the sender balance should be the negative of the amount.
+    constraint @delta(sender_balance) == 0 - amount;
+
+    // The change in the receiver balance should be the positive of the amount.
+    // This also handles the case where the receiver's balance is nil.
+    constraint @init_delta(receiver_balance; amount);
+
+    // Increment the nonce.
+    constraint @safe_increment(nonce);
+
+    // Check the authorization predicate.
+    constraint match auth.mode {
+        TransferAuthMode::Signed(auth) => match auth.mode {
+            TransferSignedMode::All => @verify_key({key, to, amount, nonce'}; auth.sig; key),
+            TransferSignedMode::Key => @verify_key({key, nonce'}; auth.sig; key),
+            TransferSignedMode::KeyTo => @verify_key({key, to, nonce'}; auth.sig; key),
+            TransferSignedMode::KeyAmount => @verify_key({key, amount, nonce'}; auth.sig; key),
+        },
+        TransferAuthMode::Predicate(addr) => @check_if_predicate_is_owner(TransferAccount; Owner; addr; key; to; amount),
+    };
+    constraint match auth.extra {
+        ExtraConstraints::Extra(extra) => ExtraConstraintsI@[extra.addr.contract]::Check@[extra.addr.addr]({ contract: __this_contract_address(), addr: __this_address() }),
+        ExtraConstraints::None => true,
+    };
+}
+// ANCHOR_END: predicate_transfer
+
+// ANCHOR: predicate_cancel
+// key: The address that the transfer or burn is being cancelled for.
+// auth: The authorization for the cancel.
+predicate Cancel(key: b256, auth: CancelAuth) {
+    let nonce = mut storage::nonce[key];
+
+    // Increment the nonce so that any pending transfers or
+    // burns are invalidated.
+    constraint @safe_increment(nonce);
+
+    // Check the authorization.
+    constraint match auth {
+        CancelAuth::Signed(sig) => @verify_key({key, nonce'}; sig; key),
+        CancelAuth::Predicate(addr) => @check_if_predicate_is_owner(CancelAccount; Owner; addr; key),
+    };
+}
+// ANCHOR_END: predicate_cancel
+
+// ANCHOR: macros
+macro @check_if_predicate_is_owner($c, $p, $address, $arg0) {
+    $c@[$address.contract]::$p@[$address.addr]($arg0, { contract: __this_contract_address(), addr: __this_address() })
+}
+
+macro @check_if_predicate_is_owner($c, $p, $address, $arg0, $arg1) {
+    $c@[$address.contract]::$p@[$address.addr]($arg0, $arg1, { contract: __this_contract_address(), addr: __this_address() })
+}
+
+macro @check_if_predicate_is_owner($c, $p, $address, $arg0, $arg1, $arg2) {
+    $c@[$address.contract]::$p@[$address.addr]($arg0, $arg1, $arg2, { contract: __this_contract_address(), addr: __this_address() })
+}
+// ANCHOR_END: macros
+
+// ANCHOR_END: token_complete
