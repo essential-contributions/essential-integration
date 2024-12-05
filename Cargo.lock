@@ -2293,12 +2293,8 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "clap",
-<<<<<<< main
  "essential-hash 0.9.0",
-=======
- "essential-hash 0.7.0",
  "essential-node-types",
->>>>>>> chore: update deps
  "essential-rest-client",
  "essential-types 0.7.0",
  "pint-cli",
@@ -2374,6 +2370,7 @@ dependencies = [
  "anyhow",
  "clap",
  "essential-hash 0.9.0",
+ "essential-node-types",
  "essential-rest-client",
  "essential-types 0.7.0",
  "hex",

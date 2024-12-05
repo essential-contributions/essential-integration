@@ -1,5 +1,5 @@
 use clap::Parser;
-use pint_submit::{submit_solution, SolutionInputType};
+use pint_submit::submit_solution;
 use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
@@ -28,7 +28,6 @@ async fn run(args: Args) -> anyhow::Result<()> {
         solution,
     } = args;
 
-    let solution_input = SolutionInputType::Path(solution);
-    submit_solution(builder_address, solution_input).await?;
+    submit_solution(Some(solution), builder_address, None).await?;
     Ok(())
 }
