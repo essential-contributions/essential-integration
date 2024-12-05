@@ -1,0 +1,14 @@
+{
+  "predicates": [
+    {
+      "name": "::Increment",
+      "params": []
+    }
+  ],
+  "storage": [
+    {
+      "name": "counter",
+      "ty": "Int"
+    }
+  ]
+}
