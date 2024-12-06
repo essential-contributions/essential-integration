@@ -92,7 +92,7 @@ async fn run(args: Args) -> anyhow::Result<()> {
 }
 
 async fn submit(contract: &Contract, builder_address: &str) -> Result<(), anyhow::Error> {
-    let output = submit_solution(None, builder_address.clone().to_string(), Some(contract)).await?;
+    let output = submit_solution(None, builder_address.to_string(), Some(contract)).await?;
     print_received(&output);
     Ok(())
 }
