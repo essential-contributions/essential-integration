@@ -556,7 +556,7 @@ dependencies = [
  "fuzzy-matcher",
  "shell-words",
  "tempfile",
- "thiserror",
+ "thiserror 1.0.69",
  "zeroize",
 ]
 
@@ -736,6 +736,18 @@ dependencies = [
 
 [[package]]
 name = "essential-asm"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9526424e2ae480d20833c002bce8f4baecf52675402e591b52a7097be125f592"
+dependencies = [
+ "bitflags",
+ "essential-asm-gen 0.7.0",
+ "essential-types 0.6.0",
+ "serde",
+]
+
+[[package]]
+name = "essential-asm"
 version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6923e90fec1fca93017346078a7846468d4a758b96182338389de84a33ec7122"
@@ -761,12 +773,12 @@ dependencies = [
 
 [[package]]
 name = "essential-asm-gen"
-version = "0.6.0"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "580712f5c024a841844f36dcd5c494d0c31717d8529e28591e4526e9403cf5e0"
+checksum = "b4339ed7c3b0d6994caa8b0725688a74be06bbd4016e91ab83a8dd3d36fd278b"
 dependencies = [
- "essential-asm-spec 0.5.0",
- "essential-types 0.5.0",
+ "essential-asm-spec 0.6.0",
+ "essential-types 0.6.0",
  "proc-macro2",
  "quote",
  "syn",
@@ -790,16 +802,6 @@ name = "essential-asm-spec"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ea5a593ec09b28971060958a9d98743a6ce901d3aac5da86180f8511a667979c"
-dependencies = [
- "serde",
- "serde_yaml",
-]
-
-[[package]]
-name = "essential-asm-spec"
-version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f02f5ba8c3ac04069e382c94884c212b9eb623188a88e013deb544673c3fe325"
 dependencies = [
  "serde",
  "serde_yaml",
@@ -833,7 +835,7 @@ dependencies = [
  "num_cpus",
  "rusqlite",
  "rusqlite-pool 0.1.1",
- "thiserror",
+ "thiserror 1.0.69",
  "tokio",
  "tracing",
 ]
@@ -852,7 +854,7 @@ dependencies = [
  "rusqlite",
  "rusqlite-pool 0.1.1",
  "serde",
- "thiserror",
+ "thiserror 1.0.69",
  "tokio",
 ]
 
@@ -876,7 +878,7 @@ dependencies = [
  "essential-sign 0.9.0",
  "essential-types 0.7.0",
  "essential-vm",
- "thiserror",
+ "thiserror 1.0.69",
  "tokio",
  "tracing",
 ]
@@ -893,29 +895,18 @@ dependencies = [
 ]
 
 [[package]]
-name = "essential-constraint-asm"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "50b61c54272201d0acc74d15970aed616ddd1181d652543e0b0800b6172c55f5"
-dependencies = [
- "essential-asm-gen 0.6.0",
- "essential-types 0.5.0",
- "serde",
-]
-
-[[package]]
 name = "essential-constraint-vm"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7a5217665e29aab6d81d28f0ad076e50481138f352eda877cbfc2aadc57c9b59"
 dependencies = [
  "ed25519-dalek",
- "essential-constraint-asm 0.3.1",
+ "essential-constraint-asm",
  "essential-types 0.2.0",
  "rayon",
  "secp256k1 0.29.1",
  "sha2",
- "thiserror",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
@@ -927,11 +918,11 @@ dependencies = [
  "anyhow",
  "clap",
  "dialoguer",
- "essential-constraint-asm 0.3.1",
+ "essential-constraint-asm",
  "essential-constraint-vm",
  "essential-hash 0.2.0",
  "essential-sign 0.2.0",
- "essential-state-asm 0.3.1",
+ "essential-state-asm",
  "essential-state-read-vm",
  "essential-types 0.2.0",
  "hex",
@@ -965,6 +956,18 @@ dependencies = [
 
 [[package]]
 name = "essential-hash"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ab0c6bf33ae7d446087ad17e9d4c1883d381909554cd69f1bc8dd27147455eb9"
+dependencies = [
+ "essential-types 0.6.0",
+ "postcard",
+ "serde",
+ "sha2",
+]
+
+[[package]]
+name = "essential-hash"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "20c4afe77fa9779e600216f8a6efb17329c194d3eeeef989a6001e749a296714"
@@ -989,7 +992,7 @@ dependencies = [
  "essential-types 0.7.0",
  "futures",
  "rusqlite",
- "thiserror",
+ "thiserror 1.0.69",
  "tokio",
  "tokio-stream",
  "tracing",
@@ -1012,7 +1015,7 @@ dependencies = [
  "hyper",
  "hyper-util",
  "serde",
- "thiserror",
+ "thiserror 1.0.69",
  "tokio",
  "tower",
  "tower-http",
@@ -1034,7 +1037,7 @@ dependencies = [
  "rusqlite",
  "rusqlite-pool 0.2.0",
  "serde",
- "thiserror",
+ "thiserror 1.0.69",
  "tokio",
 ]
 
@@ -1072,7 +1075,7 @@ dependencies = [
  "rusqlite",
  "serde",
  "serde_json",
- "thiserror",
+ "thiserror 1.0.69",
  "tokio",
  "tokio-util",
  "tracing",
@@ -1161,18 +1164,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a79835a1ab2e24bd4089f9e7f44aca1082402b19be16823d9128418529473e44"
 dependencies = [
  "essential-asm-gen 0.3.1",
- "essential-constraint-asm 0.3.1",
- "serde",
-]
-
-[[package]]
-name = "essential-state-asm"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e6b68f52c829df73d4c0588ba2579ed3e89421f9c581dc1d92d3135fb67cef56"
-dependencies = [
- "essential-asm-gen 0.6.0",
- "essential-constraint-asm 0.6.0",
+ "essential-constraint-asm",
  "serde",
 ]
 
@@ -1183,9 +1175,9 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3e1335220de5757595c593e1e120800c38092ac3b45aa15fc659c50efd55ec87"
 dependencies = [
  "essential-constraint-vm",
- "essential-state-asm 0.3.1",
+ "essential-state-asm",
  "essential-types 0.2.0",
- "thiserror",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
@@ -1210,6 +1202,16 @@ dependencies = [
 
 [[package]]
 name = "essential-types"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e4241420641482a64b03adcbcf72c8f802f170a4c7b031a9ee41e8dc9dea7532"
+dependencies = [
+ "hex",
+ "serde",
+]
+
+[[package]]
+name = "essential-types"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fb9ce67e642944ec19647a59f2b5c8848baa9af6884c5e4fe000e3b669dae7b9"
@@ -1225,11 +1227,11 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "652d045c15b7563a6f54083e8c00840b801f06e3f43e45b1615bac420e658bc1"
 dependencies = [
  "ed25519-dalek",
- "essential-asm",
+ "essential-asm 0.8.0",
  "essential-types 0.7.0",
  "secp256k1 0.30.0",
  "sha2",
- "thiserror",
+ "thiserror 1.0.69",
  "tracing",
 ]
 
@@ -2224,25 +2226,25 @@ checksum = "8b870d8c151b6f2fb93e84a13146138f05d02ed11c7e7c54f8826aaaf7c9f184"
 
 [[package]]
 name = "pint-abi"
-version = "0.9.0"
+version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "535996c1050511cbbd5b3e504084f02ba39123c611a72756a919b127dfacb3e6"
+checksum = "599bb9a69682f9ecde139aacdae65be126daf460592630c0fa59b1167011c25a"
 dependencies = [
- "essential-types 0.5.0",
+ "essential-types 0.6.0",
  "pint-abi-gen",
  "pint-abi-types",
  "serde_json",
- "thiserror",
+ "thiserror 2.0.4",
 ]
 
 [[package]]
 name = "pint-abi-gen"
-version = "0.9.0"
+version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "407124c61c1b46bf1e910c681cb30ecb3052d1b6be72abe968b94fa52e35135e"
+checksum = "90183ad147bc47e35c7ed58514c129470c70df4424a8075c9fb8a8347ab8fa9a"
 dependencies = [
- "essential-hash 0.7.0",
- "essential-types 0.5.0",
+ "essential-hash 0.8.0",
+ "essential-types 0.6.0",
  "pint-abi-types",
  "pint-abi-visit",
  "proc-macro2",
@@ -2263,20 +2265,20 @@ dependencies = [
 
 [[package]]
 name = "pint-abi-visit"
-version = "0.5.0"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e5b6ab14a9532c3ec9a06cad94febd0e8f2d387804f922ffcc4ba5bc51f91122"
+checksum = "e43b77a4b4415048efc2bdb45c36505b9b973179c462f1b87b6fb2e6a1aabd90"
 dependencies = [
- "essential-types 0.5.0",
+ "essential-types 0.6.0",
  "petgraph",
  "pint-abi-types",
 ]
 
 [[package]]
 name = "pint-cli"
-version = "0.11.0"
+version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d9225e57148d13e0bba7a201df7f46fcbe3b6153f39aa2af454adfc3a4293eaf"
+checksum = "b413a74b20a1824e1f2ab76559fdeefe4913c2bf858a958478d6eec07fbb4427"
 dependencies = [
  "anyhow",
  "clap",
@@ -2308,26 +2310,26 @@ checksum = "032538c7dc7a70b3c7d8a7e0bbc84c33cfbc819c035afadfd7a0e7591876ba66"
 dependencies = [
  "serde",
  "serde_ignored",
- "thiserror",
+ "thiserror 1.0.69",
  "toml",
 ]
 
 [[package]]
 name = "pint-pkg"
-version = "0.11.0"
+version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ecd45856b5a1d39414ec77063f87f3c3e48216f10f76351db1d1d328f8facdfc"
+checksum = "4ecba9e14132b9ee789bdfc302be62b8e753612508d4fb3e9c1193bd7d9a5753"
 dependencies = [
  "clap",
- "essential-hash 0.7.0",
- "essential-types 0.5.0",
+ "essential-hash 0.8.0",
+ "essential-types 0.6.0",
  "petgraph",
  "pint-abi-types",
  "pint-manifest",
  "pintc",
  "serde",
  "serde_json",
- "thiserror",
+ "thiserror 2.0.4",
 ]
 
 [[package]]
@@ -2347,15 +2349,15 @@ dependencies = [
 
 [[package]]
 name = "pint-solve"
-version = "0.1.0"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1e4e3825a2c3ec748324a9554f9376c3b94759ae0a11f323042f7ed6d2ffa163"
+checksum = "a1c4ffb1e8ef6f2f79e1921c9f623614b8a14231aa158cf703ed59b8097a23ff"
 dependencies = [
  "expect-test",
  "fxhash",
  "lalrpop",
  "lalrpop-util",
- "thiserror",
+ "thiserror 2.0.4",
  "yansi",
 ]
 
@@ -2375,17 +2377,16 @@ dependencies = [
 
 [[package]]
 name = "pintc"
-version = "0.11.0"
+version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0b379b85a5677dd31b1509a5f27129526e7c0d24ee058ee5d4948a7d5992b8bb"
+checksum = "b03dae85b149a14f40f0ac96fda4d0be80233b563196b6cc2ddde587a9ec8b7c"
 dependencies = [
  "anyhow",
  "ariadne",
  "clap",
- "essential-constraint-asm 0.6.0",
- "essential-hash 0.7.0",
- "essential-state-asm 0.6.0",
- "essential-types 0.5.0",
+ "essential-asm 0.7.0",
+ "essential-hash 0.8.0",
+ "essential-types 0.6.0",
  "expect-test",
  "fxhash",
  "itertools 0.13.0",
@@ -2400,7 +2401,7 @@ dependencies = [
  "serde_json",
  "similar-asserts",
  "slotmap",
- "thiserror",
+ "thiserror 2.0.4",
  "yansi",
 ]
 
@@ -2533,7 +2534,7 @@ checksum = "ba009ff324d1fc1b900bd1fdb31564febe58a8ccc8a6fdbb93b543d33b13ca43"
 dependencies = [
  "getrandom",
  "libredox",
- "thiserror",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
@@ -3181,7 +3182,16 @@ version = "1.0.69"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b6aaf5339b578ea85b50e080feb250a3e8ae8cfcdff9a461c9ec2904bc923f52"
 dependencies = [
- "thiserror-impl",
+ "thiserror-impl 1.0.69",
+]
+
+[[package]]
+name = "thiserror"
+version = "2.0.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2f49a1853cf82743e3b7950f77e0f4d622ca36cf4317cba00c767838bac8d490"
+dependencies = [
+ "thiserror-impl 2.0.4",
 ]
 
 [[package]]
@@ -3189,6 +3199,17 @@ name = "thiserror-impl"
 version = "1.0.69"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4fee6c4efc90059e10f81e6d42c60a18f76588c3d74cb83a0b242a2b6c7504c1"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "thiserror-impl"
+version = "2.0.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8381894bb3efe0c4acac3ded651301ceee58a15d47c2e34885ed1908ad667061"
 dependencies = [
  "proc-macro2",
  "quote",
