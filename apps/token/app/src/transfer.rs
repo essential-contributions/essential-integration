@@ -3,10 +3,7 @@
 
 use essential_app_utils::inputs::Encode;
 use essential_sign::secp256k1::ecdsa::RecoverableSignature;
-use essential_types::{
-    solution::{Solution, SolutionData},
-    Word,
-};
+use essential_types::{solution::Solution, Word};
 
 use crate::{balance, nonce, Query};
 
@@ -113,14 +110,12 @@ pub fn build_solution(build: BuildSolution) -> anyhow::Result<Solution> {
         .balances(|map| map.entry(hashed_from_key, from_balance))
         .balances(|map| map.entry(hashed_to_key, to_balance))
         .nonce(|nonces| nonces.entry(hashed_from_key, new_nonce));
-    let solution = SolutionData {
+    let solution = Solution {
         predicate_to_solve: super::token::Transfer::ADDRESS,
-        decision_variables: vars.into(),
+        predicate_data: vars.into(),
         state_mutations: mutations.into(),
     };
-    Ok(Solution {
-        data: vec![solution],
-    })
+    Ok(solution)
 }
 
 /// Increments the nonce by 1.
