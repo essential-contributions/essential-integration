@@ -5,7 +5,7 @@ use essential_app_utils::{
     db::{new_dbs, Dbs},
 };
 use essential_node as node;
-use essential_types::{ContentAddress, PredicateAddress, Word};
+use essential_types::{ContentAddress, PredicateAddress, SolutionSet, Word};
 
 #[tokio::test]
 async fn number_go_up() {
@@ -82,7 +82,11 @@ async fn increment(dbs: &Dbs, predicate_address: PredicateAddress) -> Word {
     let (solution, new_count) =
         incremented_solution(predicate_address, QueryCount(current_count)).unwrap();
 
-    utils::builder::submit(&dbs.builder, solution)
+    let solution_set = SolutionSet {
+        solutions: vec![solution],
+    };
+
+    utils::builder::submit(&dbs.builder, solution_set)
         .await
         .unwrap();
     new_count
