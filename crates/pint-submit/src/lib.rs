@@ -5,12 +5,12 @@ use essential_types::{contract::Contract, solution::Solution, ContentAddress};
 use std::path::PathBuf;
 
 pub async fn submit_solution(
-    solution_opt: Option<Solution>,
+    solution_opt: Option<PathBuf>,
     builder_address: String,
     contract_opt: Option<&Contract>,
 ) -> anyhow::Result<ContentAddress> {
     let solution: Solution = match (solution_opt, contract_opt) {
-        (Some(s), None) => s,
+        (Some(s), None) => serde_json::from_str::<Solution>(&from_file(s).await?)?,
         (None, Some(contract)) => {
             let registry_predicate = essential_node_types::BigBang::default().contract_registry;
             register_contract_solution(registry_predicate, contract)
