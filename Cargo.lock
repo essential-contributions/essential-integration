@@ -413,10 +413,10 @@ dependencies = [
  "essential-app-utils",
  "essential-builder",
  "essential-builder-db",
- "essential-hash 0.7.0",
+ "essential-hash 0.9.0",
  "essential-node",
  "essential-rest-client",
- "essential-types 0.5.0",
+ "essential-types 0.7.0",
  "regex",
  "tokio",
  "tracing-subscriber",
@@ -720,18 +720,30 @@ dependencies = [
  "essential-builder",
  "essential-builder-db",
  "essential-debugger",
- "essential-hash 0.7.0",
+ "essential-hash 0.9.0",
  "essential-node",
  "essential-node-db",
  "essential-node-types",
  "essential-rest-client",
- "essential-sign 0.7.0",
- "essential-types 0.5.0",
+ "essential-sign 0.9.0",
+ "essential-types 0.7.0",
  "hex",
  "serde_json",
  "tokio",
  "toml",
  "uuid",
+]
+
+[[package]]
+name = "essential-asm"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6923e90fec1fca93017346078a7846468d4a758b96182338389de84a33ec7122"
+dependencies = [
+ "bitflags",
+ "essential-asm-gen 0.8.0",
+ "essential-types 0.7.0",
+ "serde",
 ]
 
 [[package]]
@@ -761,6 +773,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "essential-asm-gen"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "99c315530fb75940002e1d65dc932f0b5f6af47ac6fc9b7851e8aa4c3d06c831"
+dependencies = [
+ "essential-asm-spec 0.6.0",
+ "essential-types 0.7.0",
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "essential-asm-spec"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -781,19 +806,29 @@ dependencies = [
 ]
 
 [[package]]
-name = "essential-builder"
-version = "0.10.0"
+name = "essential-asm-spec"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "be011f98fb8b15a471b561dc8ac6206aafc15ec4828d65fe61efc6f55cdb4ff9"
+checksum = "8925c8f919b39b735f09713639bba0791ad8275db98a203e8d562502b84e88ce"
+dependencies = [
+ "serde",
+ "serde_yaml",
+]
+
+[[package]]
+name = "essential-builder"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a7617626d37f96531e67672494be82148a0ccde21c22acfd8296efff13622359"
 dependencies = [
  "essential-builder-db",
  "essential-builder-types",
  "essential-check",
- "essential-hash 0.7.0",
+ "essential-hash 0.9.0",
  "essential-node",
  "essential-node-db",
  "essential-node-types",
- "essential-types 0.5.0",
+ "essential-types 0.7.0",
  "futures",
  "num_cpus",
  "rusqlite",
@@ -805,13 +840,13 @@ dependencies = [
 
 [[package]]
 name = "essential-builder-db"
-version = "0.5.0"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5b02b03e5011557cbf5848b36013f9758fa731ef1dbe0749387575f6f1b9f596"
+checksum = "d66fb173797535865e3bdb4d2d2017e9693864b2d6adbb2125ecb21d41d4f36b"
 dependencies = [
  "essential-builder-types",
- "essential-hash 0.7.0",
- "essential-types 0.5.0",
+ "essential-hash 0.9.0",
+ "essential-types 0.7.0",
  "num_cpus",
  "postcard",
  "rusqlite",
@@ -823,26 +858,24 @@ dependencies = [
 
 [[package]]
 name = "essential-builder-types"
-version = "0.2.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7aafb0886d9ff26e326a8442704d604c6ab3a94c1991657f41fc00395fc21406"
+checksum = "688f5ba1c3cbac90a4828346c5e16097630259dba08fe6bcf8411c96b41d2c62"
 dependencies = [
- "essential-types 0.5.0",
+ "essential-types 0.7.0",
  "serde",
 ]
 
 [[package]]
 name = "essential-check"
-version = "0.9.0"
+version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d7bd54ccabf1e8c65d95ad9e5e575ba9e79657fdb6290670475f87c40b3d7633"
+checksum = "d266107205d3ac02763d80d42d014d451538a02c5bb06dcd18806cb524709085"
 dependencies = [
- "essential-constraint-vm 0.6.0",
- "essential-hash 0.7.0",
- "essential-sign 0.7.0",
- "essential-state-read-vm 0.7.0",
- "essential-types 0.5.0",
- "rayon",
+ "essential-hash 0.9.0",
+ "essential-sign 0.9.0",
+ "essential-types 0.7.0",
+ "essential-vm",
  "thiserror",
  "tokio",
  "tracing",
@@ -886,22 +919,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "essential-constraint-vm"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5d729c151ca0805be22936ec63670a7911ac3cc61edc3c107eb370d22f83a323"
-dependencies = [
- "ed25519-dalek",
- "essential-constraint-asm 0.6.0",
- "essential-types 0.5.0",
- "rayon",
- "secp256k1 0.30.0",
- "sha2",
- "thiserror",
- "tracing",
-]
-
-[[package]]
 name = "essential-debugger"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -911,11 +928,11 @@ dependencies = [
  "clap",
  "dialoguer",
  "essential-constraint-asm 0.3.1",
- "essential-constraint-vm 0.3.0",
+ "essential-constraint-vm",
  "essential-hash 0.2.0",
  "essential-sign 0.2.0",
  "essential-state-asm 0.3.1",
- "essential-state-read-vm 0.3.0",
+ "essential-state-read-vm",
  "essential-types 0.2.0",
  "hex",
  "serde_json",
@@ -947,17 +964,29 @@ dependencies = [
 ]
 
 [[package]]
-name = "essential-node"
-version = "0.8.0"
+name = "essential-hash"
+version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0e57d529f35a7cdb121c5f194ff25d91c4391578462f945432ea858194fef353"
+checksum = "20c4afe77fa9779e600216f8a6efb17329c194d3eeeef989a6001e749a296714"
+dependencies = [
+ "essential-types 0.7.0",
+ "postcard",
+ "serde",
+ "sha2",
+]
+
+[[package]]
+name = "essential-node"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "28b65bf0b80d16f216f8c3d9da44ea8f2b593d4a88f61e636a8d33219a67d057"
 dependencies = [
  "essential-check",
- "essential-hash 0.7.0",
+ "essential-hash 0.9.0",
  "essential-node-db",
  "essential-node-types",
  "essential-relayer",
- "essential-types 0.5.0",
+ "essential-types 0.7.0",
  "futures",
  "rusqlite",
  "thiserror",
@@ -969,14 +998,14 @@ dependencies = [
 
 [[package]]
 name = "essential-node-api"
-version = "0.8.0"
+version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2d7fa282c948abff8398894b12dd2a498bbb132ef8c1fcc058fab9417816174d"
+checksum = "6e86bcc20f76b3f2f1e58eb0b3daa25dbfca9cdf4216e8418e9e7efa2fabfc73"
 dependencies = [
  "axum",
  "essential-node",
  "essential-node-types",
- "essential-types 0.5.0",
+ "essential-types 0.7.0",
  "futures",
  "hex",
  "http",
@@ -992,14 +1021,14 @@ dependencies = [
 
 [[package]]
 name = "essential-node-db"
-version = "0.4.0"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5d9e75f923eb656fe806ea6989f70862184858e5efeffee85c32433242842724"
+checksum = "9da1fb209428cb7bb7a780303ee796da53a9c1fceb0418e913f53fdd1d7ddd26"
 dependencies = [
- "essential-hash 0.7.0",
+ "essential-hash 0.9.0",
  "essential-node-db-sql",
  "essential-node-types",
- "essential-types 0.5.0",
+ "essential-types 0.7.0",
  "futures",
  "num_cpus",
  "rusqlite",
@@ -1011,18 +1040,18 @@ dependencies = [
 
 [[package]]
 name = "essential-node-db-sql"
-version = "0.4.0"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d1a57901ccc84bfdf602a401b051997ceb9c795e8deaf22b3bda65a866fb7b3b"
+checksum = "6a39e0b65b812e744b90f8d79b8d81afddb6ee80dab331f9d478f46231d9da06"
 
 [[package]]
 name = "essential-node-types"
-version = "0.2.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1acecbe007106a3c62fd1434df3fbd5a06c935a4b1c67413d6123feed4c19384"
+checksum = "022c4f8cfa172c77c0e6cbd08060f0f75fc653a58f94fc54a5e5030b8fd74fe3"
 dependencies = [
- "essential-hash 0.7.0",
- "essential-types 0.5.0",
+ "essential-hash 0.9.0",
+ "essential-types 0.7.0",
  "serde",
  "serde_yaml",
  "tokio",
@@ -1030,14 +1059,14 @@ dependencies = [
 
 [[package]]
 name = "essential-relayer"
-version = "0.3.0"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "267d8d9f59a103541d96a1544e1cc13fcf6c9cf98b11fef4fee55a10336d59d2"
+checksum = "25c9d66e28df7225e82a6d562166991effb9217212901b3f79707c5154688112"
 dependencies = [
- "essential-hash 0.7.0",
+ "essential-hash 0.9.0",
  "essential-node-db",
  "essential-node-types",
- "essential-types 0.5.0",
+ "essential-types 0.7.0",
  "futures",
  "reqwest",
  "rusqlite",
@@ -1060,7 +1089,7 @@ dependencies = [
  "essential-node",
  "essential-node-api",
  "essential-node-types",
- "essential-types 0.5.0",
+ "essential-types 0.7.0",
  "hex",
  "reqwest",
  "serde",
@@ -1088,6 +1117,17 @@ checksum = "4a0479a5b95a348740ea5d211a019cc8e7950588dea999da9afbaff9e7bd54dc"
 dependencies = [
  "essential-hash 0.7.0",
  "essential-types 0.5.0",
+ "secp256k1 0.30.0",
+]
+
+[[package]]
+name = "essential-sign"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "28d46ba95598252156752cd6db17099536db65e1762a510051a29f9fca755d98"
+dependencies = [
+ "essential-hash 0.9.0",
+ "essential-types 0.7.0",
  "secp256k1 0.30.0",
 ]
 
@@ -1142,23 +1182,10 @@ version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3e1335220de5757595c593e1e120800c38092ac3b45aa15fc659c50efd55ec87"
 dependencies = [
- "essential-constraint-vm 0.3.0",
+ "essential-constraint-vm",
  "essential-state-asm 0.3.1",
  "essential-types 0.2.0",
  "thiserror",
-]
-
-[[package]]
-name = "essential-state-read-vm"
-version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3ac2ef76b5b5b7073b4cba162f1754d974305b929abf0875f5f8ff671719273f"
-dependencies = [
- "essential-constraint-vm 0.6.0",
- "essential-state-asm 0.6.0",
- "essential-types 0.5.0",
- "thiserror",
- "tracing",
 ]
 
 [[package]]
@@ -1179,6 +1206,31 @@ checksum = "c7d7418cbf7dd2365e3ec9409a2c02375335530b5eb90bb39167e607f67ca869"
 dependencies = [
  "hex",
  "serde",
+]
+
+[[package]]
+name = "essential-types"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fb9ce67e642944ec19647a59f2b5c8848baa9af6884c5e4fe000e3b669dae7b9"
+dependencies = [
+ "hex",
+ "serde",
+]
+
+[[package]]
+name = "essential-vm"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "652d045c15b7563a6f54083e8c00840b801f06e3f43e45b1615bac420e658bc1"
+dependencies = [
+ "ed25519-dalek",
+ "essential-asm",
+ "essential-types 0.7.0",
+ "secp256k1 0.30.0",
+ "sha2",
+ "thiserror",
+ "tracing",
 ]
 
 [[package]]
@@ -2239,9 +2291,9 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "clap",
- "essential-hash 0.7.0",
+ "essential-hash 0.9.0",
  "essential-rest-client",
- "essential-types 0.5.0",
+ "essential-types 0.7.0",
  "pint-cli",
  "pint-pkg",
  "serde_json",
@@ -2285,7 +2337,7 @@ dependencies = [
  "anyhow",
  "clap",
  "essential-rest-client",
- "essential-types 0.5.0",
+ "essential-types 0.7.0",
  "hex",
  "pint-abi",
  "pint-manifest",
@@ -2313,9 +2365,9 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "clap",
- "essential-hash 0.7.0",
+ "essential-hash 0.9.0",
  "essential-rest-client",
- "essential-types 0.5.0",
+ "essential-types 0.7.0",
  "hex",
  "serde_json",
  "tokio",
@@ -3181,12 +3233,12 @@ dependencies = [
  "essential-app-utils",
  "essential-builder",
  "essential-builder-db",
- "essential-hash 0.7.0",
+ "essential-hash 0.9.0",
  "essential-node",
  "essential-rest-client",
- "essential-sign 0.7.0",
+ "essential-sign 0.9.0",
  "essential-signer",
- "essential-types 0.5.0",
+ "essential-types 0.7.0",
  "essential-wallet",
  "hex",
  "pint-abi",
