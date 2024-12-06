@@ -28,4 +28,4 @@ toml.workspace = true
 uuid.workspace = true
 
 [features]
-test-utils = ["dep:essential-debugger", "dep:essential-rest-client"]
+test-utils = ["dep:essential-rest-client"]
