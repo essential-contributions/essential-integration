@@ -1,6 +1,6 @@
 use essential_app_utils::{self as utils, compile::compile_pint_project};
 use essential_signer::Signature;
-use essential_types::{convert::word_4_from_u8_32, Word};
+use essential_types::{convert::word_4_from_u8_32, solution::SolutionSet, Word};
 use essential_wallet::Wallet;
 use token::Query;
 
@@ -91,13 +91,17 @@ async fn mint_and_transfer() {
     };
     let solution = token::mint::build_solution(build_solution).unwrap();
 
+    let solution_set = SolutionSet {
+        solutions: vec![solution],
+    };
+
     // Submit the mint solution
-    utils::builder::submit(&dbs.builder, solution.clone())
+    utils::builder::submit(&dbs.builder, solution_set.clone())
         .await
         .unwrap();
 
     // Validate the mint solution
-    utils::node::validate_solution(&dbs.node, solution.clone())
+    utils::node::validate_solution(&dbs.node, solution_set.clone())
         .await
         .unwrap();
 
@@ -162,14 +166,17 @@ async fn mint_and_transfer() {
         signature: sig,
     };
     let solution = token::transfer::build_solution(solution).unwrap();
+    let solution_set = SolutionSet {
+        solutions: vec![solution],
+    };
 
     // Submit the transfer solution
-    utils::builder::submit(&dbs.builder, solution.clone())
+    utils::builder::submit(&dbs.builder, solution_set.clone())
         .await
         .unwrap();
 
     // Validate the transfer solution
-    utils::node::validate_solution(&dbs.node, solution.clone())
+    utils::node::validate_solution(&dbs.node, solution_set.clone())
         .await
         .unwrap();
     let o = utils::builder::build_default(&dbs).await.unwrap();
