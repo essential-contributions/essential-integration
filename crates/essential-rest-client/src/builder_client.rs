@@ -1,5 +1,5 @@
 use crate::handle_response;
-use essential_builder_types::SolutionFailure;
+use essential_builder_types::SolutionSetFailure;
 use essential_node_types::register_contract_solution;
 use essential_types::{contract::Contract, solution::Solution, ContentAddress};
 use reqwest::{Client, ClientBuilder};
@@ -26,11 +26,8 @@ impl EssentialBuilderClient {
     /// Creates a solution to the contract registry predicate and submits it.
     pub async fn deploy_contract(&self, contract: &Contract) -> anyhow::Result<ContentAddress> {
         let registry_predicate = essential_node_types::BigBang::default().contract_registry;
-        let solution = register_contract_solution(registry_predicate, contract)?;
-        self.submit_solution(&Solution {
-            data: vec![solution],
-        })
-        .await
+        let solution = register_contract_solution(registry_predicate.clone(), contract)?;
+        self.submit_solution(&solution).await
     }
 
     /// Submit solution.
@@ -81,11 +78,11 @@ impl EssentialBuilderClient {
         &self,
         solution_ca: &ContentAddress,
         limit: u32,
-    ) -> anyhow::Result<Vec<SolutionFailure<'static>>> {
+    ) -> anyhow::Result<Vec<SolutionSetFailure<'static>>> {
         let url = self
             .url
             .join(&format!("/latest_solution_failures/{solution_ca}/{limit}"))?;
         let response = handle_response(self.client.get(url).send().await?).await?;
-        Ok(response.json::<Vec<SolutionFailure<'static>>>().await?)
+        Ok(response.json::<Vec<SolutionSetFailure<'static>>>().await?)
     }
 }

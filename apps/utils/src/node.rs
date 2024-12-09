@@ -10,7 +10,7 @@ pub async fn query_state_head(
     let ca = essential_node_db::get_latest_finalized_block_address(&tx)?;
     let num = match ca {
         Some(ca) => essential_node_db::get_block_header(&tx, &ca)?
-            .map(|h| h.0)
+            .map(|h| h.number)
             .unwrap_or_default(),
         None => 0,
     };
@@ -20,9 +20,16 @@ pub async fn query_state_head(
 
 pub async fn validate_solution(
     conn: &essential_node::db::ConnectionPool,
-    solution: essential_types::solution::Solution,
+    solution_set: essential_types::solution::SolutionSet,
 ) -> anyhow::Result<()> {
-    let registry_predicate = essential_node_types::BigBang::default().contract_registry;
-    essential_node::validate_solution_dry_run(conn, &registry_predicate.contract, solution).await?;
+    let contract_registry_predicate = essential_node_types::BigBang::default().contract_registry;
+    let program_registry_predicate = essential_node_types::BigBang::default().program_registry;
+    essential_node::validate_solution_set_dry_run(
+        conn,
+        &contract_registry_predicate.contract,
+        &program_registry_predicate.contract,
+        solution_set,
+    )
+    .await?;
     Ok(())
 }
