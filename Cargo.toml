@@ -47,8 +47,8 @@ tracing = "0.1.40"
 tracing-subscriber = "0.3.18"
 uuid = { version = "1.11.0", features = ["v4"] }
 
-essential-rest-client = { path = "crates/essential-rest-client", version = "0.6.0" }
-essential-app-utils = { path = "apps/utils", version = "0.6.0" }
-pint-deploy = { path = "crates/pint-deploy", version = "0.1.0" }
-pint-query = { path = "crates/pint-query", version = "0.1.0" }
-pint-submit = { path = "crates/pint-submit", version = "0.1.0" }
+essential-rest-client = { path = "crates/essential-rest-client", version = "0.7.0" }
+essential-app-utils = { path = "apps/utils", version = "0.7.0" }
+pint-deploy = { path = "crates/pint-deploy", version = "0.2.0" }
+pint-query = { path = "crates/pint-query", version = "0.2.0" }
+pint-submit = { path = "crates/pint-submit", version = "0.2.0" }

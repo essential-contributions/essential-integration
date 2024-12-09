@@ -713,7 +713,7 @@ dependencies = [
 
 [[package]]
 name = "essential-app-utils"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "anyhow",
  "clap",
@@ -736,18 +736,6 @@ dependencies = [
 
 [[package]]
 name = "essential-asm"
-version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9526424e2ae480d20833c002bce8f4baecf52675402e591b52a7097be125f592"
-dependencies = [
- "bitflags",
- "essential-asm-gen 0.7.0",
- "essential-types 0.6.0",
- "serde",
-]
-
-[[package]]
-name = "essential-asm"
 version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6923e90fec1fca93017346078a7846468d4a758b96182338389de84a33ec7122"
@@ -766,19 +754,6 @@ checksum = "dd6dcaddd3f9f6e170131b7dee34ec0754d9b682351957c0f0a9d05fe5e0e606"
 dependencies = [
  "essential-asm-spec 0.2.1",
  "essential-types 0.2.0",
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
-name = "essential-asm-gen"
-version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b4339ed7c3b0d6994caa8b0725688a74be06bbd4016e91ab83a8dd3d36fd278b"
-dependencies = [
- "essential-asm-spec 0.6.0",
- "essential-types 0.6.0",
  "proc-macro2",
  "quote",
  "syn",
@@ -956,18 +931,6 @@ dependencies = [
 
 [[package]]
 name = "essential-hash"
-version = "0.8.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ab0c6bf33ae7d446087ad17e9d4c1883d381909554cd69f1bc8dd27147455eb9"
-dependencies = [
- "essential-types 0.6.0",
- "postcard",
- "serde",
- "sha2",
-]
-
-[[package]]
-name = "essential-hash"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "20c4afe77fa9779e600216f8a6efb17329c194d3eeeef989a6001e749a296714"
@@ -1083,7 +1046,7 @@ dependencies = [
 
 [[package]]
 name = "essential-rest-client"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "anyhow",
  "base64",
@@ -1202,16 +1165,6 @@ dependencies = [
 
 [[package]]
 name = "essential-types"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e4241420641482a64b03adcbcf72c8f802f170a4c7b031a9ee41e8dc9dea7532"
-dependencies = [
- "hex",
- "serde",
-]
-
-[[package]]
-name = "essential-types"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fb9ce67e642944ec19647a59f2b5c8848baa9af6884c5e4fe000e3b669dae7b9"
@@ -1227,7 +1180,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "652d045c15b7563a6f54083e8c00840b801f06e3f43e45b1615bac420e658bc1"
 dependencies = [
  "ed25519-dalek",
- "essential-asm 0.8.0",
+ "essential-asm",
  "essential-types 0.7.0",
  "secp256k1 0.30.0",
  "sha2",
@@ -2226,11 +2179,11 @@ checksum = "8b870d8c151b6f2fb93e84a13146138f05d02ed11c7e7c54f8826aaaf7c9f184"
 
 [[package]]
 name = "pint-abi"
-version = "0.10.0"
+version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "599bb9a69682f9ecde139aacdae65be126daf460592630c0fa59b1167011c25a"
+checksum = "b2b85eb800b06aa0993c19a9a3aacc37f06aff3f1e73e8a7a1993f78cf96a798"
 dependencies = [
- "essential-types 0.6.0",
+ "essential-types 0.7.0",
  "pint-abi-gen",
  "pint-abi-types",
  "serde_json",
@@ -2239,12 +2192,12 @@ dependencies = [
 
 [[package]]
 name = "pint-abi-gen"
-version = "0.10.0"
+version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "90183ad147bc47e35c7ed58514c129470c70df4424a8075c9fb8a8347ab8fa9a"
+checksum = "1ea880fdb805b77de58b42bf5dc95f10606f4a52b27cbea6c5cc108bb4192191"
 dependencies = [
- "essential-hash 0.8.0",
- "essential-types 0.6.0",
+ "essential-hash 0.9.0",
+ "essential-types 0.7.0",
  "pint-abi-types",
  "pint-abi-visit",
  "proc-macro2",
@@ -2265,20 +2218,20 @@ dependencies = [
 
 [[package]]
 name = "pint-abi-visit"
-version = "0.6.0"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e43b77a4b4415048efc2bdb45c36505b9b973179c462f1b87b6fb2e6a1aabd90"
+checksum = "915590c229c519dca0b72abd0ac852aa8a72db44b33c53d2dc91c4d63d455f42"
 dependencies = [
- "essential-types 0.6.0",
+ "essential-types 0.7.0",
  "petgraph",
  "pint-abi-types",
 ]
 
 [[package]]
 name = "pint-cli"
-version = "0.12.0"
+version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b413a74b20a1824e1f2ab76559fdeefe4913c2bf858a958478d6eec07fbb4427"
+checksum = "95b222ba190adbc1732549db63a6f7e80b711591878bf84e250bbbbf6568f9dd"
 dependencies = [
  "anyhow",
  "clap",
@@ -2316,13 +2269,13 @@ dependencies = [
 
 [[package]]
 name = "pint-pkg"
-version = "0.12.0"
+version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4ecba9e14132b9ee789bdfc302be62b8e753612508d4fb3e9c1193bd7d9a5753"
+checksum = "6a7e7be3d90c12a0fb603e52df19f2d402c5c449aa65b30f1a2430439bd8a31d"
 dependencies = [
  "clap",
- "essential-hash 0.8.0",
- "essential-types 0.6.0",
+ "essential-hash 0.9.0",
+ "essential-types 0.7.0",
  "petgraph",
  "pint-abi-types",
  "pint-manifest",
@@ -2334,7 +2287,7 @@ dependencies = [
 
 [[package]]
 name = "pint-query"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "clap",
@@ -2377,16 +2330,16 @@ dependencies = [
 
 [[package]]
 name = "pintc"
-version = "0.12.0"
+version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b03dae85b149a14f40f0ac96fda4d0be80233b563196b6cc2ddde587a9ec8b7c"
+checksum = "35389eb433577ceb0873d5aa27d7f9c6c995a742adcb0d840d5c1136dec550ac"
 dependencies = [
  "anyhow",
  "ariadne",
  "clap",
- "essential-asm 0.7.0",
- "essential-hash 0.8.0",
- "essential-types 0.6.0",
+ "essential-asm",
+ "essential-hash 0.9.0",
+ "essential-types 0.7.0",
  "expect-test",
  "fxhash",
  "itertools 0.13.0",
