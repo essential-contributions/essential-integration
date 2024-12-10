@@ -1,7 +1,7 @@
 use crate::handle_response;
 use essential_builder_types::SolutionSetFailure;
 use essential_node_types::register_contract_solution;
-use essential_types::{contract::Contract, solution::Solution, ContentAddress};
+use essential_types::{contract::Contract, solution::SolutionSet, ContentAddress};
 use reqwest::{Client, ClientBuilder};
 
 /// Client that binds to an Essential builder address.
@@ -27,7 +27,10 @@ impl EssentialBuilderClient {
     pub async fn deploy_contract(&self, contract: &Contract) -> anyhow::Result<ContentAddress> {
         let registry_predicate = essential_node_types::BigBang::default().contract_registry;
         let solution = register_contract_solution(registry_predicate.clone(), contract)?;
-        self.submit_solution(&solution).await
+        let solutions = SolutionSet {
+            solutions: vec![solution],
+        };
+        self.submit_solution(&solutions).await
     }
 
     /// Submit solution.
@@ -46,9 +49,9 @@ impl EssentialBuilderClient {
     /// Submitting the same solution twice (even by different user) is idempotent.
     ///
     /// Returns the content address of the submitted solution.
-    pub async fn submit_solution(&self, solution: &Solution) -> anyhow::Result<ContentAddress> {
-        let url = self.url.join("/submit-solution")?;
-        let response = handle_response(self.client.post(url).json(solution).send().await?).await?;
+    pub async fn submit_solution(&self, solutions: &SolutionSet) -> anyhow::Result<ContentAddress> {
+        let url = self.url.join("/submit-solution-set")?;
+        let response = handle_response(self.client.post(url).json(solutions).send().await?).await?;
         Ok(response.json::<ContentAddress>().await?)
     }
 
