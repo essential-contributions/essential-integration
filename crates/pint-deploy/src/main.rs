@@ -1,9 +1,10 @@
 use anyhow::{anyhow, bail, Context};
 use clap::{builder::styling::Style, Parser};
 use essential_rest_client::builder_client::EssentialBuilderClient;
-use essential_types::{contract::Contract, ContentAddress};
+use essential_types::{contract::Contract, predicate::Program, ContentAddress};
 use pint_pkg::build::BuiltPkg;
-use std::path::{Path, PathBuf};
+use serde_json::Value;
+use std::{collections::BTreeSet, path::PathBuf};
 
 #[derive(Parser, Debug)]
 #[command(name = "deploy", version, about, long_about = None)]
@@ -119,11 +120,15 @@ fn print_received(ca: &ContentAddress) {
 }
 
 /// Read a [`Contract`] from a JSON file at the given path.
-async fn contract_from_path(contract_path: &Path) -> anyhow::Result<Contract> {
+async fn contract_from_path(contract_path: &PathBuf) -> anyhow::Result<Contract> {
     let contract_string = tokio::fs::read_to_string(&contract_path)
         .await
         .with_context(|| format!("failed to read contract from file {contract_path:?}"))?;
-    let contract = serde_json::from_str::<Contract>(&contract_string)
+    let json_value: Value = serde_json::from_str(&contract_string)
+        .with_context(|| format!("failed to parse JSON from {contract_path:?}"))?;
+
+    let (contract, _): (Contract, BTreeSet<Program>) = serde_json::from_value(json_value)
         .with_context(|| format!("failed to parse `Contract` from JSON {contract_path:?}"))?;
+
     Ok(contract)
 }
