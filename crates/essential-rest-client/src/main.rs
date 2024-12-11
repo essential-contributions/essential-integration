@@ -3,7 +3,10 @@ use essential_rest_client::{
     builder_client::EssentialBuilderClient, node_client::EssentialNodeClient,
 };
 use essential_types::{
-    contract::Contract, convert::word_from_bytes, solution::Solution, ContentAddress, Word,
+    contract::Contract,
+    convert::word_from_bytes,
+    solution::{Solution, SolutionSet},
+    ContentAddress, Word,
 };
 use std::{path::PathBuf, str::FromStr};
 
@@ -106,7 +109,10 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
         } => {
             let builder_client = EssentialBuilderClient::new(builder_address)?;
             let solution = serde_json::from_str::<Solution>(&from_file(solution).await?)?;
-            let output = builder_client.submit_solution(&solution).await?;
+            let solutions = SolutionSet {
+                solutions: vec![solution],
+            };
+            let output = builder_client.submit_solution(&solutions).await?;
             println!("{}", output);
         }
         Command::LatestSolutionFailures {
