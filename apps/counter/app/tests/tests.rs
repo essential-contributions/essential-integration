@@ -5,8 +5,10 @@ use essential_app_utils::{
     db::{new_dbs, Dbs},
 };
 use essential_node as node;
-use essential_types::Program;
-use essential_types::{contract::Contract, ContentAddress, PredicateAddress, SolutionSet, Word};
+use essential_node_types::BigBang;
+use essential_types::{
+    contract::Contract, ContentAddress, PredicateAddress, Program, SolutionSet, Word,
+};
 
 #[tokio::test]
 async fn number_go_up() {
@@ -23,11 +25,20 @@ async fn number_go_up() {
     };
 
     let dbs = new_dbs().await;
+    let big_bang = BigBang::default();
 
     // Deploy the contract
-    essential_app_utils::deploy::deploy_contract(&dbs.builder, &counter, &programs)
-        .await
-        .unwrap();
+    let contract_registry = big_bang.contract_registry;
+    let program_registry = big_bang.program_registry;
+    essential_app_utils::deploy::register_contract_and_programs(
+        &dbs.builder,
+        &contract_registry,
+        &program_registry,
+        &counter,
+        programs,
+    )
+    .await
+    .unwrap();
 
     let key = counter_key();
     let count = read_count(&dbs.node, &predicate_address.contract, &key).await;

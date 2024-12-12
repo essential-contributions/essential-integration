@@ -1,4 +1,5 @@
 use essential_app_utils::{self as utils, compile::compile_pint_project};
+use essential_node_types::BigBang;
 use essential_signer::Signature;
 use essential_types::{convert::word_4_from_u8_32, solution::SolutionSet, Word};
 use essential_wallet::Wallet;
@@ -46,11 +47,20 @@ async fn mint_and_transfer() {
 
     // Create new databases for testing
     let dbs = utils::db::new_dbs().await;
+    let big_bang = BigBang::default();
 
     // Deploy the token contract
-    essential_app_utils::deploy::deploy_contract(&dbs.builder, &transfer, &programs)
-        .await
-        .unwrap();
+    let contract_registry = big_bang.contract_registry;
+    let program_registry = big_bang.program_registry;
+    essential_app_utils::deploy::register_contract_and_programs(
+        &dbs.builder,
+        &contract_registry,
+        &program_registry,
+        &transfer,
+        programs,
+    )
+    .await
+    .unwrap();
 
     // Get Alice's nonce key
     let alice_nonce_key = token::nonce_key(alice_hashed_key);
