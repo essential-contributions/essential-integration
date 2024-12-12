@@ -12,6 +12,7 @@ repository.workspace = true
 anyhow = { workspace = true }
 clap = { workspace = true }
 essential-hash = { workspace = true }
+essential-node-types = { workspace = true }
 essential-rest-client = { workspace = true }
 essential-types = { workspace = true }
 pint-cli = { workspace = true }

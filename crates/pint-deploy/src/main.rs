@@ -1,10 +1,10 @@
-use anyhow::{anyhow, bail, Context};
+use anyhow::{anyhow, bail};
 use clap::{builder::styling::Style, Parser};
-use essential_rest_client::builder_client::EssentialBuilderClient;
-use essential_types::{contract::Contract, predicate::Program, ContentAddress};
+use essential_node_types::BigBang;
+use essential_rest_client::{builder_client::EssentialBuilderClient, contract_from_path};
+use essential_types::{contract::Contract, ContentAddress};
 use pint_pkg::build::BuiltPkg;
-use serde_json::Value;
-use std::{collections::BTreeSet, path::PathBuf};
+use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
 #[command(name = "deploy", version, about, long_about = None)]
@@ -42,12 +42,16 @@ async fn run(args: Args) -> anyhow::Result<()> {
         contract,
     } = args;
 
+    // The expected configuration of the chain we're querying.
+    // FIXME: Provide CLI arg for specifying a path to a yml like the node and builder.
+    let big_bang = BigBang::default();
+
     let builder_client = EssentialBuilderClient::new(builder_address)?;
 
     // If a contract was specified directly, there's no need to do the build or inspect any of the
     // `build_args` - we can deploy this directly.
     if let Some(contract_path) = contract {
-        let contract = contract_from_path(&contract_path).await?;
+        let (contract, programs) = contract_from_path(&contract_path).await?;
         let name = format!(
             "{}",
             contract_path
@@ -56,7 +60,9 @@ async fn run(args: Args) -> anyhow::Result<()> {
                 .display()
         );
         print_deploying(&name, &contract);
-        let output = builder_client.deploy_contract(&contract).await?;
+        let output = builder_client
+            .deploy_contract(&big_bang, &contract, &programs)
+            .await?;
         print_received(&output);
         return Ok(());
     }
@@ -86,9 +92,11 @@ async fn run(args: Args) -> anyhow::Result<()> {
         }
         BuiltPkg::Contract(_built) => {
             let contract_path = profile_dir.join(&pinned.name).with_extension("json");
-            let contract = contract_from_path(&contract_path).await?;
+            let (contract, programs) = contract_from_path(&contract_path).await?;
             print_deploying(&pinned.name, &contract);
-            let output = builder_client.deploy_contract(&contract).await?;
+            let output = builder_client
+                .deploy_contract(&big_bang, &contract, &programs)
+                .await?;
             print_received(&output);
         }
     }
@@ -117,18 +125,4 @@ fn print_received(ca: &ContentAddress) {
         bold.render_reset(),
         ca
     );
-}
-
-/// Read a [`Contract`] from a JSON file at the given path.
-async fn contract_from_path(contract_path: &PathBuf) -> anyhow::Result<Contract> {
-    let contract_string = tokio::fs::read_to_string(&contract_path)
-        .await
-        .with_context(|| format!("failed to read contract from file {contract_path:?}"))?;
-    let json_value: Value = serde_json::from_str(&contract_string)
-        .with_context(|| format!("failed to parse JSON from {contract_path:?}"))?;
-
-    let (contract, _): (Contract, BTreeSet<Program>) = serde_json::from_value(json_value)
-        .with_context(|| format!("failed to parse `Contract` from JSON {contract_path:?}"))?;
-
-    Ok(contract)
 }
