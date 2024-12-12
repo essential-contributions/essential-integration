@@ -20,7 +20,7 @@ async fn mint_and_transfer() {
 
     // Compile the token contract
     // This requires `pint` be available on PATH
-    let transfer =
+    let (transfer, programs) =
         compile_pint_project(concat!(env!("CARGO_MANIFEST_DIR"), "/../pint/token").into())
             .await
             .unwrap();
@@ -48,7 +48,7 @@ async fn mint_and_transfer() {
     let dbs = utils::db::new_dbs().await;
 
     // Deploy the token contract
-    essential_app_utils::deploy::deploy_contract(&dbs.builder, &transfer)
+    essential_app_utils::deploy::deploy_contract(&dbs.builder, &transfer, &programs)
         .await
         .unwrap();
 

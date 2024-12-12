@@ -84,7 +84,7 @@ async fn query_count(
 }
 
 async fn compile_address(pint_directory: PathBuf) -> Result<PredicateAddress, anyhow::Error> {
-    let counter = compile_pint_project(pint_directory).await?;
+    let (counter, _) = compile_pint_project(pint_directory).await?;
     let contract_address = essential_hash::contract_addr::from_contract(&counter);
     let predicate_address = essential_hash::content_addr(&counter.predicates[0]);
     let predicate_address = PredicateAddress {
