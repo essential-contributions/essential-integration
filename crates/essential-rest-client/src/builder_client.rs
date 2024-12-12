@@ -52,6 +52,7 @@ impl EssentialBuilderClient {
     pub async fn submit_solution(&self, solutions: &SolutionSet) -> anyhow::Result<ContentAddress> {
         let url = self.url.join("/submit-solution-set")?;
         let response = handle_response(self.client.post(url).json(solutions).send().await?).await?;
+        dbg!(&response);
         Ok(response.json::<ContentAddress>().await?)
     }
 
