@@ -415,6 +415,7 @@ dependencies = [
  "essential-builder-db",
  "essential-hash 0.9.0",
  "essential-node",
+ "essential-node-types",
  "essential-rest-client",
  "essential-types 0.7.0",
  "regex",

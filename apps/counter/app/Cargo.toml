@@ -17,6 +17,7 @@ tokio.workspace = true
 essential-app-utils = { workspace = true, features = ["test-utils"] }
 essential-builder.workspace = true
 essential-builder-db.workspace = true
+essential-node-types.workspace = true
 essential-node.workspace = true
 regex = "1.11.1"
 tracing.workspace = true

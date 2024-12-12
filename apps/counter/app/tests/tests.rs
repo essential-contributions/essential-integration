@@ -5,14 +5,15 @@ use essential_app_utils::{
     db::{new_dbs, Dbs},
 };
 use essential_node as node;
-use essential_types::{ContentAddress, PredicateAddress, SolutionSet, Word};
+use essential_node_types::BigBang;
+use essential_rest_client::{builder_client::EssentialBuilderClient, contract_from_path};
+use essential_types::{contract::Contract, ContentAddress, PredicateAddress, SolutionSet, Word};
 
 #[tokio::test]
 async fn number_go_up() {
     tracing_subscriber::fmt::init();
-    let counter = compile_pint_project(concat!(env!("CARGO_MANIFEST_DIR"), "/../pint").into())
-        .await
-        .unwrap();
+    let contract_path = concat!(env!("CARGO_MANIFEST_DIR"), "/../pint").into();
+    let counter: Contract = compile_pint_project(contract_path).await.unwrap();
 
     let contract_address = essential_hash::contract_addr::from_contract(&counter);
     let predicate_address = essential_hash::content_addr(&counter.predicates[0]);
@@ -24,7 +25,16 @@ async fn number_go_up() {
     let dbs = new_dbs().await;
 
     // Deploy the contract
-    essential_app_utils::deploy::deploy_contract(&dbs.builder, &counter)
+    let builder_address = dbs.builder;
+    let big_bang = BigBang::default();
+    let builder_client = EssentialBuilderClient::new(builder_address.to_owned()).unwrap();
+    // essential_app_utils::deploy::deploy_contract(&dbs.builder, &counter)
+    //     .await
+    //     .unwrap();
+
+    let (contract, programs) = contract_from_path(&contract_path).await.unwrap();
+    let _ = builder_client
+        .deploy_contract(&big_bang, &contract, &programs)
         .await
         .unwrap();
 
