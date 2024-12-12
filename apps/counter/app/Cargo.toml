@@ -19,4 +19,5 @@ essential-builder.workspace = true
 essential-builder-db.workspace = true
 essential-node.workspace = true
 regex = "1.11.1"
+tracing.workspace = true
 tracing-subscriber.workspace = true

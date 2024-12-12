@@ -1,9 +1,9 @@
 use clap::{Parser, Subcommand};
+use essential_node_types::BigBang;
 use essential_rest_client::{
-    builder_client::EssentialBuilderClient, node_client::EssentialNodeClient,
+    builder_client::EssentialBuilderClient, contract_from_path, node_client::EssentialNodeClient,
 };
 use essential_types::{
-    contract::Contract,
     convert::word_from_bytes,
     solution::{Solution, SolutionSet},
     ContentAddress, Word,
@@ -98,9 +98,13 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
             builder_address,
             contract,
         } => {
+            // FIXME: Allow for specifying big bang config via CLI argument.
+            let big_bang = BigBang::default();
             let builder_client = EssentialBuilderClient::new(builder_address)?;
-            let contract = serde_json::from_str::<Contract>(&from_file(contract).await?)?;
-            let output = builder_client.deploy_contract(&contract).await?;
+            let (contract, programs) = contract_from_path(&contract).await?;
+            let output = builder_client
+                .deploy_contract(&big_bang, &contract, &programs)
+                .await?;
             println!("{}", output);
         }
         Command::SubmitSolution {

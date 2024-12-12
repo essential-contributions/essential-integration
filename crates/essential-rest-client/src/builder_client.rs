@@ -1,7 +1,7 @@
 use crate::handle_response;
 use essential_builder_types::SolutionSetFailure;
-use essential_node_types::register_contract_solution;
-use essential_types::{contract::Contract, solution::SolutionSet, ContentAddress};
+use essential_node_types::{register_contract_solution, register_program_solution, BigBang};
+use essential_types::{contract::Contract, solution::SolutionSet, ContentAddress, Program};
 use reqwest::{Client, ClientBuilder};
 
 /// Client that binds to an Essential builder address.
@@ -24,12 +24,24 @@ impl EssentialBuilderClient {
     /// Deploy contract.
     ///
     /// Creates a solution to the contract registry predicate and submits it.
-    pub async fn deploy_contract(&self, contract: &Contract) -> anyhow::Result<ContentAddress> {
-        let registry_predicate = essential_node_types::BigBang::default().contract_registry;
-        let solution = register_contract_solution(registry_predicate.clone(), contract)?;
-        let solutions = SolutionSet {
-            solutions: vec![solution],
-        };
+    pub async fn deploy_contract(
+        &self,
+        big_bang: &BigBang,
+        contract: &Contract,
+        programs: &[Program],
+    ) -> anyhow::Result<ContentAddress> {
+        // FIXME: Move big_bang into argument position, handle fallback to default in CLI.
+        let mut solutions = vec![];
+        solutions.push(register_contract_solution(
+            big_bang.contract_registry.clone(),
+            contract,
+        )?);
+        solutions.extend(
+            programs
+                .iter()
+                .map(|p| register_program_solution(big_bang.program_registry.clone(), p)),
+        );
+        let solutions = SolutionSet { solutions };
         self.submit_solution(&solutions).await
     }
 
