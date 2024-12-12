@@ -12,7 +12,7 @@ pub async fn deploy_contract(
 ) -> anyhow::Result<ContentAddress> {
     let mut solutions = vec![];
     solutions.push(registered_contract_solution(contract));
-    solutions.extend(programs.iter().map(|p| registered_program_solution(p)));
+    solutions.extend(programs.iter().map(registered_program_solution));
     let solutions = SolutionSet { solutions };
 
     let r = builder_conn
