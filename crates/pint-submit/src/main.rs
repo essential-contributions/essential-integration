@@ -1,6 +1,9 @@
 use clap::{builder::styling::Style, Parser};
 use essential_rest_client::builder_client::EssentialBuilderClient;
-use essential_types::{solution::Solution, ContentAddress};
+use essential_types::{
+    solution::{Solution, SolutionSet},
+    ContentAddress,
+};
 use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
@@ -33,7 +36,10 @@ async fn run(args: Args) -> anyhow::Result<()> {
     let solution = serde_json::from_str::<Solution>(&from_file(solution).await?)?;
     let solution_ca = essential_hash::content_addr(&solution);
     print_submitting(&solution_ca);
-    let output = builder_client.submit_solution(&solution).await?;
+    let solutions = SolutionSet {
+        solutions: vec![solution],
+    };
+    let output = builder_client.submit_solution(&solutions).await?;
     if solution_ca != output {
         anyhow::bail!("The content address of the submitted solution differs from expected. May be a serialization error.");
     }

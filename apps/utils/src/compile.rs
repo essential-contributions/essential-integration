@@ -1,6 +1,9 @@
 use anyhow::{bail, ensure};
-use essential_types::{contract::Contract, predicate::Predicate};
-use std::path::PathBuf;
+use essential_types::{
+    contract::Contract,
+    predicate::{Predicate, Program},
+};
+use std::{collections::BTreeSet, path::PathBuf};
 use tokio::{
     io::{AsyncReadExt, BufReader},
     process::Command,
@@ -21,7 +24,7 @@ pub struct NamedContract {
 
 pub async fn compile_pint_project(path: PathBuf) -> anyhow::Result<Contract> {
     let (bytes, _, _) = compile_pint_project_inner(path, false).await?;
-    let contract: Contract = serde_json::from_slice(&bytes)?;
+    let (contract, _): (Contract, BTreeSet<Program>) = serde_json::from_slice(&bytes)?;
     Ok(contract)
 }
 
