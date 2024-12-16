@@ -2,7 +2,7 @@
 // ANCHOR: use
 use anyhow::bail;
 use essential_types::{
-    solution::{Mutation, Solution, SolutionData},
+    solution::{Mutation, Solution, SolutionSet},
     Value, Word,
 };
 // ANCHOR_END: use
@@ -25,10 +25,10 @@ pub fn counter_key() -> CounterKey {
 // ANCHOR_END: counter-key
 
 // ANCHOR: increment
-pub fn incremented_solution(count: Option<Value>) -> anyhow::Result<(Solution, Word)> {
+pub fn increment_solution_set(count: Option<Value>) -> anyhow::Result<(SolutionSet, Word)> {
     let count = extract_count(count)?;
     let new_count = count + 1;
-    Ok((create_solution(new_count), new_count))
+    Ok((create_solution_set(new_count), new_count))
 }
 // ANCHOR_END: increment
 
@@ -47,12 +47,12 @@ pub fn extract_count(count: Option<Value>) -> anyhow::Result<Word> {
 // ANCHOR_END: extract
 
 // ANCHOR: solution
-pub fn create_solution(new_count: Word) -> Solution {
+pub fn create_solution_set(new_count: Word) -> SolutionSet {
     let state_mutations: Vec<Mutation> = storage::mutations().counter(new_count).into();
-    Solution {
-        data: vec![SolutionData {
+    SolutionSet {
+        solutions: vec![Solution {
             predicate_to_solve: Increment::ADDRESS,
-            decision_variables: Default::default(),
+            predicate_data: Default::default(),
             state_mutations,
         }],
     }
