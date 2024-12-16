@@ -91,9 +91,9 @@ A solution requires 3 components:
    Note that your addresses might be slightly different if using a newer
    compiler version.
 
-2. **`predicate_data`**: A list of input data values (aka decision variables)
-   that are expected by the predicate. Our `Increment` predicate takes no
-   parameters, so here we can specify an empty list.
+2. **`predicate_data`**: A list of input data values (aka "decision variables"
+   in pint) that are expected by the predicate. Our `Increment` predicate takes
+   no parameters, so here we can specify an empty list.
 
 3. **`state_mutations`**: The state mutations we wish to propose. In our case,
    we want to initialise the `counter` storage variable to `1`.
