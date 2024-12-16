@@ -1,5 +1,6 @@
 use crate::handle_response;
-use essential_types::{convert::bytes_from_word, Block, ContentAddress, Key, Value, Word};
+use essential_node_types::Block;
+use essential_types::{convert::bytes_from_word, ContentAddress, Key, Value, Word};
 use reqwest::{Client, ClientBuilder};
 use std::ops::Range;
 

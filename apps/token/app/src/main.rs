@@ -7,7 +7,9 @@ use essential_rest_client::{
     builder_client::EssentialBuilderClient, node_client::EssentialNodeClient,
 };
 use essential_signer::Signature;
-use essential_types::{convert::word_4_from_u8_32, ContentAddress, PredicateAddress, Word};
+use essential_types::{
+    convert::word_4_from_u8_32, ContentAddress, PredicateAddress, SolutionSet, Word,
+};
 use essential_wallet::Wallet;
 use std::path::PathBuf;
 use token::Query;
@@ -234,7 +236,10 @@ async fn mint(mut wallet: Wallet, args: Mint) -> anyhow::Result<ContentAddress> 
         token_symbol,
     };
     let solution = token::mint::build_solution(build_solution)?;
-    let ca = builder.submit_solution(&solution).await?;
+    let solutions = SolutionSet {
+        solutions: vec![solution],
+    };
+    let ca = builder.submit_solution(&solutions).await?;
     Ok(ca)
 }
 
@@ -277,7 +282,10 @@ async fn burn(mut wallet: Wallet, args: Burn) -> anyhow::Result<ContentAddress> 
         signature: sig,
     };
     let solution = token::burn::build_solution(build_solution)?;
-    let ca = builder.submit_solution(&solution).await?;
+    let solutions = SolutionSet {
+        solutions: vec![solution],
+    };
+    let ca = builder.submit_solution(&solutions).await?;
     Ok(ca)
 }
 
@@ -333,7 +341,10 @@ async fn transfer(mut wallet: Wallet, args: Transfer) -> anyhow::Result<ContentA
         signature: sig,
     };
     let solution = token::transfer::build_solution(build_solution)?;
-    let ca = builder.submit_solution(&solution).await?;
+    let solutions = SolutionSet {
+        solutions: vec![solution],
+    };
+    let ca = builder.submit_solution(&solutions).await?;
     Ok(ca)
 }
 
@@ -354,7 +365,7 @@ async fn get_balance(
 
 /// Compiles the contract and returns its address.
 async fn compile_address(pint_directory: PathBuf) -> Result<PredicateAddress, anyhow::Error> {
-    let counter = compile_pint_project(pint_directory).await?;
+    let (counter, _) = compile_pint_project(pint_directory).await?;
     let contract_address = essential_hash::contract_addr::from_contract(&counter);
     let predicate_address = essential_hash::content_addr(&counter.predicates[0]);
     let predicate_address = PredicateAddress {

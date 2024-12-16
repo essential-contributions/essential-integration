@@ -11,7 +11,7 @@ cd $temp_dir || exit
 mkdir counter
 pint new --name counter counter/contract
 cp "$SCRIPT_DIR/counter.pnt" "$temp_dir/counter/contract/src/contract.pnt"
-cd counter/contract || exist
+cd counter/contract || exit
 pint build
 
 cd ..

@@ -178,11 +178,11 @@ predicate Transfer(key: b256, to: b256, amount: int, auth: TransferAuth) {
 
     // Check the authorization predicate.
     constraint match auth.mode {
-        TransferAuthMode::Signed(auth) => match auth.mode {
-            TransferSignedMode::All => @verify_key({key, to, amount, nonce'}; auth.sig; key),
-            TransferSignedMode::Key => @verify_key({key, nonce'}; auth.sig; key),
-            TransferSignedMode::KeyTo => @verify_key({key, to, nonce'}; auth.sig; key),
-            TransferSignedMode::KeyAmount => @verify_key({key, amount, nonce'}; auth.sig; key),
+        TransferAuthMode::Signed(a) => match a.mode {
+            TransferSignedMode::All => @verify_key({key, to, amount, nonce'}; a.sig; key),
+            TransferSignedMode::Key => @verify_key({key, nonce'}; a.sig; key),
+            TransferSignedMode::KeyTo => @verify_key({key, to, nonce'}; a.sig; key),
+            TransferSignedMode::KeyAmount => @verify_key({key, amount, nonce'}; a.sig; key),
         },
         TransferAuthMode::Predicate(addr) => @check_if_predicate_is_owner(TransferAccount; Owner; addr; key; to; amount),
     };

@@ -2,7 +2,7 @@ use clap::{Parser, Subcommand};
 use counter_app::{counter_key, extract_count, incremented_solution, CounterKey, QueryCount};
 use essential_app_utils::compile::compile_pint_project;
 use essential_rest_client::node_client::EssentialNodeClient;
-use essential_types::{ContentAddress, PredicateAddress};
+use essential_types::{ContentAddress, PredicateAddress, SolutionSet};
 use std::path::PathBuf;
 
 #[derive(Parser)]
@@ -64,7 +64,10 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
             let (solution, new_count) = incremented_solution(address, count)?;
             let builder =
                 essential_rest_client::builder_client::EssentialBuilderClient::new(builder_api)?;
-            let ca = builder.submit_solution(&solution).await?;
+            let solutions = SolutionSet {
+                solutions: vec![solution],
+            };
+            let ca = builder.submit_solution(&solutions).await?;
             println!("Submitted solution: {}", ca);
             println!("Incremented count to: {}", new_count);
         }
@@ -81,7 +84,7 @@ async fn query_count(
 }
 
 async fn compile_address(pint_directory: PathBuf) -> Result<PredicateAddress, anyhow::Error> {
-    let counter = compile_pint_project(pint_directory).await?;
+    let (counter, _) = compile_pint_project(pint_directory).await?;
     let contract_address = essential_hash::contract_addr::from_contract(&counter);
     let predicate_address = essential_hash::content_addr(&counter.predicates[0]);
     let predicate_address = PredicateAddress {

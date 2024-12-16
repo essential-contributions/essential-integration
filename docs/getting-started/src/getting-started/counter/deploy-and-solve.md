@@ -91,9 +91,9 @@ A solution requires 3 components:
    Note that your addresses might be slightly different if using a newer
    compiler version.
 
-2. **`decision_variables`**: A list of parameters (aka decision variables) that
-   are expected by the predicate. Our `Increment` predicate takes no
-   parameters, so here we can specify an empty list.
+2. **`predicate_data`**: A list of input data values (aka "decision variables"
+   in pint) that are expected by the predicate. Our `Increment` predicate takes
+   no parameters, so here we can specify an empty list.
 
 3. **`state_mutations`**: The state mutations we wish to propose. In our case,
    we want to initialise the `counter` storage variable to `1`.
@@ -107,13 +107,13 @@ When represented as JSON, our full solution looks as follows:
 
 ```json
 {
-    "data": [
+    "solutions": [
         {
             "predicate_to_solve": {
                 "contract": "1899743AA94972DDD137D039C2E670ADA63969ABF93191FA1A4506304D4033A2",
                 "predicate": "355A12DCB600C302FFD5D69C4B7B79E60BA3C72DDA553B7D43F4C36CB7CC0948"
             },
-            "decision_variables": [],
+            "predicate_data": [],
             "state_mutations": [
                 {
                     "key": [0],
@@ -125,16 +125,19 @@ When represented as JSON, our full solution looks as follows:
 }
 ```
 
-Lets put the above JSON in a `solution.json` file.
+Lets put the above JSON in a `solutions.json` file.
+
+> **Note:** We use the plural "solutions" here, as the following `pint submit`
+> command actually supports submitting whole sets of solutions simultaneously.
 
 To submit our solution to the local builder, we can now use the following command:
 
 ```
-pint submit --builder-address "http://127.0.0.1:3554" --solution "./solution.json"
+pint submit --builder-address "http://127.0.0.1:3554" --solutions "./solutions.json"
 ```
 
-As confirmation that the builder received our solution, it responds with its
-content address.
+As confirmation that the builder received our solution, it responds with the
+content address of the set.
 
 However, this is not enough to know whether or not our solution was included in
 a block, or whether it passed the contract's constraints at all.

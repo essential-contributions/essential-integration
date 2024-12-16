@@ -5,14 +5,17 @@ use essential_app_utils::{
     db::{new_dbs, Dbs},
 };
 use essential_node as node;
-use essential_types::{ContentAddress, PredicateAddress, Word};
+use essential_node_types::BigBang;
+use essential_types::{
+    contract::Contract, ContentAddress, PredicateAddress, Program, SolutionSet, Word,
+};
 
 #[tokio::test]
 async fn number_go_up() {
     tracing_subscriber::fmt::init();
-    let counter = compile_pint_project(concat!(env!("CARGO_MANIFEST_DIR"), "/../pint").into())
-        .await
-        .unwrap();
+    let contract_path = concat!(env!("CARGO_MANIFEST_DIR"), "/../pint").into();
+    let (counter, programs): (Contract, Vec<Program>) =
+        compile_pint_project(contract_path).await.unwrap();
 
     let contract_address = essential_hash::contract_addr::from_contract(&counter);
     let predicate_address = essential_hash::content_addr(&counter.predicates[0]);
@@ -22,11 +25,20 @@ async fn number_go_up() {
     };
 
     let dbs = new_dbs().await;
+    let big_bang = BigBang::default();
 
     // Deploy the contract
-    essential_app_utils::deploy::deploy_contract(&dbs.builder, &counter)
-        .await
-        .unwrap();
+    let contract_registry = big_bang.contract_registry;
+    let program_registry = big_bang.program_registry;
+    essential_app_utils::deploy::register_contract_and_programs(
+        &dbs.builder,
+        &contract_registry,
+        &program_registry,
+        &counter,
+        programs,
+    )
+    .await
+    .unwrap();
 
     let key = counter_key();
     let count = read_count(&dbs.node, &predicate_address.contract, &key).await;
@@ -58,8 +70,6 @@ async fn number_go_up() {
 
     let count = read_count(&dbs.node, &predicate_address.contract, &key).await;
     assert_eq!(count, 2);
-
-    // Demonstrate syncing node with deployed node and reading count.
 }
 
 async fn read_count(
@@ -82,7 +92,11 @@ async fn increment(dbs: &Dbs, predicate_address: PredicateAddress) -> Word {
     let (solution, new_count) =
         incremented_solution(predicate_address, QueryCount(current_count)).unwrap();
 
-    utils::builder::submit(&dbs.builder, solution)
+    let solution_set = SolutionSet {
+        solutions: vec![solution],
+    };
+
+    utils::builder::submit(&dbs.builder, solution_set)
         .await
         .unwrap();
     new_count

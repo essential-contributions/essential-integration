@@ -1,14 +1,29 @@
-use essential_node_types::register_contract_solution;
-use essential_types::{contract::Contract, solution::Solution, ContentAddress};
+use essential_node_types::{register_contract_solution, register_program_solution};
+use essential_types::{
+    contract::Contract,
+    solution::{Solution, SolutionSet},
+    ContentAddress, PredicateAddress, Program,
+};
 
-pub async fn deploy_contract(
+pub async fn register_contract_and_programs(
     builder_conn: &essential_builder_db::ConnectionPool,
+    contract_registry: &PredicateAddress,
+    program_registry: &PredicateAddress,
     contract: &Contract,
+    programs: Vec<Program>,
 ) -> anyhow::Result<ContentAddress> {
-    let solution = deploy_contract_solution(contract)?;
+    let solutions = register_contract_solution(contract_registry.clone(), contract)
+        .into_iter()
+        .chain(
+            programs
+                .iter()
+                .map(|p| register_program_solution(program_registry.clone(), p)),
+        )
+        .collect();
+    let solution_set = std::sync::Arc::new(SolutionSet { solutions });
     let r = builder_conn
-        .insert_solution_submission(
-            std::sync::Arc::new(solution),
+        .insert_solution_set_submission(
+            solution_set,
             std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
                 .unwrap(),
@@ -17,10 +32,16 @@ pub async fn deploy_contract(
     Ok(r)
 }
 
-pub fn deploy_contract_solution(contract: &Contract) -> anyhow::Result<Solution> {
-    let registry_predicate = essential_node_types::BigBang::default().contract_registry;
-    let solution = register_contract_solution(registry_predicate, contract)?;
-    Ok(Solution {
-        data: vec![solution],
-    })
+pub fn registered_contract_solution(
+    contract: &Contract,
+    contract_registry: &PredicateAddress,
+) -> Solution {
+    register_contract_solution(contract_registry.clone(), contract).unwrap()
+}
+
+pub fn registered_program_solution(
+    program: &Program,
+    predicate_registry: &PredicateAddress,
+) -> Solution {
+    register_program_solution(predicate_registry.clone(), program)
 }

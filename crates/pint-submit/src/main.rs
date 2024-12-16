@@ -1,6 +1,6 @@
 use clap::{builder::styling::Style, Parser};
 use essential_rest_client::builder_client::EssentialBuilderClient;
-use essential_types::{solution::Solution, ContentAddress};
+use essential_types::{solution::SolutionSet, ContentAddress};
 use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
@@ -10,9 +10,9 @@ struct Args {
     /// The endpoint of builder to bind to.
     #[arg(long)]
     builder_address: String,
-    /// Path to the solution file as a json `Solution`.
+    /// Path to the solutions file in the form of a JSON-serialized `SolutionSet`.
     #[arg(long)]
-    solution: PathBuf,
+    solutions: PathBuf,
 }
 
 #[tokio::main]
@@ -26,16 +26,16 @@ async fn main() {
 async fn run(args: Args) -> anyhow::Result<()> {
     let Args {
         builder_address,
-        solution,
+        solutions,
     } = args;
 
     let builder_client = EssentialBuilderClient::new(builder_address)?;
-    let solution = serde_json::from_str::<Solution>(&from_file(solution).await?)?;
-    let solution_ca = essential_hash::content_addr(&solution);
+    let solution_set = serde_json::from_str::<SolutionSet>(&from_file(solutions).await?)?;
+    let solution_ca = essential_hash::content_addr(&solution_set);
     print_submitting(&solution_ca);
-    let output = builder_client.submit_solution(&solution).await?;
+    let output = builder_client.submit_solution(&solution_set).await?;
     if solution_ca != output {
-        anyhow::bail!("The content address of the submitted solution differs from expected. May be a serialization error.");
+        anyhow::bail!("The content address of the submitted solution set differs from expected. May be a serialization error.");
     }
     print_submitted();
     Ok(())
@@ -45,7 +45,7 @@ async fn run(args: Args) -> anyhow::Result<()> {
 fn print_submitting(ca: &ContentAddress) {
     let bold = Style::new().bold();
     println!(
-        "  {}Submitting{} solution {}",
+        "  {}Submitting{} solution set {}",
         bold.render(),
         bold.render_reset(),
         ca,

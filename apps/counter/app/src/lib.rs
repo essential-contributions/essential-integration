@@ -1,6 +1,6 @@
 use anyhow::bail;
 use essential_types::{
-    solution::{Mutation, Solution, SolutionData},
+    solution::{Mutation, Solution},
     PredicateAddress, Value, Word,
 };
 
@@ -46,13 +46,11 @@ pub fn extract_count(count: QueryCount) -> anyhow::Result<Word> {
 /// Create a solution that sets the count to a new value.
 pub fn create_solution(predicate: PredicateAddress, new_count: Word) -> Solution {
     Solution {
-        data: vec![SolutionData {
-            predicate_to_solve: predicate,
-            decision_variables: Default::default(),
-            state_mutations: vec![Mutation {
-                key: vec![COUNTER_KEY],
-                value: vec![new_count],
-            }],
+        predicate_to_solve: predicate,
+        predicate_data: Default::default(),
+        state_mutations: vec![Mutation {
+            key: vec![COUNTER_KEY],
+            value: vec![new_count],
         }],
     }
 }

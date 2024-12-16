@@ -2,7 +2,7 @@
 edition = "2021"
 name = "token"
 publish = false
-version = "0.1.0"
+version = "0.2.0"
 
 [dependencies]
 anyhow = { workspace = true }
@@ -26,4 +26,5 @@ essential-wallet = { workspace = true, features = ["test-utils"] }
 essential-builder = { workspace = true, features = ["tracing"] }
 essential-builder-db.workspace = true
 essential-node = { workspace = true, features = ["tracing"] }
+essential-node-types.workspace = true
 tracing-subscriber.workspace = true
