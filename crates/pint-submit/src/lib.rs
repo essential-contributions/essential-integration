@@ -9,8 +9,13 @@ pub async fn submit_solution(
     builder_address: String,
     contract_opt: Option<&Contract>,
 ) -> anyhow::Result<ContentAddress> {
+    // Used by both `pint-submit` and `pint-deploy`.
+    // For the former, we receive a path to a solution,
+    // whereas for the latter we receive a reference to a contract.
     let solution_set: SolutionSet = match (solutions_opt, contract_opt) {
+        // handle `pint-submit`
         (Some(s), None) => serde_json::from_str::<SolutionSet>(&from_file(s).await?)?,
+        // handle `pint-deploy`
         (None, Some(contract)) => {
             let registry_predicate = essential_node_types::BigBang::default().contract_registry;
             let solution = register_contract_solution(registry_predicate, contract)?;
@@ -24,7 +29,6 @@ pub async fn submit_solution(
     };
 
     let builder_client = EssentialBuilderClient::new(builder_address)?;
-    // let solution_set = serde_json::from_str::<SolutionSet>(&from_file(solutions).await?)?;
     let solution_ca = essential_hash::content_addr(&solution_set);
     print_submitting(&solution_ca);
     let output = builder_client.submit_solution(&solution_set).await?;
