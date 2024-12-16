@@ -66,7 +66,7 @@ async fn run(args: Args) -> anyhow::Result<()> {
             .deploy_contract(&big_bang, &contract, &programs)
             .await?;
         print_received(&output);
-        submit(&contract, &builder_address.clone()).await?;
+        submit(&contract, builder_address).await?;
         return Ok(());
     }
 
@@ -102,15 +102,15 @@ async fn run(args: Args) -> anyhow::Result<()> {
                 .deploy_contract(&big_bang, &contract, &programs)
                 .await?;
             print_received(&output);
-            submit(&contract, &builder_address).await?;
+            submit(&contract, builder_address).await?;
         }
     }
 
     Ok(())
 }
 
-async fn submit(contract: &Contract, builder_address: &str) -> Result<(), anyhow::Error> {
-    let output = submit_solution(None, builder_address.to_string(), Some(contract)).await?;
+async fn submit(contract: &Contract, builder_address: String) -> Result<(), anyhow::Error> {
+    let output = submit_solution(None, builder_address, Some(contract)).await?;
     print_received(&output);
     Ok(())
 }
