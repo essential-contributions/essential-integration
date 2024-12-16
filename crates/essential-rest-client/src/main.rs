@@ -117,7 +117,7 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
             let solutions = SolutionSet {
                 solutions: vec![solution],
             };
-            let output = builder_client.submit_solution(&solutions).await?;
+            let output = builder_client.submit_solution_set(&solutions).await?;
             println!("{}", output);
         }
         Command::LatestSolutionFailures {

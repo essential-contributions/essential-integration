@@ -31,7 +31,7 @@ pub async fn submit_solution(
     let builder_client = EssentialBuilderClient::new(builder_address)?;
     let solution_ca = essential_hash::content_addr(&solution_set);
     print_submitting(&solution_ca);
-    let output = builder_client.submit_solution(&solution_set).await?;
+    let output = builder_client.submit_solution_set(&solution_set).await?;
     if solution_ca != output {
         anyhow::bail!("The content address of the submitted solution differs from expected. May be a serialization error.");
     }
