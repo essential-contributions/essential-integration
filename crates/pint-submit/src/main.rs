@@ -1,9 +1,6 @@
 use clap::{builder::styling::Style, Parser};
 use essential_rest_client::builder_client::EssentialBuilderClient;
-use essential_types::{
-    solution::SolutionSet,
-    ContentAddress,
-};
+use essential_types::{solution::SolutionSet, ContentAddress};
 use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
