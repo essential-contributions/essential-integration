@@ -13,10 +13,10 @@ pub async fn submit_solution(
         (Some(s), None) => serde_json::from_str::<SolutionSet>(&from_file(s).await?)?,
         (None, Some(contract)) => {
             let registry_predicate = essential_node_types::BigBang::default().contract_registry;
-            let solution = register_contract_solution(registry_predicate, contract)
-                ?;
+            let solution = register_contract_solution(registry_predicate, contract)?;
             SolutionSet {
-                solutions: vec![solution]}
+                solutions: vec![solution],
+            }
         }
         (None, None) | (Some(_), Some(_)) => {
             anyhow::bail!("Either a solution or a contract must be provided, but not both.");
