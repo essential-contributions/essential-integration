@@ -1,11 +1,11 @@
 use anyhow::{anyhow, bail};
 use clap::{builder::styling::Style, Parser};
 use essential_rest_client::{builder_client::EssentialBuilderClient, contract_from_path};
-use essential_node_types::{BigBang, register_contract_solution};
+use essential_node_types::BigBang;
 use essential_types::{contract::Contract, ContentAddress};
 use pint_pkg::build::BuiltPkg;
 use pint_submit::submit_solution;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
 #[command(name = "deploy", version, about, long_about = None)]
@@ -47,7 +47,7 @@ async fn run(args: Args) -> anyhow::Result<()> {
     // FIXME: Provide CLI arg for specifying a path to a yml like the node and builder.
     let big_bang = BigBang::default();
 
-    let builder_client = EssentialBuilderClient::new(builder_address)?;
+    let builder_client = EssentialBuilderClient::new(builder_address.clone())?;
 
     // If a contract was specified directly, there's no need to do the build or inspect any of the
     // `build_args` - we can deploy this directly.
@@ -66,7 +66,7 @@ async fn run(args: Args) -> anyhow::Result<()> {
             .deploy_contract(&big_bang, &contract, &programs)
             .await?;
         print_received(&output);
-        submit(contract, &builder_address.clone()).await?;
+        submit(&contract, &builder_address.clone()).await?;
         return Ok(());
     }
 
@@ -102,7 +102,7 @@ async fn run(args: Args) -> anyhow::Result<()> {
                 .deploy_contract(&big_bang, &contract, &programs)
                 .await?;
             print_received(&output);
-            submit(contract, &builder_address).await?;
+            submit(&contract, &builder_address).await?;
         }
     }
 
