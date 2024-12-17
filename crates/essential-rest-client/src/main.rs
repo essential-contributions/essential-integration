@@ -4,9 +4,9 @@ use essential_rest_client::{
     builder_client::EssentialBuilderClient, contract_from_path, node_client::EssentialNodeClient,
 };
 use essential_types::{
-    convert::word_from_bytes,
+    convert::words_from_hex_str,
     solution::{Solution, SolutionSet},
-    ContentAddress, Word,
+    ContentAddress, Key, Word,
 };
 use std::{path::PathBuf, str::FromStr};
 
@@ -36,6 +36,7 @@ enum Command {
         #[arg(short, long)]
         content_address: ContentAddress,
         /// Key to query, encoded as hex.
+        #[arg(value_parser = words_from_hex_str)]
         key: Key,
     },
     /// Deploy a contract.
@@ -90,7 +91,7 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
         } => {
             let node_client = EssentialNodeClient::new(node_address)?;
             let output = node_client
-                .query_state(content_address.to_owned(), key.0.to_owned())
+                .query_state(content_address.to_owned(), key)
                 .await?;
             println!("{}", serde_json::to_string(&output)?);
         }
@@ -160,22 +161,5 @@ impl FromStr for BlockRange {
             start: start.parse()?,
             end: end.parse()?,
         })
-    }
-}
-
-// FIXME: Should be made obsolete by https://github.com/essential-contributions/essential-base/issues/228
-#[derive(Clone, Debug)]
-struct Key(essential_types::Key);
-
-impl FromStr for Key {
-    type Err = anyhow::Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Self(
-            hex::decode(s)?
-                .chunks_exact(8)
-                .map(|chunk| word_from_bytes(chunk.try_into().expect("Always 8 bytes")))
-                .collect(),
-        ))
     }
 }

@@ -1,9 +1,9 @@
 use clap::{builder::styling::Style, Parser};
 use essential_rest_client::node_client::EssentialNodeClient;
-use essential_types::{convert::word_from_bytes, ContentAddress};
+use essential_types::{convert::words_from_hex_str, ContentAddress, Key};
 use pint_abi::types::{ContractABI, TypeABI};
 use pint_manifest::ManifestFile;
-use std::{fs::read_dir, path::PathBuf, str::FromStr};
+use std::{fs::read_dir, path::PathBuf};
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -24,7 +24,7 @@ struct Args {
     /// The exact key to query in state, encoded as hex.
     ///
     /// One and only one of `key` or `<STORAGE_ACCESS>` is expected.
-    #[arg(long)]
+    #[arg(long, value_parser = words_from_hex_str )]
     key: Option<Key>,
     /// The storage access to query.
     ///
@@ -70,7 +70,7 @@ async fn run(args: Args) -> anyhow::Result<()> {
             let contract_abi = get_contract_abi(&manifest)?;
             get_key_from_abi(&contract_abi, storage_access_name)?
         }
-        (Some(key_hex), None) => key_hex.0,
+        (Some(key), None) => key,
         (None, None) => anyhow::bail!("At least one of key name or key hex should be provided."),
     };
 
@@ -80,23 +80,6 @@ async fn run(args: Args) -> anyhow::Result<()> {
         .await?;
     println!("{}", serde_json::to_string(&output)?);
     Ok(())
-}
-
-// FIXME: Should be made obsolete by https://github.com/essential-contributions/essential-base/issues/228
-#[derive(Clone, Debug)]
-struct Key(essential_types::Key);
-
-impl FromStr for Key {
-    type Err = anyhow::Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Self(
-            hex::decode(s)?
-                .chunks_exact(8)
-                .map(|chunk| word_from_bytes(chunk.try_into().expect("Always 8 bytes")))
-                .collect(),
-        ))
-    }
 }
 
 /// Find the file within the current directory or parent directories with the given name.
@@ -135,7 +118,7 @@ fn get_contract_abi(manifest: &ManifestFile) -> anyhow::Result<ContractABI> {
 }
 
 /// Given a `ContractABI` and a key name, return the `Key`.
-fn get_key_from_abi(abi: &ContractABI, key_name: String) -> anyhow::Result<essential_types::Key> {
+fn get_key_from_abi(abi: &ContractABI, key_name: String) -> anyhow::Result<Key> {
     abi.storage
         .iter()
         .enumerate()
