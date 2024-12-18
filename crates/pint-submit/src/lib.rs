@@ -2,32 +2,11 @@ use clap::builder::styling::Style;
 use essential_node_types::register_contract_solution;
 use essential_rest_client::builder_client::EssentialBuilderClient;
 use essential_types::{contract::Contract, solution::SolutionSet, ContentAddress};
-use std::path::PathBuf;
 
 pub async fn submit_solution_set(
-    solutions_opt: Option<PathBuf>,
+    solution_set: SolutionSet,
     builder_address: String,
-    contract_opt: Option<&Contract>,
 ) -> anyhow::Result<ContentAddress> {
-    // Used by both `pint-submit` and `pint-deploy`.
-    // For the former, we receive a path to a solution,
-    // whereas for the latter we receive a reference to a contract.
-    let solution_set: SolutionSet = match (solutions_opt, contract_opt) {
-        // handle `pint-submit`
-        (Some(s), None) => serde_json::from_str::<SolutionSet>(&from_file(s).await?)?,
-        // handle `pint-deploy`
-        (None, Some(contract)) => {
-            let registry_predicate = essential_node_types::BigBang::default().contract_registry;
-            let solution = register_contract_solution(registry_predicate, contract)?;
-            SolutionSet {
-                solutions: vec![solution],
-            }
-        }
-        (None, None) | (Some(_), Some(_)) => {
-            anyhow::bail!("Either a solution or a contract must be provided, but not both.");
-        }
-    };
-
     let builder_client = EssentialBuilderClient::new(builder_address)?;
     let solution_ca = essential_hash::content_addr(&solution_set);
     print_submitting(&solution_ca);
@@ -39,13 +18,17 @@ pub async fn submit_solution_set(
     Ok(output)
 }
 
-pub async fn register_contract() {}
-
-pub async fn register_program() {}
-
-async fn from_file(path: PathBuf) -> anyhow::Result<String> {
-    let content = tokio::fs::read_to_string(path).await?;
-    Ok(content)
+pub async fn register_contract(
+    builder_address: String,
+    contract: &Contract,
+) -> anyhow::Result<ContentAddress> {
+    let registry_predicate = essential_node_types::BigBang::default().contract_registry;
+    let solution = register_contract_solution(registry_predicate, contract)?;
+    let solution_set = SolutionSet {
+        solutions: vec![solution],
+    };
+    let output = submit_solution_set(solution_set, builder_address).await?;
+    Ok(output)
 }
 
 /// Print the "Submitting ..." output.

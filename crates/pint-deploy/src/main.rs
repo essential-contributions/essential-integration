@@ -4,7 +4,7 @@ use essential_node_types::BigBang;
 use essential_rest_client::{builder_client::EssentialBuilderClient, contract_from_path};
 use essential_types::{contract::Contract, ContentAddress};
 use pint_pkg::build::BuiltPkg;
-use pint_submit::submit_solution_set;
+use pint_submit::register_contract;
 use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
@@ -66,7 +66,7 @@ async fn run(args: Args) -> anyhow::Result<()> {
             .deploy_contract(&big_bang, &contract, &programs)
             .await?;
         print_received(&output);
-        submit(&contract, builder_address).await?;
+        register_contract_and_submit_solution(builder_address, &contract).await?;
         return Ok(());
     }
 
@@ -102,15 +102,18 @@ async fn run(args: Args) -> anyhow::Result<()> {
                 .deploy_contract(&big_bang, &contract, &programs)
                 .await?;
             print_received(&output);
-            submit(&contract, builder_address).await?;
+            register_contract_and_submit_solution(builder_address, &contract).await?;
         }
     }
 
     Ok(())
 }
 
-async fn submit(contract: &Contract, builder_address: String) -> Result<(), anyhow::Error> {
-    let output = submit_solution_set(None, builder_address, Some(contract)).await?;
+async fn register_contract_and_submit_solution(
+    builder_address: String,
+    contract: &Contract,
+) -> Result<(), anyhow::Error> {
+    let output = register_contract(builder_address, contract).await?;
     print_received(&output);
     Ok(())
 }

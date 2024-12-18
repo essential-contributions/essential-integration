@@ -1,4 +1,5 @@
 use clap::Parser;
+use essential_types::solution::SolutionSet;
 use pint_submit::submit_solution_set;
 use std::path::PathBuf;
 
@@ -28,6 +29,8 @@ async fn run(args: Args) -> anyhow::Result<()> {
         solutions,
     } = args;
 
-    submit_solution_set(Some(solutions), builder_address, None).await?;
+    let solution_set =
+        serde_json::from_str::<SolutionSet>(tokio::fs::read_to_string(&solutions).await?.as_str())?;
+    submit_solution_set(solution_set, builder_address).await?;
     Ok(())
 }

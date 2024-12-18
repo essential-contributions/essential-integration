@@ -61,7 +61,10 @@ impl EssentialBuilderClient {
     /// Submitting the same solution twice (even by different user) is idempotent.
     ///
     /// Returns the content address of the submitted solution.
-    pub async fn submit_solution_set(&self, solutions: &SolutionSet) -> anyhow::Result<ContentAddress> {
+    pub async fn submit_solution_set(
+        &self,
+        solutions: &SolutionSet,
+    ) -> anyhow::Result<ContentAddress> {
         let url = self.url.join("/submit-solution-set")?;
         let response = handle_response(self.client.post(url).json(solutions).send().await?).await?;
         dbg!(&response);
