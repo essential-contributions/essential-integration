@@ -8,10 +8,18 @@ homepage.workspace = true
 license.workspace = true
 repository.workspace = true
 
+[[bin]]
+name = "submit"
+path = "src/main.rs"
+
+[lib]
+path = "src/lib.rs"
+
 [dependencies]
 anyhow = { workspace = true }
 clap = { workspace = true }
 essential-hash = { workspace = true }
+essential-node-types = { workspace = true }
 essential-rest-client = { workspace = true }
 essential-types = { workspace = true }
 hex = { workspace = true }

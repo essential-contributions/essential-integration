@@ -2103,6 +2103,7 @@ dependencies = [
  "essential-types 0.7.0",
  "pint-cli",
  "pint-pkg",
+ "pint-submit",
  "serde_json",
  "tokio",
 ]
@@ -2173,6 +2174,7 @@ dependencies = [
  "anyhow",
  "clap",
  "essential-hash 0.9.0",
+ "essential-node-types",
  "essential-rest-client",
  "essential-types 0.7.0",
  "hex",

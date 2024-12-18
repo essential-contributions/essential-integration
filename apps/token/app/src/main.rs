@@ -239,7 +239,7 @@ async fn mint(mut wallet: Wallet, args: Mint) -> anyhow::Result<ContentAddress> 
     let solutions = SolutionSet {
         solutions: vec![solution],
     };
-    let ca = builder.submit_solution(&solutions).await?;
+    let ca = builder.submit_solution_set(&solutions).await?;
     Ok(ca)
 }
 
@@ -285,7 +285,7 @@ async fn burn(mut wallet: Wallet, args: Burn) -> anyhow::Result<ContentAddress> 
     let solutions = SolutionSet {
         solutions: vec![solution],
     };
-    let ca = builder.submit_solution(&solutions).await?;
+    let ca = builder.submit_solution_set(&solutions).await?;
     Ok(ca)
 }
 
@@ -344,7 +344,7 @@ async fn transfer(mut wallet: Wallet, args: Transfer) -> anyhow::Result<ContentA
     let solutions = SolutionSet {
         solutions: vec![solution],
     };
-    let ca = builder.submit_solution(&solutions).await?;
+    let ca = builder.submit_solution_set(&solutions).await?;
     Ok(ca)
 }
 

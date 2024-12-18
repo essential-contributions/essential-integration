@@ -4,6 +4,7 @@ use essential_node_types::BigBang;
 use essential_rest_client::{builder_client::EssentialBuilderClient, contract_from_path};
 use essential_types::{contract::Contract, ContentAddress};
 use pint_pkg::build::BuiltPkg;
+use pint_submit::register_contract;
 use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
@@ -46,7 +47,7 @@ async fn run(args: Args) -> anyhow::Result<()> {
     // FIXME: Provide CLI arg for specifying a path to a yml like the node and builder.
     let big_bang = BigBang::default();
 
-    let builder_client = EssentialBuilderClient::new(builder_address)?;
+    let builder_client = EssentialBuilderClient::new(builder_address.clone())?;
 
     // If a contract was specified directly, there's no need to do the build or inspect any of the
     // `build_args` - we can deploy this directly.
@@ -60,10 +61,12 @@ async fn run(args: Args) -> anyhow::Result<()> {
                 .display()
         );
         print_deploying(&name, &contract);
+
         let output = builder_client
             .deploy_contract(&big_bang, &contract, &programs)
             .await?;
         print_received(&output);
+        register_contract_and_submit_solution(builder_address, &contract).await?;
         return Ok(());
     }
 
@@ -94,13 +97,24 @@ async fn run(args: Args) -> anyhow::Result<()> {
             let contract_path = profile_dir.join(&pinned.name).with_extension("json");
             let (contract, programs) = contract_from_path(&contract_path).await?;
             print_deploying(&pinned.name, &contract);
+
             let output = builder_client
                 .deploy_contract(&big_bang, &contract, &programs)
                 .await?;
             print_received(&output);
+            register_contract_and_submit_solution(builder_address, &contract).await?;
         }
     }
 
+    Ok(())
+}
+
+async fn register_contract_and_submit_solution(
+    builder_address: String,
+    contract: &Contract,
+) -> Result<(), anyhow::Error> {
+    let output = register_contract(builder_address, contract).await?;
+    print_received(&output);
     Ok(())
 }
 
