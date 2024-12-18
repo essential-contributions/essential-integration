@@ -4,7 +4,7 @@ use essential_rest_client::builder_client::EssentialBuilderClient;
 use essential_types::{contract::Contract, solution::SolutionSet, ContentAddress};
 use std::path::PathBuf;
 
-pub async fn submit_solution(
+pub async fn submit_solution_set(
     solutions_opt: Option<PathBuf>,
     builder_address: String,
     contract_opt: Option<&Contract>,
@@ -38,6 +38,10 @@ pub async fn submit_solution(
     print_submitted();
     Ok(output)
 }
+
+pub async fn register_contract() {}
+
+pub async fn register_program() {}
 
 async fn from_file(path: PathBuf) -> anyhow::Result<String> {
     let content = tokio::fs::read_to_string(path).await?;

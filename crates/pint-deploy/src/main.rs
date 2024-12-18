@@ -4,7 +4,7 @@ use essential_node_types::BigBang;
 use essential_rest_client::{builder_client::EssentialBuilderClient, contract_from_path};
 use essential_types::{contract::Contract, ContentAddress};
 use pint_pkg::build::BuiltPkg;
-use pint_submit::submit_solution;
+use pint_submit::submit_solution_set;
 use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
@@ -110,7 +110,7 @@ async fn run(args: Args) -> anyhow::Result<()> {
 }
 
 async fn submit(contract: &Contract, builder_address: String) -> Result<(), anyhow::Error> {
-    let output = submit_solution(None, builder_address, Some(contract)).await?;
+    let output = submit_solution_set(None, builder_address, Some(contract)).await?;
     print_received(&output);
     Ok(())
 }
