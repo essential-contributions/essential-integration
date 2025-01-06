@@ -956,6 +956,7 @@ dependencies = [
  "base64",
  "clap",
  "essential-builder-types",
+ "essential-hash 0.9.0",
  "essential-node",
  "essential-node-api",
  "essential-node-types",
