@@ -1,6 +1,6 @@
-use clap::{builder::styling::Style, Parser};
+use clap::Parser;
 use essential_rest_client::builder_client::EssentialBuilderClient;
-use essential_types::{solution::SolutionSet, ContentAddress};
+use essential_types::solution::SolutionSet;
 use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
@@ -31,35 +31,8 @@ async fn run(args: Args) -> anyhow::Result<()> {
 
     let builder_client = EssentialBuilderClient::new(builder_address)?;
     let solution_set = serde_json::from_str::<SolutionSet>(&from_file(solutions).await?)?;
-    let solution_ca = essential_hash::content_addr(&solution_set);
-    print_submitting(&solution_ca);
-    let output = builder_client.submit_solution_set(&solution_set).await?;
-    if solution_ca != output {
-        anyhow::bail!("The content address of the submitted solution set differs from expected. May be a serialization error.");
-    }
-    print_submitted();
+    let _ = builder_client.submit_solution_set(&solution_set).await?;
     Ok(())
-}
-
-/// Print the "Submitting ..." output.
-fn print_submitting(ca: &ContentAddress) {
-    let bold = Style::new().bold();
-    println!(
-        "  {}Submitting{} solution set {}",
-        bold.render(),
-        bold.render_reset(),
-        ca,
-    );
-}
-
-/// Print the "Submitted" output.
-fn print_submitted() {
-    let bold = Style::new().bold();
-    println!(
-        "   {}Submitted{} successfully",
-        bold.render(),
-        bold.render_reset(),
-    );
 }
 
 async fn from_file(path: PathBuf) -> anyhow::Result<String> {
