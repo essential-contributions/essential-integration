@@ -67,7 +67,7 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
             let solutions = SolutionSet {
                 solutions: vec![solution],
             };
-            let ca = builder.submit_solution(&solutions).await?;
+            let ca = builder.submit_solution_set(&solutions).await?;
             println!("Submitted solution: {}", ca);
             println!("Incremented count to: {}", new_count);
         }

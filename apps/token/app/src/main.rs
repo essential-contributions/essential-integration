@@ -236,10 +236,10 @@ async fn mint(mut wallet: Wallet, args: Mint) -> anyhow::Result<ContentAddress> 
         token_symbol,
     };
     let solution = token::mint::build_solution(build_solution)?;
-    let solutions = SolutionSet {
+    let solution_set = SolutionSet {
         solutions: vec![solution],
     };
-    let ca = builder.submit_solution(&solutions).await?;
+    let ca = builder.submit_solution_set(&solution_set).await?;
     Ok(ca)
 }
 
@@ -282,10 +282,10 @@ async fn burn(mut wallet: Wallet, args: Burn) -> anyhow::Result<ContentAddress> 
         signature: sig,
     };
     let solution = token::burn::build_solution(build_solution)?;
-    let solutions = SolutionSet {
+    let solution_set = SolutionSet {
         solutions: vec![solution],
     };
-    let ca = builder.submit_solution(&solutions).await?;
+    let ca = builder.submit_solution_set(&solution_set).await?;
     Ok(ca)
 }
 
@@ -341,10 +341,10 @@ async fn transfer(mut wallet: Wallet, args: Transfer) -> anyhow::Result<ContentA
         signature: sig,
     };
     let solution = token::transfer::build_solution(build_solution)?;
-    let solutions = SolutionSet {
+    let solution_set = SolutionSet {
         solutions: vec![solution],
     };
-    let ca = builder.submit_solution(&solutions).await?;
+    let ca = builder.submit_solution_set(&solution_set).await?;
     Ok(ca)
 }
 
