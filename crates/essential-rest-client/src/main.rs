@@ -47,11 +47,11 @@ enum Command {
         contract: PathBuf,
     },
     /// Submit a solution.
-    SubmitSolution {
+    SubmitSolutionSet {
         /// The endpoint of builder to bind to.
         builder_address: String,
-        /// Path to the solution file as a json `Solution`.
-        solution: PathBuf,
+        /// Path to the solution set file as a json `SolutionSet`.
+        solution_set: PathBuf,
     },
     /// Get the latest failures for solution.
     LatestSolutionFailures {
@@ -108,16 +108,14 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
                 .await?;
             println!("{}", output);
         }
-        Command::SubmitSolution {
+        Command::SubmitSolutionSet {
             builder_address,
-            solution,
+            solution_set,
         } => {
             let builder_client = EssentialBuilderClient::new(builder_address)?;
-            let solution = serde_json::from_str::<Solution>(&from_file(solution).await?)?;
-            let solutions = SolutionSet {
-                solutions: vec![solution],
-            };
-            let output = builder_client.submit_solution(&solutions).await?;
+            let solution_set =
+                serde_json::from_str::<SolutionSet>(&from_file(solution_set).await?)?;
+            let output = builder_client.submit_solution_set(&solution_set).await?;
             println!("{}", output);
         }
         Command::LatestSolutionFailures {

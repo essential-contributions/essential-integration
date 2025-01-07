@@ -33,7 +33,7 @@ async fn run(args: Args) -> anyhow::Result<()> {
     let solution_set = serde_json::from_str::<SolutionSet>(&from_file(solutions).await?)?;
     let solution_ca = essential_hash::content_addr(&solution_set);
     print_submitting(&solution_ca);
-    let output = builder_client.submit_solution(&solution_set).await?;
+    let output = builder_client.submit_solution_set(&solution_set).await?;
     if solution_ca != output {
         anyhow::bail!("The content address of the submitted solution set differs from expected. May be a serialization error.");
     }

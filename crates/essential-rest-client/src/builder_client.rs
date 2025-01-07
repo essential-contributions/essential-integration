@@ -41,29 +41,33 @@ impl EssentialBuilderClient {
                 .iter()
                 .map(|p| register_program_solution(big_bang.program_registry.clone(), p)),
         );
-        let solutions = SolutionSet { solutions };
-        self.submit_solution(&solutions).await
+        let solution_set = SolutionSet { solutions };
+        self.submit_solution_set(&solution_set).await
     }
 
-    /// Submit solution.
+    /// Submit solution set.
     ///
-    /// This allows submitting a solution to be included in an upcoming block.
-    /// Once a solution is submitted it is added to the pool.
-    /// The block builder runs on a regular loop interval and will include the solution in a block in FIFO order if it satisfies the constraints.
+    /// This allows submitting a set of solutions to be included in an upcoming block.
+    /// Once a set is submitted it is added to the pool.
+    /// The block builder runs on a regular loop interval and will include the set of solutions in a block in FIFO order if it satisfies the constraints.
     ///
     /// The block builder is likely to become more sophisticated in the future.
     ///
-    /// Note that currently if you submit a solution that conflicts with another solution then whichever solution is submitted first will be included in the block and the other solution will fail. Failed solutions are not retried and will eventually be pruned.
+    /// Note that currently if you submit a solution set containing a solution that conflicts with another solution then whichever solution is submitted first will be included in the block and the other solution will fail. Failed solutions are not retried and will eventually be pruned.
     ///
     /// A solution can conflict with another solution when one solution is built on top of pre-state that the other solution changes. For example if a counter can only increment by 1 and is currently set to 5 then you submit a solution setting it to 6 but another solution is submitted before yours that sets the counter to 6 then your solution will fail to satisfy the constraints.
     /// In fact in this example your solution will never satisfy again unless you update the state mutation to the current count + 1. But to do this you have to resubmit your solution.
     ///
-    /// Submitting the same solution twice (even by different user) is idempotent.
+    /// Submitting the same solution set twice (even by different user) is idempotent.
     ///
-    /// Returns the content address of the submitted solution.
-    pub async fn submit_solution(&self, solutions: &SolutionSet) -> anyhow::Result<ContentAddress> {
+    /// Returns the content address of the submitted solution set.
+    pub async fn submit_solution_set(
+        &self,
+        solution_set: &SolutionSet,
+    ) -> anyhow::Result<ContentAddress> {
         let url = self.url.join("/submit-solution-set")?;
-        let response = handle_response(self.client.post(url).json(solutions).send().await?).await?;
+        let response =
+            handle_response(self.client.post(url).json(solution_set).send().await?).await?;
         dbg!(&response);
         Ok(response.json::<ContentAddress>().await?)
     }
