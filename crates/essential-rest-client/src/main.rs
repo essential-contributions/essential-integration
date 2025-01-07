@@ -4,9 +4,7 @@ use essential_rest_client::{
     builder_client::EssentialBuilderClient, contract_from_path, node_client::EssentialNodeClient,
 };
 use essential_types::{
-    convert::words_from_hex_str,
-    solution::{Solution, SolutionSet},
-    ContentAddress, Key, Word,
+    convert::words_from_hex_str, solution::SolutionSet, ContentAddress, Key, Word,
 };
 use std::{path::PathBuf, str::FromStr};
 
@@ -39,14 +37,14 @@ enum Command {
         #[arg(value_parser = words_from_hex_str)]
         key: Key,
     },
-    /// Deploy a contract.
-    DeployContract {
+    /// Register a contract.
+    RegisterContract {
         /// The endpoint of builder to bind to.
         builder_address: String,
         /// Path to the contract file as a json `Contract`.
         contract: PathBuf,
     },
-    /// Submit a solution.
+    /// Submit a solution set.
     SubmitSolutionSet {
         /// The endpoint of builder to bind to.
         builder_address: String,
@@ -95,16 +93,22 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
                 .await?;
             println!("{}", serde_json::to_string(&output)?);
         }
-        Command::DeployContract {
+        Command::RegisterContract {
             builder_address,
             contract,
         } => {
-            // FIXME: Allow for specifying big bang config via CLI argument.
+            // FIXME: Allow for specifying big bang config via CLI argument & handle fallback to
+            // default.
             let big_bang = BigBang::default();
             let builder_client = EssentialBuilderClient::new(builder_address)?;
             let (contract, programs) = contract_from_path(&contract).await?;
             let output = builder_client
-                .deploy_contract(&big_bang, &contract, &programs)
+                .register_contract(
+                    big_bang.contract_registry,
+                    big_bang.program_registry,
+                    &contract,
+                    &programs,
+                )
                 .await?;
             println!("{}", output);
         }

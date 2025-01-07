@@ -61,7 +61,12 @@ async fn run(args: Args) -> anyhow::Result<()> {
         );
         print_deploying(&name, &contract);
         let output = builder_client
-            .deploy_contract(&big_bang, &contract, &programs)
+            .register_contract(
+                big_bang.contract_registry,
+                big_bang.program_registry,
+                &contract,
+                &programs,
+            )
             .await?;
         print_received(&output);
         return Ok(());
@@ -95,7 +100,12 @@ async fn run(args: Args) -> anyhow::Result<()> {
             let (contract, programs) = contract_from_path(&contract_path).await?;
             print_deploying(&pinned.name, &contract);
             let output = builder_client
-                .deploy_contract(&big_bang, &contract, &programs)
+                .register_contract(
+                    big_bang.contract_registry,
+                    big_bang.program_registry,
+                    &contract,
+                    &programs,
+                )
                 .await?;
             print_received(&output);
         }
