@@ -104,8 +104,8 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
             let (contract, programs) = contract_from_path(&contract).await?;
             let output = builder_client
                 .register_contract(
-                    big_bang.contract_registry,
-                    big_bang.program_registry,
+                    &big_bang.contract_registry,
+                    &big_bang.program_registry,
                     &contract,
                     &programs,
                 )
