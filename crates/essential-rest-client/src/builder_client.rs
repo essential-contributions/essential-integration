@@ -1,4 +1,5 @@
 use crate::handle_response;
+use clap::builder::styling::Style;
 use essential_builder_types::SolutionSetFailure;
 use essential_node_types::{register_contract_solution, register_program_solution, BigBang};
 use essential_types::{contract::Contract, solution::SolutionSet, ContentAddress, Program};
@@ -65,11 +66,17 @@ impl EssentialBuilderClient {
         &self,
         solution_set: &SolutionSet,
     ) -> anyhow::Result<ContentAddress> {
+        let solution_ca = essential_hash::content_addr(solution_set);
+        print_submitting(&solution_ca);
         let url = self.url.join("/submit-solution-set")?;
         let response =
             handle_response(self.client.post(url).json(solution_set).send().await?).await?;
-        dbg!(&response);
-        Ok(response.json::<ContentAddress>().await?)
+        let output = response.json::<ContentAddress>().await?;
+        if solution_ca != output {
+            anyhow::bail!("The content address of the submitted solution set differs from expected. May be a serialization error.");
+        }
+        print_submitted();
+        Ok(output)
     }
 
     /// For solution in the given content address, get the latest solution failures.
@@ -105,4 +112,25 @@ impl EssentialBuilderClient {
         let response = handle_response(self.client.get(url).send().await?).await?;
         Ok(response.json::<Vec<SolutionSetFailure<'static>>>().await?)
     }
+}
+
+/// Print the "Submitting ..." output.
+fn print_submitting(ca: &ContentAddress) {
+    let bold = Style::new().bold();
+    println!(
+        "  {}Submitting{} solution set {}",
+        bold.render(),
+        bold.render_reset(),
+        ca,
+    );
+}
+
+/// Print the "Submitted" output.
+fn print_submitted() {
+    let bold = Style::new().bold();
+    println!(
+        "   {}Submitted{} successfully",
+        bold.render(),
+        bold.render_reset(),
+    );
 }
