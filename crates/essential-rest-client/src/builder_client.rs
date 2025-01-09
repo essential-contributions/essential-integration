@@ -25,7 +25,7 @@ impl EssentialBuilderClient {
     /// Deploy contract.
     ///
     /// Creates a solution to the contract registry predicate and submits it.
-    pub async fn deploy_contract(
+    pub async fn register_contract(
         &self,
         big_bang: &BigBang,
         contract: &Contract,
