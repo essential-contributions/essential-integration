@@ -145,7 +145,7 @@ async fn start_essential_builder() -> (Child, String, String) {
 async fn deploy_contract(builder_address: String) {
     let deploy_output = TokioCommand::new("essential-rest-client")
         .args([
-            "deploy-contract",
+            "register-contract",
             &format!("http://{}", builder_address.as_str()),
             concat!(env!("CARGO_MANIFEST_DIR"), "/../pint/out/debug/pint.json"),
         ])

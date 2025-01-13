@@ -1,8 +1,10 @@
 use crate::handle_response;
 use clap::builder::styling::Style;
 use essential_builder_types::SolutionSetFailure;
-use essential_node_types::{register_contract_solution, register_program_solution, BigBang};
-use essential_types::{contract::Contract, solution::SolutionSet, ContentAddress, Program};
+use essential_node_types::{register_contract_solution, register_program_solution};
+use essential_types::{
+    contract::Contract, solution::SolutionSet, ContentAddress, PredicateAddress, Program,
+};
 use reqwest::{Client, ClientBuilder};
 
 /// Client that binds to an Essential builder address.
@@ -22,28 +24,28 @@ impl EssentialBuilderClient {
         Ok(Self { client, url })
     }
 
-    /// Deploy contract.
+    /// Register contract.
     ///
     /// Creates a solution to the contract registry predicate and submits it.
-    pub async fn deploy_contract(
+    pub async fn register_contract(
         &self,
-        big_bang: &BigBang,
+        contract_registry: PredicateAddress,
+        program_registry: PredicateAddress,
         contract: &Contract,
         programs: &[Program],
     ) -> anyhow::Result<ContentAddress> {
-        // FIXME: Move big_bang into argument position, handle fallback to default in CLI.
+        let contract_ca = essential_hash::content_addr(contract);
         let mut solutions = vec![];
-        solutions.push(register_contract_solution(
-            big_bang.contract_registry.clone(),
-            contract,
-        )?);
+        solutions.push(register_contract_solution(contract_registry, contract)?);
         solutions.extend(
             programs
                 .iter()
-                .map(|p| register_program_solution(big_bang.program_registry.clone(), p)),
+                .map(|p| register_program_solution(program_registry.clone(), p)),
         );
         let solution_set = SolutionSet { solutions };
-        self.submit_solution_set(&solution_set).await
+        let output = self.submit_solution_set(&solution_set).await?;
+        print_registered_contract(&contract_ca);
+        Ok(output)
     }
 
     /// Submit solution set.
@@ -76,6 +78,24 @@ impl EssentialBuilderClient {
             anyhow::bail!("The content address of the submitted solution set differs from expected. May be a serialization error.");
         }
         print_submitted();
+        Ok(output)
+    }
+
+    /// Register program.
+    ///
+    /// Creates a solution to the program registry predicate and submits it.
+    pub async fn register_program(
+        &self,
+        program_registry: PredicateAddress,
+        program: &Program,
+    ) -> anyhow::Result<ContentAddress> {
+        let program_ca = essential_hash::content_addr(program);
+        let program_solution = register_program_solution(program_registry, program);
+        let solution_set = SolutionSet {
+            solutions: vec![program_solution],
+        };
+        let output = self.submit_solution_set(&solution_set).await?;
+        print_registered_program(&program_ca);
         Ok(output)
     }
 
@@ -114,23 +134,47 @@ impl EssentialBuilderClient {
     }
 }
 
+const BOLD: Style = Style::new().bold();
+
 /// Print the "Submitting ..." output.
 fn print_submitting(ca: &ContentAddress) {
-    let bold = Style::new().bold();
+    // let bold = Style::new().bold();
     println!(
         "  {}Submitting{} solution set {}",
-        bold.render(),
-        bold.render_reset(),
+        BOLD.render(),
+        BOLD.render_reset(),
         ca,
     );
 }
 
 /// Print the "Submitted" output.
 fn print_submitted() {
-    let bold = Style::new().bold();
+    // let bold = Style::new().bold();
     println!(
         "   {}Submitted{} successfully",
-        bold.render(),
-        bold.render_reset(),
+        BOLD.render(),
+        BOLD.render_reset(),
+    );
+}
+
+/// Print the "Submitted contract ... for registration ..." output.
+fn print_registered_contract(ca: &ContentAddress) {
+    // let bold = Style::new().bold();
+    println!(
+        "   {}Submitted{} contract {} for registration successfully",
+        BOLD.render(),
+        BOLD.render_reset(),
+        ca,
+    );
+}
+
+/// Print the "Submitted program ... for registration ..." output.
+fn print_registered_program(ca: &ContentAddress) {
+    // let bold = Style::new().bold();
+    println!(
+        "   {}Submitted{} program {} for registration successfully",
+        BOLD.render(),
+        BOLD.render_reset(),
+        ca,
     );
 }
