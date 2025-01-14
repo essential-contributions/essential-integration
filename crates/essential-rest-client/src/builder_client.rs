@@ -7,6 +7,8 @@ use essential_types::{
 };
 use reqwest::{Client, ClientBuilder};
 
+const BOLD: Style = Style::new().bold();
+
 /// Client that binds to an Essential builder address.
 #[derive(Clone)]
 pub struct EssentialBuilderClient {
@@ -29,14 +31,17 @@ impl EssentialBuilderClient {
     /// Creates a solution to the contract registry predicate and submits it.
     pub async fn register_contract(
         &self,
-        contract_registry: PredicateAddress,
-        program_registry: PredicateAddress,
+        contract_registry: &PredicateAddress,
+        program_registry: &PredicateAddress,
         contract: &Contract,
         programs: &[Program],
     ) -> anyhow::Result<ContentAddress> {
         let contract_ca = essential_hash::content_addr(contract);
         let mut solutions = vec![];
-        solutions.push(register_contract_solution(contract_registry, contract)?);
+        solutions.push(register_contract_solution(
+            contract_registry.clone(),
+            contract,
+        )?);
         solutions.extend(
             programs
                 .iter()
@@ -86,11 +91,11 @@ impl EssentialBuilderClient {
     /// Creates a solution to the program registry predicate and submits it.
     pub async fn register_program(
         &self,
-        program_registry: PredicateAddress,
+        program_registry: &PredicateAddress,
         program: &Program,
     ) -> anyhow::Result<ContentAddress> {
         let program_ca = essential_hash::content_addr(program);
-        let program_solution = register_program_solution(program_registry, program);
+        let program_solution = register_program_solution(program_registry.clone(), program);
         let solution_set = SolutionSet {
             solutions: vec![program_solution],
         };
@@ -134,11 +139,8 @@ impl EssentialBuilderClient {
     }
 }
 
-const BOLD: Style = Style::new().bold();
-
 /// Print the "Submitting ..." output.
 fn print_submitting(ca: &ContentAddress) {
-    // let bold = Style::new().bold();
     println!(
         "  {}Submitting{} solution set {}",
         BOLD.render(),
@@ -149,7 +151,6 @@ fn print_submitting(ca: &ContentAddress) {
 
 /// Print the "Submitted" output.
 fn print_submitted() {
-    // let bold = Style::new().bold();
     println!(
         "   {}Submitted{} successfully",
         BOLD.render(),
@@ -159,7 +160,6 @@ fn print_submitted() {
 
 /// Print the "Submitted contract ... for registration ..." output.
 fn print_registered_contract(ca: &ContentAddress) {
-    // let bold = Style::new().bold();
     println!(
         "   {}Submitted{} contract {} for registration successfully",
         BOLD.render(),
@@ -170,7 +170,6 @@ fn print_registered_contract(ca: &ContentAddress) {
 
 /// Print the "Submitted program ... for registration ..." output.
 fn print_registered_program(ca: &ContentAddress) {
-    // let bold = Style::new().bold();
     println!(
         "   {}Submitted{} program {} for registration successfully",
         BOLD.render(),

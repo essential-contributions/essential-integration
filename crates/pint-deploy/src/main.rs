@@ -3,6 +3,7 @@ use clap::{builder::styling::Style, Parser};
 use essential_node_types::BigBang;
 use essential_rest_client::{builder_client::EssentialBuilderClient, contract_from_path};
 use essential_types::{contract::Contract, ContentAddress};
+use futures::future::join_all;
 use pint_pkg::build::BuiltPkg;
 use std::path::PathBuf;
 
@@ -62,12 +63,23 @@ async fn run(args: Args) -> anyhow::Result<()> {
         print_deploying(&name, &contract);
         let output = builder_client
             .register_contract(
-                big_bang.contract_registry,
-                big_bang.program_registry,
+                &big_bang.contract_registry,
+                &big_bang.program_registry,
                 &contract,
                 &programs,
             )
             .await?;
+
+        join_all(programs.iter().map(|p| {
+            let builder_client = &builder_client;
+            async {
+                builder_client
+                    .register_program(&big_bang.program_registry, p)
+                    .await
+            }
+        }))
+        .await;
+
         print_received(&output);
         return Ok(());
     }
@@ -101,8 +113,8 @@ async fn run(args: Args) -> anyhow::Result<()> {
             print_deploying(&pinned.name, &contract);
             let output = builder_client
                 .register_contract(
-                    big_bang.contract_registry,
-                    big_bang.program_registry,
+                    &big_bang.contract_registry,
+                    &big_bang.program_registry,
                     &contract,
                     &programs,
                 )
