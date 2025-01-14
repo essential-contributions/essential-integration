@@ -119,6 +119,17 @@ async fn run(args: Args) -> anyhow::Result<()> {
                     &programs,
                 )
                 .await?;
+
+            join_all(programs.iter().map(|p| {
+                let builder_client = &builder_client;
+                async {
+                    builder_client
+                        .register_program(&big_bang.program_registry, p)
+                        .await
+                }
+            }))
+            .await;
+
             print_received(&output);
         }
     }
